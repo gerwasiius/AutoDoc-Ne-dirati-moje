@@ -1,0 +1,81 @@
+﻿@page "/document-templates"
+@using AutoDocFront.Components.Modals
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject IHttpClientFactory httpClientFactory
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+<PageTitle>Document Templates</PageTitle>
+
+<div class="row align-items-center my-3">
+    <div class="col">
+        <h3>Document Templates</h3>
+    </div>
+
+    @if (selectedTemplate != null)
+    {
+        <button class="btn btn-icon ml-2" @onclick="() => ShowEditModal(selectedTemplate)" title="Izmjeni odabrani član">
+            <span class="oi oi-pencil fs-5"></span>
+        </button>
+    }
+    <div class="col-auto">
+        <button class="btn btn-icon ml-2 mr-2" @onclick="ShowCreateModal" title="Add new template">
+            <span class="oi oi-plus fs-5"></span>
+        </button>
+        <button class="btn btn-danger ml-1" @onclick="ClosePrompt" title="Exit">
+            <span class="fa fa-sign-in fs-5"></span>
+        </button>
+    </div>
+</div>
+
+<hr class="mt-2 mb-2" />
+
+@if (_loading)
+{
+    <div class="spinner mt-5"></div>
+}
+else
+{
+    <div class="row">
+        <div class="col-3">
+            <div class="card">
+                <h6 class="card-header">Templates List</h6>
+                <nav>
+                    <ul class="list-group navigation-list section-list-container">
+                        @foreach (var template in templates)
+                        {
+                            <li class="list-group-item cursor-pointer @(selectedTemplate?.Id == template.Id ? "active" : "")"
+                                @onclick="() => SelectTemplate(template)">
+                                @($"v{template.Version} | {template.Name}")
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <div class="col-9">
+            @if (selectedTemplate != null)
+            {
+                <div class="card mb-2">
+                    <h5 class="card-header">Basic Info</h5>
+                    <div class="card-body">
+                        <div><b>Name:</b> @selectedTemplate.Name</div>
+                        <div><b>Description:</b> @selectedTemplate.Description</div>
+                        <div><b>Status:</b> @selectedTemplate.Status</div>
+                        <div><b>Version:</b> @selectedTemplate.Version</div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary" @onclick="() => ShowEditModal(selectedTemplate)">Edit</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<DocumentTemplateModal
+    IsOpen="@isModalOpen"
+    IsOpenChanged="@(v => isModalOpen = v)"
+    Template="selectedTemplate"
+    ModalMode="modalMode"
+    OnSave="OnModalSave" />

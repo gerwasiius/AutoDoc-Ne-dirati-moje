@@ -1,0 +1,52 @@
+﻿@using System
+
+<div class="col-md-6 col-lg-4">
+    <div class="corporate-card h-100 d-flex flex-column justify-content-between @(Mode == "select" ? "pointer" : "")" @onclick="HandleClick">
+        <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="text-corporate-black mb-0">@Group.Name</h5>
+                @if (Mode == "admin")
+                {
+                    @if (Group.Status == Models.Enumerations.GroupStatusType.ACTIVE)
+                    {
+                        <span class="badge bg-green-100 text-green-800 border border-success d-flex align-items-center gap-1">
+                            <i class="fa fa-eye"></i> Aktivna
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary d-flex align-items-center gap-1">
+                            <i class="fa fa-eye-slash"></i> Neaktivna
+                        </span>
+                    }
+                }
+                else if (Mode == "select")
+                {
+                    <div class="d-flex gap-2 justify-content-end">
+                        <span class="text-secondary">
+                            <i class="fa fa-arrow-right group-select-arrow"></i>
+                        </span>
+                    </div>
+                }
+            </div>
+            <div class="text-corporate-gray-medium mb-3">@Group.Description</div>
+        </div>
+        <div>
+            <div class="text-sm text-corporate-gray-medium mb-3">
+                @* <p class="mb-1">@Group.MemberCount @(Mode == "select" ? "sekcija" : "članova")</p> *@
+                <p class="mb-0">@((Mode == "select") ? Group.DateInserted : $"Kreirana: {Group.DateInserted}")</p>
+            </div>
+            @if (Mode == "admin")
+            {
+                <div class="d-flex gap-2">
+                    <button class="btn corporate-button-secondary flex-fill btn-sm" @onclick="() => OnEdit.InvokeAsync(Group)">
+                        <i class="fa fa-edit me-1"></i> Izmjena
+                    </button>
+                    <button class="btn corporate-button-secondary d-flex align-items-center gap-1 btn-sm" @onclick="() => OnViewMembers.InvokeAsync(Group)">
+                        <i class="fa fa-puzzle-piece"></i> Članovi
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

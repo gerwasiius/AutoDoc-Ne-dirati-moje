@@ -1,0 +1,71 @@
+﻿
+
+.button-wrapper {
+    display: inline-flex; /* Da bi pozadina bila samo oko dugmadi */
+    background-color: #f0f0f0; /* Svijetlo siva boja pozadine */
+    padding: 5px; /* Dodaj padding kako bi pozadina bila malo veća od dugmadi */
+    border-radius: 5px; /* Dodaj zaobljene rubove ako želiš */
+    align-items: center; /* Poravnaj dugmad vertikalno u sredinu */
+    width:max-content;
+}
+
+.btn-transparent {
+    background-color: transparent;
+    color: black;
+    border: none;
+}
+
+.btn-group-sm .btn {
+    padding: 5px 10px; /* Smanji padding za manju veličinu dugmadi */
+    font-size: 0.8rem; /* Smanji font za manju veličinu dugmadi */
+}
+
+.btn-light {
+    background-color: #fff;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/*.tabs {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    max-width: 600px;
+    margin: 20px auto;
+}*/
+
+/*.tab-header {
+    display: flex;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+}*/
+/*
+.tab-button {
+    flex: 1;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+*/
+  /*  .tab-button.active {
+        background-color: #fff;
+        border-bottom: 2px solid #007bff;
+        font-weight: bold;
+    }
+*/
+/*.tab-content {
+    display: none;
+    padding: 20px;
+    background-color: #fff;
+}
+*/
+  /*  .tab-content.active {
+        display: block;
+    }
+*/

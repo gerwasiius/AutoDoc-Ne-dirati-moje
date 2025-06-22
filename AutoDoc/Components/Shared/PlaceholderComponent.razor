@@ -1,0 +1,75 @@
+﻿@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@inject IJSRuntime JS
+
+<div>
+    <h4>Available Placeholders:</h4>
+    <nav>
+        <ul class="list-group navigation-list card-container-scroll">
+            @foreach (var property in ParameterProperties)
+            {
+                @if (IsComplexProperty(property))
+                {
+                    <div class="form-item">
+
+                    <li class="list-group-item cursor-pointer" draggable="true" ondragstart="drag(event)" data-placeholder="@property">
+                            @GetDisplayName(property)
+                        </li>
+                        @* <label @onclick="() => ToggleSubProperties(property.Name)" class="form-label" style="cursor: pointer;">
+                            @GetDisplayName(property) <span class="caret" style="font-size: 0.8em;">&#9660;</span>
+                        </label>
+                        <div id="@property.Name" class="collapse" style="margin-left: 20px;">
+                            @foreach (var subProperty in GetSubProperties(property))
+                            {
+                                <div class="form-item">
+                                    <label class="form-label">@GetDisplayName(subProperty)</label>
+                                    <button @onclick="() => InsertPlaceholder(subProperty.Name)">Insert</button>
+                                </div>
+                            }
+                        </div> *@
+                    </div>
+                }
+                else
+                {
+                    <div class="form-item">
+                        <label class="form-label">@GetDisplayName(property)</label>
+                        <button @onclick="() => InsertPlaceholder(property.Name)">Insert</button>
+                    </div>
+                }
+            }
+        </ul>
+    </nav>
+</div>
+
+@code {
+    [Parameter] public List<PropertyInfo> ParameterProperties { get; set; }
+
+    private void ToggleSubProperties(string propertyName) =>
+        JS.InvokeVoidAsync("toggleCollapse", $"#{propertyName}");
+
+    private bool IsComplexProperty(PropertyInfo property) =>
+        property.PropertyType.IsClass && property.PropertyType != typeof(string);
+
+    private IEnumerable<PropertyInfo> GetSubProperties(PropertyInfo property) =>
+        property.PropertyType.GetProperties().Where(p => p.CanRead && p.GetMethod.IsPublic);
+
+    private string GetDisplayName(PropertyInfo property)
+    {
+        var displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
+        return displayAttribute != null ? displayAttribute.Name : property.Name;
+    }
+
+    private async Task InsertPlaceholder(string placeholder)
+    {
+        await JS.InvokeVoidAsync("insertPlaceholder", placeholder);
+    }
+}
+
+<script>
+    function toggleCollapse(elementId) {
+        const element = document.querySelector(elementId);
+        if (element) {
+            element.classList.toggle('show');
+        }
+    }
+</script>

@@ -1,0 +1,127 @@
+﻿@rendermode InteractiveServer
+@page "/sections/{GroupId}"
+@using System.Web
+@using AutoDocFront.Components.Modals
+@using AutoDocFront.Components.Shared
+@using AutoDocFront.Models.Enumerations
+
+@if (_loading)
+{
+    <div class="spinner mt-5"></div>
+}
+else
+{
+    <div class="container pb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <h1 class="h2 fw-bold text-dark">Sekcije grupe: @_group?.Name</h1>
+                <p class="text-secondary">Upravljanje sekcijama i članovima grupe</p>
+            </div>
+            <button class="btn corporate-button-primary" @onclick="ShowSectionModalForInsert">
+                <i class="fa fa-plus"></i> Nova sekcija
+            </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <select class="form-select w-auto corporate-select" value="@_statusFilter" @onchange="OnStatusFilterChanged">
+                <option value="all">Sve grupe</option>
+                <option value="ACTIVE">Aktivne</option>
+                <option value="DEACTIVATED">Deaktivirane</option>
+            </select>
+            <div class="input-group">
+                <input class="form-control" placeholder="Pretraga po nazivu sekcije"
+                       @bind="_searchTerm" @bind:event="oninput" />
+                <button class="btn corporate-button-secondary" type="button" @onclick="OnSearchClicked" aria-label="Traži">
+                    <i class="fa fa-search"></i> Traži
+                </button>
+                <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClearFiltersClicked" title="Očisti filtere" aria-label="Očisti filtere">
+                    <i class="fa fa-eraser"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
+            <span>
+                Prikazano @(StartIndex + 1)-@EndIndex od @_sections.Count sekcija
+            </span>
+            @if (TotalPages > 1)
+            {
+                <span>Stranica @_currentPage od @TotalPages</span>
+            }
+        </div>
+
+        <div class="row g-4">
+            @foreach (var sectionItem in CurrentSections)
+            {
+                <div class="corporate-card shadow-sm p-0" style="min-height: 120px;">
+                    <div class="card-body d-flex flex-row align-items-start justify-content-between gap-3">
+                        <div class="flex-grow-1 min-width-0">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="fw-bold text-dark text-truncate" style="font-size: 1.1rem;">@sectionItem.Name</span>
+                                <span class="badge @(sectionItem.IsActive ? "bg-success" : "bg-secondary")" style="font-size: 0.85em;">
+                                    @(sectionItem.IsActive ? "Aktivna" : "Neaktivna")
+                                </span>
+                            </div>
+                            <div class="text-secondary small mb-2" style="max-width: 600px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                @sectionItem.Description
+                            </div>
+                            <div class="text-secondary small section-content-clamp">
+                                @((MarkupString)(sectionItem.Content ?? "Bez sadržaja"))
+                            </div>
+                        </div>
+                        <div class="text-end flex-shrink-0 ms-3" style="min-width: 120px;">
+                            @*                             <div class="fw-medium small">
+                                v @sectionItem.Version
+                            </div> *@
+                            <div class="fw-medium small">
+                                <span class="badge corporate-badge" style="font-size: 0.85em;">
+                                    v @sectionItem.Version
+                                </span>
+                            </div>
+
+                            <div class="text-secondary small">
+                                Posljednje ažuriranje:
+                                @(sectionItem.DateUpdate != null
+                                    ? sectionItem.DateUpdate?.ToString("dd.MM.yyyy")
+                                    : sectionItem.DateInsert?.ToString("dd.MM.yyyy"))
+                            </div>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn corporate-button-secondary btn-sm"
+                                        @onclick="() => OpenHistoricalSectionModal(sectionItem)">
+                                    <i class="fa fa-eye me-1"></i> Pregled
+                                </button>
+                                <button class="btn corporate-button-secondary btn-sm"
+                                        @onclick="() => OpenEditSectionModal(sectionItem)">
+                                    <i class="fa fa-edit me-1"></i> Izmjena
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (TotalPages > 1)
+        {
+            <Pagination CurrentPage="@_currentPage"
+                        TotalPages="@TotalPages"
+                        OnPageChanged="ChangePage" />
+        }
+
+        @if (!_sections.Any())
+        {
+            <div class="text-center py-5">
+                <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">
+                    <i class="fa fa-search text-secondary" style="font-size: 2rem;"></i>
+                </div>
+                <h3 class="h5 fw-medium text-dark mb-2">Nema rezultata</h3>
+                <p class="text-secondary">Pokušajte sa drugim terminom pretrage ili kreirajte novu sekciju.</p>
+            </div>
+        }
+    </div>
+}
+
+@if (_isSectionModalVisible)
+{
+    <SectionsModal IsOpen="@_isSectionModalVisible" IsOpenChanged="@((value) => _isSectionModalVisible = value)" Group="_group" Section="_selectedSection" ModalMode="_sectionModalMode" OnSave="OnSectionModalSave" />
+}

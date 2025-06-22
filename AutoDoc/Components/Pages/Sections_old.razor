@@ -1,0 +1,72 @@
+﻿@page "/sections"
+@using AutoDocFront.Models.DTO
+@using AutoDocFront.Models.DTO.GroupSection
+@using Microsoft.FluentUI.AspNetCore.Components
+@rendermode InteractiveServer
+@inject IHttpClientFactory httpClientFactory
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+<PageTitle>Članovi</PageTitle>
+
+<div class="row align-items-center my-3">
+    <div class="col">
+        <h3>Odaberi grupu članova</h3>
+    </div>
+    <div class="col-auto">
+        <!-- Button to toggle search input visibility -->
+        <button class="btn btn-icon ml-2" @onclick="ToggleSearch" title="Pretrazi">
+            <span class="fa fa-search fs-5"></span>
+        </button>
+        <!-- Button to close the prompt -->
+        <button class="btn btn-danger mr-2 ml-2" @onclick="ClosePrompt" title="Izlaz">
+            <span class="fa fa-sign-in fs-5"></span>
+        </button>
+    </div>
+</div>
+<hr class="mt-2 mb-2" />
+<div class="container">
+    @if (isSearchVisible)
+    {
+        <input @bind="searchTerm" @bind:event="oninput" placeholder="Pretraga po nazivu grupe" class="form-control mt-2 mb-2" />
+    }
+    <div class="row card-container-scroll">
+        @if (_loading)
+        {
+            <div class="spinner mt-5"></div>
+        }
+        else if (groupSection.Any())
+        {
+            @foreach (var item in filteredGroupSections)
+            {
+                <div class="col-lg-4 mb-4">
+                    <a href="@($"sections/{item.ID}")" class="card card-item">
+                        <div class="card-body p-2">
+                            <div class="justify-content-between align-items-center">
+                                <div class="align-items-center">
+                                    <div class="ms-3">
+                                        <h6 class="fw-bold mb-1">@item.Name</h6>
+                                    </div>
+                                    <hr class="m-0" />
+                                    <div class="ms-3 description-container">
+                                        <p class="text-muted mb-0 mt-1">@item.Description</p>
+                                        @* <p class="text-muted mb-0 mt-1">@item.Description</p> *@
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-body-tertiary p-d-flex text-center cursor-pointer">
+                            Odaberi
+                        </div>
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+            <span class="text-center">Nema podataka za prikazati!</span>
+        }
+    </div>
+</div>
+
+

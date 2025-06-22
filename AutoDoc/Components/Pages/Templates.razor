@@ -1,0 +1,169 @@
+﻿@rendermode InteractiveServer
+@page "/templates"
+@using AutoDocFront.Components.Modals
+@using AutoDocFront.Components.Shared
+@using AutoDocFront.Models.Enumerations
+
+@if (_loading)
+{
+    <div class="spinner mt-5"></div>
+}
+else
+{
+    <div class="container pb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <h1 class="h2 fw-bold text-dark">Document Template-i</h1>
+                <p class="text-secondary">Kreiranje i organizacija template-a od postojećih sekcija</p>
+            </div>
+            <button class="btn corporate-button-primary" @onclick="ShowCreateTemplateModal">
+                <i class="fa fa-plus"></i> Novi template
+            </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <select class="form-select w-auto corporate-select" value="@statusFilter" @onchange="OnStatusFilterChanged">
+                <option value="all">Svi statusi</option>
+                @foreach (var status in Enum.GetValues(typeof(AutoDocFront.Models.Enumerations.DocumentTemplateStatusType)).Cast<AutoDocFront.Models.Enumerations.DocumentTemplateStatusType>())
+                {
+                    <option value="@status">@GetStatusDisplayName(status)</option>
+                }
+            </select>
+            <div class="input-group">
+                <input @bind="searchTerm"
+                       placeholder="Pretraga po nazivu predloška"
+                       class="form-control"
+                       @bind:event="oninput" />
+                <button class="btn corporate-button-secondary" type="button" @onclick="OnSearchClicked">
+                    <i class="fa fa-search"></i> Traži
+                </button>
+                <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClearFiltersClicked" title="Očisti filtere">
+                    <i class="fa fa-eraser" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
+            <span>
+                Prikazano @(StartIndex + 1)-@EndIndex od @totalCount template-a
+            </span>
+            @if (TotalPages > 1)
+            {
+                <span>Stranica @currentPage od @TotalPages</span>
+            }
+        </div>
+
+        <div class="row g-4 mt-2">
+            @foreach (var template in templates)
+            {
+                <div class="col-md-6">
+                    <div class="corporate-card h-100 d-flex flex-column">
+                        <div class="card-header bg-white template-card-header">
+                            <div class="row w-100 align-items-center">
+                                <div class="col-12 min-width-0">
+                                    <div class="template-card-title text-truncate">@template.Name</div>
+                                    <div class="text-secondary text-truncate-2 mt-1">@template.Description</div>
+                                </div>
+                                @*                      <div class="col-2 d-flex justify-content-end align-items-center">
+                                 <span class="template-card-badge" title="Broj sekcija: ">
+                                    <i class="fa fa-layer-group"></i> @template.Relations.Count
+                                </span> 
+                            </div> *@
+                            </div>
+                        </div>
+                        <div class="card-body flex-grow-1">
+                            <div class="template-card-info mb-2">
+                                <span>
+                                    <i class="fa fa-calendar-alt"></i>
+                                    <b>Važi od:</b> @template.ValidFrom?.ToString("dd.MM.yyyy")
+                                </span>
+                                <span>
+                                    <i class="fa fa-calendar-check"></i>
+                                    <b>Važi do:</b>
+                                    @(template.ValidTo.HasValue
+                                        ? template.ValidTo.Value.ToString("dd.MM.yyyy")
+                                        : "Beskonačno")
+                                </span>
+                            </div>
+                            <div class="template-card-info">
+                                <span>
+                                    <i class="fa fa-history"></i>
+                                    <b>Poslednje ažuriranje:</b>
+                                    @(template.DateUpdate?.ToString("dd.MM.yyyy HH:mm") ?? template.DateInsert.ToString("dd.MM.yyyy HH:mm"))
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer template-card-footer d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="template-card-status badge @GetStatusBadgeClass(template.Status)">
+                                    @GetStatusDisplayName(template.Status)
+                                </span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn corporate-button-secondary btn-sm"
+                                        @onclick="() => ShowViewTemplateModal(template)">
+                                    <i class="fa fa-info-circle me-1"></i> Osnovni podaci
+                                </button>
+                                <button class="btn corporate-button-secondary btn-sm"
+                                    @onclick="() => ShowSectionsModal(template)">
+
+                                    <i class="fa fa-list me-1"></i> Sekcije
+                                </button>
+                                <button class="btn corporate-button-secondary btn-sm">
+                                    <i class="fa fa-eye me-1"></i> Pregled
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (TotalPages > 1)
+            {
+                <Pagination CurrentPage="@currentPage"
+                            TotalPages="@TotalPages"
+                            OnPageChanged="ChangePage" />
+            }
+        </div>
+
+        @if (!templates.Any())
+        {
+            <div class="text-center py-5">
+                <div class="bg-light rounded-circle mx-auto mb-3" style="width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa fa-search text-secondary" style="font-size: 2rem;"></i>
+                </div>
+                <h4 class="text-dark mb-2">Nema template-a</h4>
+                <p class="text-secondary">Kreirajte novi template ili promenite termine pretrage.</p>
+            </div>
+        }
+    </div>
+}
+
+@if (isTemplateModalOpen)
+{
+    <DocumentTemplateModal IsOpen="isTemplateModalOpen"
+                           IsOpenChanged="@(v => isTemplateModalOpen = v)"
+                           Template="selectedTemplate"
+                           ModalMode="templateModalMode"
+                           OnSave="OnTemplateModalSave"
+                           OnEdit="ShowEditTemplateModal" />
+}
+
+@if (isSectionsModalOpen)
+{
+    <TemplateFormDialog IsOpen="isSectionsModalOpen"
+                        IsOpenChanged="@(v => isSectionsModalOpen = v)"
+                        OpenSectionPicker="@(EventCallback.Factory.Create(this, OpenSectionPickerAsync))"
+                        Template="selectedTemplate"
+                        OnSubmit="CloseSectionsModal" />
+}
+
+@if (IsSectionPickerOpen){
+
+    <SectionPickerDialog IsOpen="IsSectionPickerOpen"
+                         IsOpenChanged="@(v => IsSectionPickerOpen = v)"
+                         AvailableGroups="availableGroups"
+                         AvailableSections="availableSections"
+                         OnGroupChanged="HandleGroupChanged" />
+
+}

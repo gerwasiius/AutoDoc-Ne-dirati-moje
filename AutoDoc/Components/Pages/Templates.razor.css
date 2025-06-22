@@ -1,0 +1,67 @@
+﻿.template-card-header {
+    min-height: 75px; /* Adjust as needed for your design */
+    max-height: 75px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.6em; /* Reserve space for 2 lines (adjust line-height if needed) */
+    line-height: 1.3em;
+}
+
+.template-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 0;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.template-card-badge {
+    font-size: 1rem;
+    padding: 0.35em 0.8em;
+    background: #f5f6fa;
+    color: #2c3e50;
+    border-radius: 1em;
+    font-weight: 500;
+}
+
+.template-card-footer {
+    border-top: 1px solid #f0f0f0;
+    background: #fafbfc;
+}
+
+.template-card-info {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+    .template-card-info i {
+        margin-right: 0.4em;
+        color: #b1b1b1;
+    }
+
+
+.corporate-card {
+    min-width: 0;
+    word-break: break-word;
+    overflow: hidden;
+}
+

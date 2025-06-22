@@ -1,0 +1,93 @@
+﻿@if (IsOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.2)">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    @* <h5 class="modal-title">@((EditingTemplate != null) ? "Izmena Template-a" : "Novi Template")</h5> *@
+                    <h5 class="modal-title">Pregled template-a</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Naziv: </label>
+                        <input class="form-control corporate-input" @bind="FormData.Name" disabled="true" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Opis: </label>
+                        <textarea class="form-control corporate-input" @bind="FormData.Description" rows="3" disabled="true"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">Sekcije dokumenta</label>
+                            <button class="btn corporate-button-secondary btn-sm" @onclick="OpenSectionPickerClicked">
+                                <i class="fa fa-plus"></i> Dodaj sekcije
+                            </button>
+                        </div>
+                        <div class="bg-light border rounded p-2" style="min-height:200px;">
+                            @if (FormData?.Relations == null || !FormData.Relations.Any())
+                            {
+                                <div class="text-center text-secondary py-3">
+                                    Nema dodatih sekcija
+                                </div>
+                            }
+                            @*  @if (FormData?.Sections == null || !FormData.Sections.Any())
+                            {
+                                <div class="text-center text-secondary py-3">
+                                    Nema dodatih sekcija
+                                </div>
+                            } *@
+                            else
+                            {
+                                @foreach (var (sectionItem, idx) in FormData.Relations.Select((s, i) => (s, i)))
+                                {
+                                    <div class="d-flex align-items-center justify-content-between bg-white border rounded mb-2 px-3 py-2">
+                                        <div class="d-flex align-items-center flex-grow-1">
+                                            <span class="badge bg-warning text-dark me-2">@(@idx + 1)</span>
+                                            <div>
+                                                <span class="fw-medium">@sectionItem.Section?.Name</span>
+                                                @* @if (sectionItem.Conditions?.Count > 0)
+                                                {
+                                                    <div class="text-secondary small" title="@string.Join(", ", sectionItem.Conditions.Select(c => c.Description))">
+                                                        @sectionItem.Conditions.Count uslov(a) definisan(o)
+                                                    </div>
+                                                } *@
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-light btn-sm" @onclick="() => MoveSectionClicked(idx, -1)" disabled="@(idx == 0)">
+                                                <i class="fa fa-arrow-up"></i>
+                                            </button>
+                                            <button class="btn btn-light btn-sm" @onclick="() => MoveSectionClicked(idx, 1)" disabled="@(idx == FormData.Relations.Count - 1)">
+                                                <i class="fa fa-arrow-down"></i>
+                                            </button>
+                                            <button class="btn btn-light btn-sm" title="Podesi uslove" @onclick="() => OpenSectionConditionsClicked(idx)">
+                                                <i class="fa fa-gear"></i>
+                                            </button>
+                                            <button class="btn btn-light btn-sm" title="Pregled" @onclick="() => PreviewSectionClicked(idx)">
+                                                <i class="fa fa-arrows-fullscreen"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" @onclick="() => RemoveSectionClicked(idx)">
+                                                <i class="fa fa-x"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="Close">Otkaži</button>
+                    <button class="btn btn-warning" @onclick="Submit">
+                        Sačuvaj izmene
+                    </button>
+                    @* <button class="btn btn-warning" @onclick="Submit">
+                        @((EditingTemplate != null) ? "Sačuvaj izmene" : "Kreiraj template")
+                    </button> *@
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}

@@ -1,0 +1,9 @@
+﻿
+.group-select-arrow {
+    transition: color 0.2s !important;
+    color: #6c757d !important; /* Bootstrap's text-secondary */
+}
+
+.corporate-card.pointer:hover .group-select-arrow {
+    color: #212529 !important; /* Bootstrap's text-dark */
+}

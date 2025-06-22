@@ -1,0 +1,85 @@
+﻿@rendermode InteractiveServer
+@page "/group-selection"
+@using AutoDocFront.Components.Shared;
+
+@if (_loading)
+{
+    <div class="spinner mt-5"></div>
+}
+else
+{
+    <div class="container pb-4">
+        <div class="mb-4" style="max-width: 100%;">
+            <div class="row align-items-start g-3">
+                <div class="col-md-8">
+                    <h1 class="h2 fw-bold text-dark">Izbor Grupe</h1>
+                    <p class="text-secondary mb-3">
+                        Odaberite grupu za upravljanje sekcijama i članovima
+                    </p>
+                    <div class="input-group mb-2">
+                        <input class="form-control border-start-0 ps-2 corporate-input"
+                               placeholder="Pretraga grupa..."
+                               @bind="searchTerm"
+                               @bind:event="oninput" />
+                        <button class="btn corporate-button-secondary" type="button" @onclick="OnSearchClicked" aria-label="Traži">
+                            <i class="fa fa-search"></i> Traži
+                        </button>
+                        <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClearFiltersClicked" title="Očisti filtere" aria-label="Očisti filtere">
+                            <i class="fa fa-eraser" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-start justify-content-md-end">
+                    <div class="p-4 rounded bg-warning bg-opacity-25" style="max-width: 420px;">
+                        <h6 class="fw-bold text-dark mb-2">Napomena:</h6>
+                        <p class="text-secondary small mb-0">
+                            Prikazane su samo aktivne grupe. Za upravljanje grupama idite na "Grupe članova".
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
+            <span>
+                Prikazano @(StartIndex + 1)-@EndIndex od @totalCount grupa
+            </span>
+            @if (TotalPages > 1)
+            {
+                <span>Stranica @currentPage od @TotalPages</span>
+            }
+        </div>
+
+        <div class="row g-4">
+            @foreach (var group in groups)
+            {
+                <GroupCard Group="group"
+                           Mode="select"
+                           OnSelect="g => HandleGroupSelect(g.ID, g.Name)" />
+            }
+        </div>
+
+        @if (TotalPages > 1)
+        {
+            <Pagination CurrentPage="@currentPage"
+                        TotalPages="@TotalPages"
+                        OnPageChanged="ChangePage" />
+        }
+
+        @if (!groups.Any())
+        {
+            <div class="text-center py-5">
+                <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">
+                    <i class="fa fa-object-group fa-2x text-secondary" style="font-size: 2rem;"></i>
+                </div>
+                <h3 class="h5 fw-medium text-dark mb-2">Nema aktivnih grupa</h3>
+                <p class="text-secondary mb-4">
+                    Nema grupa koje odgovaraju vašoj pretrazi ili nema aktivnih grupa.
+                </p>
+                <button class="btn btn-outline-secondary" @onclick="@(() => Navigation.NavigateTo("/groups"))">
+                    Idite na Administraciju Grupa
+                </button>
+            </div>
+        }
+    </div>
+}

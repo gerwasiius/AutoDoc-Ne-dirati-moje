@@ -1,0 +1,67 @@
+﻿.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+}
+
+.modal-custom-size {
+    width: 98vw;
+    height: 94vh;
+    max-width: 95vw;
+    max-height: 94vh;
+}
+
+.modal-content {
+    height: 100%;
+}
+
+
+.list-group > .list-group {
+    display: none;
+    margin-bottom: 0;
+}
+
+.list-group-item:focus-within + .list-group {
+    display: block;
+}
+
+.list-group > .list-group-item {
+    border-radius: 0;
+    border-width: 1px 0 0 0;
+}
+
+    .list-group > .list-group-item:first-child {
+        border-top-width: 0;
+    }
+
+.list-group > .list-group > .list-group-item {
+    padding-left: 2.5rem;
+}
+
+
+.version-list-item {
+    transition: background 0.15s, color 0.15s;
+    cursor: pointer;
+}
+
+    .version-list-item:hover {
+        background-color: #f0f0f0 !important;
+    }
+
+    .version-list-item.active {
+        background-color: rgba(0, 0, 0, .1);
+        color: black;
+        border-color: #c0c0c0;
+    }
+
+.cursor-grab {
+    cursor: move !important;
+}
+
+    .cursor-grab:active {
+        cursor: grabbing !important;
+    }

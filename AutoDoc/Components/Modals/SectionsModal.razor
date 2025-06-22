@@ -1,0 +1,220 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using AutoDocFront.Components.Shared
+@using AutoDocFront.Models.DTO.GroupSection
+@using AutoDocFront.Models.Enumerations
+@using Microsoft.FluentUI.AspNetCore.Components
+@rendermode InteractiveServer
+
+@if (IsOpen)
+{
+    <div class="modal-backdrop"></div>
+    <div class="modal" tabindex="-1" role="dialog" style="@_modalStyle">
+        <div class="modal-dialog modal-custom-size modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header p-2">
+                    <div class="d-flex align-items-center">
+                        <h5 class="modal-title">
+                            @if (ModalMode == ModalMode.VIEW)
+                            {
+                                @($"Pregled svih verzija člana: v{Section.Version} | {Section.Name}")
+                            }
+                            else if (ModalMode == ModalMode.EDIT)
+                            {
+                                @($"Izmjena člana: v{Section.Version} | {Section.Name}")
+                            }
+                            else
+                            {
+                                @("Unos novog člana")
+                            }
+                        </h5>
+                    </div>
+                    <button type="button" class="btn-close me-2" aria-label="Close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body pe-5 ps-5 d-flex align-content-center overflow-auto">
+                    <div class="row" style="flex: 1;">
+                        <div class="col-2 mt-2 overflow-auto h-100">
+                            @if (ModalMode != ModalMode.VIEW)
+                            {
+                                <div class="form-group" style="height: 100%;">
+                                    <label class="form-label mb-1 mt-2">Dostupni parametri:</label>
+                                    <nav>
+                                        <ul class="list-group navigation-list">
+                                            <li class="list-group-item pointer" onclick="toggleGroup('Group1')">
+                                                <i class="fas fa-caret-right" id="icon-Group1"></i> Group 1
+                                            </li>
+                                            <ul id="Group1" class="list-group placeholder-items" style="display:none; padding-left: 20px;">
+                                                <li class="list-group-item cursor-grab placeholder-item text-gray" draggable="true" ondragstart="drag(event)" data-placeholder="Placeholder1">
+                                                    <i class="fa-solid fa-grip-vertical"></i>
+                                                    Placeholder 1
+                                                </li>
+                                            </ul>
+                                            <li class="list-group-item pointer group-header text-blue" onclick="toggleGroup('Group2')">
+                                                <i class="fas fa-caret-right" id="icon-Group2"></i> Group 2
+                                            </li>
+                                            <ul id="Group2" class="list-group placeholder-items" style="display:none; padding-left: 20px;">
+                                                <li class="list-group-item cursor-grab placeholder-item text-gray" draggable="true" ondragstart="drag(event)" data-placeholder="Ime_klijenta">
+                                                    <i class="fa-solid fa-grip-vertical"></i>
+                                                    Ime klijenta
+                                                </li>
+                                                <li class="list-group-item cursor-grab placeholder-item text-gray" draggable="true" ondragstart="drag(event)" data-placeholder="Prezime_klijenta">
+                                                    <i class="fa-solid fa-grip-vertical"></i>
+                                                    Prezime klijenta
+                                                </li>
+                                                <li class="list-group-item cursor-grab placeholder-item text-gray" draggable="true" ondragstart="drag(event)" data-placeholder="Prezime_klijenta">
+                                                    <i class="fa-solid fa-grip-vertical"></i>
+                                                    Prezime klijenta
+                                                </li>
+                                            </ul>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            }
+                            else if (_listSections != null && _listSections.Count > 0)
+                            {
+                                <div class="d-flex align-items-center gap-2 py-2 px-2">
+                                    <i class="fa fa-history text-secondary"></i>
+                                    <span class="fw-semibold small text-secondary">Prethodne verzije</span>
+                                </div>
+                                <hr class="my-0" />
+                                <nav>
+                                    <ul class="list-group navigation-list section-list-container">
+                                        @foreach (var sectionItem in _listSections)
+                                        {
+                                            var isActive = sectionItem.Version == _model.Version;
+                                            <li class="list-group-item cursor-pointer border-0 py-2 px-2 mb-1 rounded-3 version-list-item @((sectionItem.Version == _model.Version ? "active" : ""))"
+                                                @onclick="() => SelectVersion(sectionItem)">
+                                                <span>
+                                                    @($"v{sectionItem.Version} | {sectionItem.Name}")
+                                                    @if (sectionItem.IsActive)
+                                                    {
+                                                        <span class="badge bg-success ms-2" style="font-size:0.75em;">Aktivna</span>
+                                                    }
+                                                </span>
+                                            </li>
+                                        }
+                                    </ul>
+                                </nav>
+                            }
+                        </div>
+                        <div class="col-10">
+                            <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit">
+                                <DataAnnotationsValidator />
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <label for="SectionName" class="form-label mb-1 small">Naziv člana</label>
+                                            <InputText class="form-control form-control-sm rounded shadow-sm" id="SectionName" @bind-Value="_model.Name" disabled="@(ModalMode == ModalMode.VIEW)" />
+                                            <ValidationMessage For="@(() => _model.Name)" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <label for="SectionGroup" class="form-label mb-1 small">Grupa</label>
+                                            <InputText class="form-control form-control-sm rounded shadow-sm" id="SectionGroup" @bind-Value="Group.Name" disabled="true" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <label for="Description" class="form-label mb-1 small">Opis člana</label>
+                                            <InputTextArea class="form-control form-control-sm rounded shadow-sm" id="Description" @bind-Value="_model.Description" rows="2" disabled="@(ModalMode == ModalMode.VIEW)" />
+                                            <ValidationMessage For="@(() => _model.Description)" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="row">
+                                            <div class="col-3">
+                                                <label for="Version" class="form-label mb-1 small">Verzija</label>
+                                                <InputNumber class="form-control form-control-sm rounded shadow-sm px-2 text-center"
+                                                             id="Version"
+                                                             style="max-width: 100px; min-width: 40px;"
+                                                             @bind-Value="_model.Version"
+                                                             disabled="true" />
+                                            </div>
+                                            <div class="col-3">
+                                                <label for="IsActive" class="form-label mb-1 small">Aktivan član</label>
+                                                <input class="form-control form-control-sm rounded shadow-sm px-2 text-center"
+                                                       id="IsActive"
+                                                       style="max-width: 100px; min-width: 40px;"
+                                                       disabled="true"
+                                                       value="@(_model.IsActive ? "DA" : "NE")" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (ModalMode == ModalMode.EDIT || ModalMode == ModalMode.VIEW)
+                                {
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-2">
+                                                <label for="DateUpdate" class="form-label mb-1 small">Datum posljednje izmjene</label>
+                                                <input class="form-control form-control-sm rounded shadow-sm" id="DateUpdate" disabled="true" value="@((_model.DateUpdate ?? _model.DateInsert)?.ToString("dd.MMMM.yyyy HH:mm:ss"))" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-2">
+                                                <label for="DateUpdate" class="form-label mb-1 small">Korisnik</label>
+                                                <input class="form-control form-control-sm rounded shadow-sm" id="DateUpdate" disabled="true" value="@((_model.UserUpdate ?? _model.UserInsert))" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="mb-2">
+                                            <label for="Content" class="form-label mb-1 small">Sadržaj</label>
+                                            @if (ModalMode != ModalMode.VIEW)
+                                            {
+                                                <ValidationMessage For="@(() => _model.Content)" />
+                                                <TinyMCE @bind-Value="_model.Content" @ref="_tinyMceEditor" />
+                                            }
+                                            else
+                                            {
+                                                <div class="card-body mb-3 border border-secondary-subtle rounded bg-white base-content-height content-full-height shadow-sm">
+                                                    <div class="card-text">
+                                                        <p>@(new MarkupString(_model.Content))</p>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    <div>
+                        @if (ModalMode == ModalMode.EDIT)
+                        {
+                            if (Section.IsActive == true)
+                            {
+                                <button class="btn btn-danger fs-6" @onclick="() => ShowConfirmationDialog(false)">
+                                    <i class="fas fa-lock me-1" style="top: 1.5px"></i>
+                                    Deaktiviraj član!
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-success fs-6" @onclick="() => ShowConfirmationDialog(true)">
+                                    <i class="fas fa-unlock" style="top: 1.5px"></i>
+                                    Aktiviraj član!
+                                </button>
+                            }
+                        }
+                    </div>
+                    <div>
+                        @if (ModalMode != ModalMode.VIEW)
+                        {
+                            <button type="submit" class="btn modal-corporate-button-primary fs-6" @onclick="HandleValidSubmit">
+                                <i class="oi oi-check me-1" style="top: 1.5px"></i>
+                                Spasi
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,38 @@
+﻿.corporate-pagination .page-item {
+    color: #232323;
+    border-radius: 0.5rem;
+    margin: 0 0.15rem;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.corporate-pagination .page-link,
+.corporate-pagination .page-link:focus-visible,
+.corporate-pagination .page-link:visited {
+    background-color: transparent !important;
+    color: #232323 !important;
+    box-shadow: none !important;
+    border-radius: 0.5rem !important;
+    min-height: 40px !important;
+    min-width: 40px !important;
+}
+
+.page-item.active .page-link {
+    background-color: #fff !important;
+    color: #232323 !important;
+    border-color: rgb(230, 230, 230) !important;
+}
+
+.page-item.disabled .page-link {
+    background-color: transparent !important;
+}
+
+.page-link:hover {
+    background-color: hsl(51, 100%, 50%) !important;
+}
