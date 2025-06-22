@@ -24,6 +24,13 @@ namespace AutoDocFront.Components.Modals
         public ModalMode modalMode;
         private string _modalStyle => IsOpen ? "display: block;" : "display: none;";
 
+        private string ModalTitle => ModalMode switch
+        {
+            ModalMode.EDIT => "Izmjena predloška",
+            ModalMode.VIEW => "Pregled predloška",
+            _ => "Unos novog predloška"
+        };
+
         protected override void OnParametersSet()
         {
             _autoDocServiceClient = httpClientFactory.CreateClient("AutoDocService");

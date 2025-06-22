@@ -56,11 +56,18 @@ namespace AutoDocFront.Components.Modals
         private bool IsEditMode => Group != null && Group.ID > 0;
 
         /// <summary>
-        /// Inicijalizuje model i edit kontekst na osnovu proslijeđenih parametara.
+        /// Inicijalizacija komponente
+        /// </summary>
+        protected override void OnInitialized()
+        {
+            _autoDocServiceClient = HttpClientFactory.CreateClient("AutoDocService");
+        }
+
+        /// <summary>
+        /// On parameter set model i edit kontekst na osnovu proslijeđenih parametara.
         /// </summary>
         protected override void OnParametersSet()
         {
-            _autoDocServiceClient = HttpClientFactory.CreateClient("AutoDocService");
             _model = Group != null
                 ? new SectionGroupUpsertDTO
                 {
@@ -89,53 +96,53 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         private async Task HandleValidSubmit()
         {
-            _validationMessageStore.Clear();
-            if (_editContext.Validate())
+            if (!ValidateForm())
+                return;
+
+            _loading = true;
+            try
             {
-                _loading = true;
-                try
-                {
-                    // TODO: Zamijeniti sa stvarnim korisnikom iz autentikacije
-                    _model.User = "zlatan.kahriman";
+                _model.User = "zlatan.kahriman";
+                var response = IsEditMode
+                    ? await _autoDocServiceClient.PutAsJsonAsync("/api/contract-generation/section-groups", _model)
+                    : await _autoDocServiceClient.PostAsJsonAsync("/api/contract-generation/section-groups", _model);
 
-                    HttpResponseMessage response;
-                    if (IsEditMode)
-                    {
-                        // Izmjena postojeće grupe
-                        response = await _autoDocServiceClient.PutAsJsonAsync("/api/contract-generation/section-groups", _model);
-                    }
-                    else
-                    {
-                        // Kreiranje nove grupe
-                        response = await _autoDocServiceClient.PostAsJsonAsync("/api/contract-generation/section-groups", _model);
-                    }
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        ToastService.ShowSuccess(IsEditMode ? "Grupa je uspješno izmijenjena!" : "Grupa je uspješno kreirana!");
-                        CloseModal();
-                        await OnSave.InvokeAsync();
-                    }
-                    else
-                    {
-                        var error = await response.Content.ReadAsStringAsync();
-                        ToastService.ShowError($"Greška: {error}");
-                    }
-                }
-                catch (Exception ex)
+                if (response.IsSuccessStatusCode)
                 {
-                    ToastService.ShowError($"Neočekivana greška: {ex.Message}");
+                    ToastService.ShowSuccess(IsEditMode ? "Grupa je uspješno izmijenjena!" : "Grupa je uspješno kreirana!");
+                    CloseModal();
+                    await OnSave.InvokeAsync();
                 }
-                finally
+                else
                 {
-                    _loading = false;
+                    var error = await response.Content.ReadAsStringAsync();
+                    ToastService.ShowError($"Greška: {error}");
                 }
             }
-            else
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Neočekivana greška: {ex.Message}");
+            }
+            finally
+            {
+                _loading = false;
+            }
+        }
+
+        /// <summary>
+        /// Metoda koja sluzi da validira da li je moguce izvrsiti izmjenu
+        /// </summary>
+        /// <returns></returns>
+        private bool ValidateForm()
+        {
+            _validationMessageStore.Clear();
+            if (!_editContext.Validate())
             {
                 _editContext.NotifyValidationStateChanged();
                 ToastService.ShowError("Provjerite da li su sva polja ispravno popunjena.");
+                return false;
             }
+            return true;
         }
 
         /// <summary>

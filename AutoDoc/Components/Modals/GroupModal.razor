@@ -1,64 +1,55 @@
-﻿@using AutoDocFront.Models.DTO.GroupSection
+﻿@using AutoDocFront.Components.Shared
 @using AutoDocFront.Models.Enumerations
-@using Microsoft.FluentUI.AspNetCore.Components
 
+<BaseModalLayout IsOpen="@IsOpen" Title="@((IsEditMode ? $"Izmjena grupe {_model.Name}" : "Nova grupa"))" IsOpenChanged="@IsOpenChanged">
+    <BodyContent>
+        <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
 
-@if (IsOpen)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.4);" aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@((IsEditMode ? $"Izmjena grupe {_model.Name}" : "Nova grupa"))</h5>
-                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
-                </div>
-                <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit">
-                    <div class="modal-body">
-                        <DataAnnotationsValidator />
+            <div class="mb-3">
+                <label class="form-label">Naziv grupe</label>
+                <InputText class="form-control" @bind-Value="_model.Name" />
+                <ValidationMessage For="@(() => _model.Name)" />
+            </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Naziv grupe</label>
-                            <InputText class="form-control" @bind-Value="_model.Name" />
-                            <ValidationMessage For="@(() => _model.Name)" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Opis</label>
-                            <InputTextArea class="form-control" @bind-Value="_model.Description" />
-                            <ValidationMessage For="@(() => _model.Description)" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <input class="form-control" value="@_model.Status" disabled />
-                        </div>
+            <div class="mb-3">
+                <label class="form-label">Opis</label>
+                <InputTextArea class="form-control" @bind-Value="_model.Description" />
+                <ValidationMessage For="@(() => _model.Description)" />
+            </div>
 
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <input class="form-control" value="@_model.Status" disabled />
+            </div>
 
-                    </div>
-                    <div class="modal-footer d-flex justify-content-between align-items-center">
-                        <div>
-                            @if (IsEditMode)
-                            {
-                                @if (_model.Status == GroupStatusType.ACTIVE)
-                                {
-                                    <button type="button" class="btn btn-danger btn-sm" @onclick="() => ChangeGroupStatusAsync(GroupStatusType.DEACTIVATED)" disabled="@_loading">
-                                        <i class="fas fa-lock me-1"></i> Deaktiviraj grupu
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button type="button" class="btn btn-success btn-sm" @onclick="() => ChangeGroupStatusAsync(GroupStatusType.ACTIVE)" disabled="@_loading">
-                                        <i class="fas fa-unlock me-1"></i> Aktiviraj grupu
-                                    </button>
-                                }
-                            }
-                        </div>
-                        <div>
-                            <button type="submit" class="btn modal-corporate-button-primary btn-sm" disabled="@_loading">
-                                @(_loading ? "Spremanje..." : (IsEditMode ? "Sačuvaj izmjene" : "Kreiraj grupu"))
-                            </button>
-                        </div>
-                    </div>
-                </EditForm>
+        </EditForm>
+    </BodyContent>
+
+    <FooterContent>
+        <div class="modal-footer d-flex justify-content-between align-items-center">
+            <div>
+                @if (IsEditMode)
+                {
+                    @if (_model.Status == GroupStatusType.ACTIVE)
+                    {
+                        <button type="button" class="btn btn-danger btn-sm" @onclick="() => ChangeGroupStatusAsync(GroupStatusType.DEACTIVATED)" disabled="@_loading">
+                            <i class="fas fa-lock me-1"></i> Deaktiviraj grupu
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-success btn-sm" @onclick="() => ChangeGroupStatusAsync(GroupStatusType.ACTIVE)" disabled="@_loading">
+                            <i class="fas fa-unlock me-1"></i> Aktiviraj grupu
+                        </button>
+                    }
+                }
+            </div>
+            <div>
+                <button type="submit" class="btn modal-corporate-button-primary btn-sm" @onclick="HandleValidSubmit" disabled="@_loading">
+                    @(_loading ? "Spremanje..." : (IsEditMode ? "Sačuvaj izmjene" : "Kreiraj grupu"))
+                </button>
             </div>
         </div>
-    </div>
-}
+    </FooterContent>
+</BaseModalLayout>

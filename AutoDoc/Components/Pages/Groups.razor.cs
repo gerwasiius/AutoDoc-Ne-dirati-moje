@@ -14,46 +14,46 @@ namespace AutoDocFront.Components.Pages
     /// </summary>
     public partial class Groups
     {
-        // --- INJECTION ---
+        // --- DEPENDENCY INJECTION ---
 
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
-        [Inject] private NavigationManager Navigation { get; set; }
-        [Inject] private IToastService ToastService { get; set; }
+        [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+        [Inject] private NavigationManager Navigation { get; set; } = default!;
+        [Inject] private IToastService ToastService { get; set; } = default!;
 
-        // --- PRIVATNA POLJA ---
+        // --- POLJA ---
 
-        private HttpClient _autoDocServiceClient;
-        private List<SectionGroupGetDTO> groups = new();
+        private HttpClient _httpClient;
+        private List<SectionGroupGetDTO> groupList = new();
         private string searchTerm = string.Empty;
         private string statusFilter = "all";
         private int currentPage = 1;
         private int itemsPerPage = 30;
-        private int totalCount = 0;
-        private bool isGroupModalOpen;
-        private SectionGroupUpsertDTO selectedGroupForEdit;
-        private bool _loading = false;
+        private int totalGroupCount = 0;
+        private bool isGroupModalVisible;
+        private SectionGroupUpsertDTO selectedGroupDto;
+        private bool isLoading;
 
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
-        private int TotalPages => (int)Math.Ceiling((double)totalCount / itemsPerPage);
+        private int TotalPages => (int)Math.Ceiling((double)totalGroupCount / itemsPerPage);
 
         /// <summary>
         /// Početni indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int StartIndex => totalCount == 0 ? 0 : (currentPage - 1) * itemsPerPage;
+        private int StartIndex => totalGroupCount == 0 ? 0 : (currentPage - 1) * itemsPerPage;
 
         /// <summary>
         /// Krajnji indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int EndIndex => Math.Min(StartIndex + groups.Count, totalCount);
+        private int EndIndex => Math.Min(StartIndex + groupList.Count, totalGroupCount);
 
         /// <summary>
         /// Inicijalizuje komponentu i učitava grupe sa servera.
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            _autoDocServiceClient = HttpClientFactory.CreateClient("AutoDocService");
+            _httpClient = HttpClientFactory.CreateClient("AutoDocService");
             await LoadGroupsAsync();
         }
 
@@ -64,9 +64,9 @@ namespace AutoDocFront.Components.Pages
         {
             try
             {
-                _loading = true;
-
+                isLoading = true;
                 int offset = (currentPage - 1) * itemsPerPage;
+
                 var query = new List<string>
                 {
                     $"offset={offset}",
@@ -83,32 +83,32 @@ namespace AutoDocFront.Components.Pages
                 if (query.Count > 0)
                     apiUrl += "?" + string.Join("&", query);
 
-                var response = await _autoDocServiceClient.GetAsync(apiUrl);
+                var response = await _httpClient.GetAsync(apiUrl);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var pagedResult = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>() ?? new PagedList<SectionGroupGetDTO>();
-                    groups = pagedResult.Items ?? new List<SectionGroupGetDTO>();
-                    totalCount = pagedResult.TotalItems;
+                    var result = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>() ?? new();
+                    groupList = result.Items ?? [];
+                    totalGroupCount = result.TotalItems;
                 }
                 else
                 {
                     if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
-                        throw new Exception("Problem prilikom učitavanja grupa");
+                        throw new Exception("Greška prilikom učitavanja grupa.");
 
-                    groups = [];
-                    totalCount = 0;
+                    groupList = [];
+                    totalGroupCount = 0;
                 }
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Problem prilikom učitavanja grupa: {ex.Message}");
-                groups = [];
-                totalCount = 0;
+                ToastService.ShowError($"Greška prilikom učitavanja grupa: {ex.Message}");
+                groupList = [];
+                totalGroupCount = 0;
             }
             finally
             {
-                _loading = false;
+                isLoading = false;
                 await InvokeAsync(StateHasChanged);
             }
         }
@@ -116,8 +116,7 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Mijenja trenutnu stranicu u paginaciji.
         /// </summary>
-        /// <param name="page">Broj stranice na koju se prelazi.</param>
-        private async Task ChangePage(int page)
+        private async Task ChangePageAsync(int page)
         {
             if (page < 1 || page > TotalPages || page == currentPage) return;
             currentPage = page;
@@ -125,28 +124,26 @@ namespace AutoDocFront.Components.Pages
         }
 
         /// <summary>
-        /// Preusmjerava korisnika na stranicu sekcija za odabranu grupu.
+        /// Preusmjerava korisnika na stranicu članova grupe.
         /// </summary>
-        /// <param name="group">Odabrana grupa.</param>
-        private void HandleViewMembers(SectionGroupGetDTO group)
+        private void NavigateToGroupSections(SectionGroupGetDTO group)
         {
             Navigation.NavigateTo($"/sections/{group.ID}&groupName={Uri.EscapeDataString(group.Name)}");
         }
 
         /// <summary>
-        /// Pokreće pretragu po nazivu grupe.
+        /// Aktivira pretragu grupa na osnovu naziva.
         /// </summary>
-        private async Task OnSearchClicked()
+        private async Task SearchGroupsAsync()
         {
             currentPage = 1;
             await LoadGroupsAsync();
         }
 
         /// <summary>
-        /// Mijenja filter statusa i učitava grupe.
+        /// Mijenja filter statusa i ponovo učitava grupe.
         /// </summary>
-        /// <param name="e">Argument promjene vrijednosti.</param>
-        private async Task OnStatusFilterChanged(ChangeEventArgs e)
+        private async Task HandleStatusFilterChanged(ChangeEventArgs e)
         {
             statusFilter = e.Value?.ToString() ?? "all";
             currentPage = 1;
@@ -154,9 +151,9 @@ namespace AutoDocFront.Components.Pages
         }
 
         /// <summary>
-        /// Briše sve filtere i učitava sve grupe.
+        /// Čisti sve filtere i resetira prikaz grupa.
         /// </summary>
-        private async Task OnClearFiltersClicked()
+        private async Task ClearFiltersAsync()
         {
             searchTerm = string.Empty;
             statusFilter = "all";
@@ -167,41 +164,33 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Otvara modal za unos nove grupe.
         /// </summary>
-        private void OpenGroupModal()
+        private void ShowCreateGroupModal()
         {
-            selectedGroupForEdit = null;
-            isGroupModalOpen = true;
+            selectedGroupDto = null;
+            isGroupModalVisible = true;
         }
 
         /// <summary>
-        /// Otvara modal za izmjenu postojeće grupe.
+        /// Otvara modal za uređivanje postojeće grupe.
         /// </summary>
-        /// <param name="group">Grupa za izmjenu.</param>
-        private void OpenEditGroupModal(SectionGroupGetDTO group)
+        private void ShowEditGroupModal(SectionGroupGetDTO group)
         {
-            if (group != null)
+            selectedGroupDto = new SectionGroupUpsertDTO
             {
-                selectedGroupForEdit = new SectionGroupUpsertDTO
-                {
-                    ID = group.ID,
-                    Name = group.Name,
-                    Description = group.Description,
-                    Status = group.Status
-                };
-            }
-            else
-            {
-                selectedGroupForEdit = null;
-            }
-            isGroupModalOpen = true;
+                ID = group.ID,
+                Name = group.Name,
+                Description = group.Description,
+                Status = group.Status
+            };
+            isGroupModalVisible = true;
         }
 
         /// <summary>
-        /// Zatvara modal i ponovo učitava grupe.
+        /// Zatvara modal i osvježava prikaz grupa nakon izmjene.
         /// </summary>
-        private async Task CloseGroupModal()
+        private async Task OnGroupModalSavedAsync()
         {
-            isGroupModalOpen = false;
+            isGroupModalVisible = false;
             await LoadGroupsAsync();
         }
     }

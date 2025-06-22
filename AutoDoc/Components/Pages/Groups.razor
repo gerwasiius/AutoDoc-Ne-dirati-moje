@@ -9,7 +9,7 @@
     Grupe članova (Section Groups) management page.
     Provides filtering, pagination, and CRUD modal for groups.
 -->
-@if (_loading)
+@if (isLoading)
 {
     <div class="spinner mt-5"></div>
 }
@@ -21,14 +21,14 @@ else
                 <h1 class="h2 fw-bold text-dark">Grupe članova</h1>
                 <p class="text-secondary">Upravljanje grupama sekcija i članova dokumenta</p>
             </div>
-            <button class="btn corporate-button-primary" @onclick="OpenGroupModal">
+            <button class="btn corporate-button-primary" @onclick="ShowCreateGroupModal">
                 <i class="fa fa-plus" aria-hidden="true"></i>
                 Nova Grupa
             </button>
         </div>
 
         <div class="d-flex align-items-center gap-3 mb-3">
-            <select class="form-select w-auto corporate-select" value="@statusFilter" @onchange="OnStatusFilterChanged">
+            <select class="form-select w-auto corporate-select" value="@statusFilter" @onchange="HandleStatusFilterChanged">
                 <option value="all">Sve grupe</option>
                 <option value="ACTIVE">Aktivne</option>
                 <option value="DEACTIVATED">Deaktivirane</option>
@@ -38,10 +38,10 @@ else
                        placeholder="Pretraga po nazivu grupe"
                        class="form-control"
                        @bind:event="oninput" />
-                <button class="btn corporate-button-secondary" type="button" @onclick="OnSearchClicked">
+                <button class="btn corporate-button-secondary" type="button" @onclick="SearchGroupsAsync">
                     <i class="fa fa-search"></i> Traži
                 </button>
-                <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClearFiltersClicked" title="Očisti filtere">
+                <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="ClearFiltersAsync" title="Očisti filtere">
                     <i class="fa fa-eraser" aria-hidden="true"></i>
                 </button>
             </div>
@@ -49,7 +49,7 @@ else
 
         <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
             <span>
-                Prikazano @(StartIndex + 1)-@EndIndex od @totalCount grupa
+                Prikazano @(StartIndex + 1)-@EndIndex od @totalGroupCount grupa
             </span>
             @if (TotalPages > 1)
             {
@@ -58,12 +58,12 @@ else
         </div>
 
         <div class="row g-4">
-            @foreach (var group in groups)
+            @foreach (var group in groupList)
             {
                 <GroupCard Group="group"
                            Mode="admin"
-                           OnEdit="OpenEditGroupModal"
-                           OnViewMembers="HandleViewMembers" />
+                           OnEdit="ShowEditGroupModal"
+                           OnViewMembers="NavigateToGroupSections" />
             }
         </div>
 
@@ -71,10 +71,10 @@ else
         {
             <Pagination CurrentPage="@currentPage"
                         TotalPages="@TotalPages"
-                        OnPageChanged="ChangePage" />
+                        OnPageChanged="ChangePageAsync" />
         }
 
-        @if (!groups.Any())
+        @if (!groupList.Any())
         {
             <div class="text-center py-5">
                 <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">
@@ -86,10 +86,10 @@ else
         }
     </div>
 }
-@if (isGroupModalOpen)
+@if (isGroupModalVisible)
 {
-    <GroupModal IsOpen="isGroupModalOpen"
-                IsOpenChanged="@(v => isGroupModalOpen = v)"
-                Group="selectedGroupForEdit"
-                OnSave="CloseGroupModal" />
+    <GroupModal IsOpen="isGroupModalVisible"
+                IsOpenChanged="@(v => isGroupModalVisible = v)"
+                Group="selectedGroupDto"
+                OnSave="OnGroupModalSavedAsync" />
 }

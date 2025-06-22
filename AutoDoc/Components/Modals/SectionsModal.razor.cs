@@ -78,7 +78,6 @@ namespace AutoDocFront.Components.Modals
         private string _modalStyle => IsOpen ? "display: block;" : "display: none;";
 
         // --- LIFECYCLE ---
-
         /// <summary>
         /// Inicijalizuje modal, priprema model i učitava verzije sekcije ako je u VIEW modu.
         /// </summary>

@@ -55,7 +55,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 //database connection
-builder.Services.AddDbContextPool<ContractGenerationContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("autoDocDB"), e => e.UseCompatibilityLevel(120)));
+//builder.Services.AddDbContextPool<ContractGenerationContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("autoDocDB"), e => e.UseCompatibilityLevel(120)));
+builder.Services.AddDbContext<ContractGenerationContext>(options =>
+    options.UseSqlite("Data Source=local_autodoc.db"));
 
 //health check
 builder.Services.AddHealthChecks()
