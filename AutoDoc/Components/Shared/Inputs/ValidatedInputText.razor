@@ -1,0 +1,22 @@
+﻿@if (!string.IsNullOrEmpty(Label))
+{
+    <label class="form-label">
+        @Label @if (IsRequired)
+        {
+            <span class="text-danger">*</span>
+        }
+    </label>
+}
+<InputText class="@CssClass"
+           style="@InputStyle"
+           Value="Value"
+           ValueChanged="OnValueChanged"
+           ValueExpression="FieldExpression"
+           id="@FieldId"
+           disabled="@Disabled"
+           placeholder="@Placeholder" />
+
+@if (EnableValidation)
+{
+    <ValidationMessage For="@FieldExpression" />
+}

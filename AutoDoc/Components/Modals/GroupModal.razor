@@ -1,4 +1,5 @@
 ﻿@using AutoDocFront.Components.Shared
+@using AutoDocFront.Components.Shared.Inputs
 @using AutoDocFront.Models.Enumerations
 
 <BaseModalLayout IsOpen="@IsOpen" Title="@((IsEditMode ? $"Izmjena grupe {_model.Name}" : "Nova grupa"))" IsOpenChanged="@IsOpenChanged">
@@ -7,20 +8,23 @@
             <DataAnnotationsValidator />
 
             <div class="mb-3">
-                <label class="form-label">Naziv grupe</label>
-                <InputText class="form-control" @bind-Value="_model.Name" />
-                <ValidationMessage For="@(() => _model.Name)" />
+                <ValidatedInputText Label="Naziv grupe"
+                                    IsRequired="true"
+                                    @bind-Value="_model.Name"
+                                    FieldExpression="@(() => _model.Name)" />
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Opis</label>
-                <InputTextArea class="form-control" @bind-Value="_model.Description" />
-                <ValidationMessage For="@(() => _model.Description)" />
+                <ValidatedInputTextArea Label="Opis"
+                                        IsRequired="true"
+                                        Rows="3"
+                                        @bind-Value="_model.Description"
+                                        FieldExpression="@(() => _model.Description)" />
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Status</label>
-                <input class="form-control" value="@_model.Status" disabled />
+                <ReadOnlyInputText Label="Status"
+                                   Value="@_model.Status.ToString()" />
             </div>
 
         </EditForm>

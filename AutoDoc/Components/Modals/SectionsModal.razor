@@ -1,4 +1,5 @@
-﻿@using Microsoft.AspNetCore.Components.Forms
+﻿@using AutoDocFront.Components.Shared.Inputs
+@using Microsoft.AspNetCore.Components.Forms
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Models.DTO.GroupSection
 @using AutoDocFront.Models.Enumerations
@@ -31,10 +32,12 @@
                     <button type="button" class="btn-close me-2" aria-label="Close" @onclick="CloseModal"></button>
                 </div>
                 <div class="modal-body pe-5 ps-5 d-flex align-content-center overflow-auto">
-                    <div class="row" style="flex: 1;">
-                        <div class="col-2 mt-2 overflow-auto h-100">
+                    <div class="row" style="flex: 1; min-height: 60vh;">
+                        <div class="col-2 mt-2">
                             @if (ModalMode != ModalMode.VIEW)
                             {
+                                <div class="position-sticky sticky-top" style="top: 10px; z-index: 2;">
+
                                 <div class="form-group" style="height: 100%;">
                                     <label class="form-label mb-1 mt-2">Dostupni parametri:</label>
                                     <nav>
@@ -67,6 +70,7 @@
                                             </ul>
                                         </ul>
                                     </nav>
+                                </div>
                                 </div>
                             }
                             else if (_listSections != null && _listSections.Count > 0)
@@ -102,43 +106,44 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-2">
-                                            <label for="SectionName" class="form-label mb-1 small">Naziv člana</label>
-                                            <InputText class="form-control form-control-sm rounded shadow-sm" id="SectionName" @bind-Value="_model.Name" disabled="@(ModalMode == ModalMode.VIEW)" />
-                                            <ValidationMessage For="@(() => _model.Name)" />
+                                            <ValidatedInputText Label="Naziv člana"
+                                                                IsRequired="@(ModalMode != ModalMode.VIEW)"
+                                                                Disabled="@(ModalMode == ModalMode.VIEW)"
+                                                                @bind-Value="_model.Name"
+                                                                FieldExpression="@(() => _model.Name)" />
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-2">
-                                            <label for="SectionGroup" class="form-label mb-1 small">Grupa</label>
-                                            <InputText class="form-control form-control-sm rounded shadow-sm" id="SectionGroup" @bind-Value="Group.Name" disabled="true" />
+                                            <ReadOnlyInputText Label="Grupa"
+                                                               Value="@Group.Name.ToString()" />
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-2">
-                                            <label for="Description" class="form-label mb-1 small">Opis člana</label>
-                                            <InputTextArea class="form-control form-control-sm rounded shadow-sm" id="Description" @bind-Value="_model.Description" rows="2" disabled="@(ModalMode == ModalMode.VIEW)" />
-                                            <ValidationMessage For="@(() => _model.Description)" />
+                                            <ValidatedInputTextArea Label="Opis člana"
+                                                                    IsRequired="@(ModalMode != ModalMode.VIEW)"
+                                                                    Disabled="@(ModalMode == ModalMode.VIEW)"
+                                                                    Rows="2"
+                                                                    @bind-Value="_model.Description"
+                                                                    FieldExpression="@(() => _model.Description)" />
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="row">
                                             <div class="col-3">
-                                                <label for="Version" class="form-label mb-1 small">Verzija</label>
-                                                <InputNumber class="form-control form-control-sm rounded shadow-sm px-2 text-center"
-                                                             id="Version"
-                                                             style="max-width: 100px; min-width: 40px;"
-                                                             @bind-Value="_model.Version"
-                                                             disabled="true" />
+                                                <ReadOnlyInputText Label="Verzija:"
+                                                                   Value="@_model.Version.ToString()"
+                                                                   InputClass="form-control rounded shadow-sm px-2 text-center"
+                                                                   InputStyle="max-width: 100px; min-width: 40px;" />
                                             </div>
                                             <div class="col-3">
-                                                <label for="IsActive" class="form-label mb-1 small">Aktivan član</label>
-                                                <input class="form-control form-control-sm rounded shadow-sm px-2 text-center"
-                                                       id="IsActive"
-                                                       style="max-width: 100px; min-width: 40px;"
-                                                       disabled="true"
-                                                       value="@(_model.IsActive ? "DA" : "NE")" />
+                                                <ReadOnlyInputText Label="Aktivan član: "
+                                                                   Value="@(_model.IsActive ? "DA" : "NE")"
+                                                                   InputClass="form-control rounded shadow-sm px-2 text-center"
+                                                                   InputStyle="max-width: 100px; min-width: 40px;" />
                                             </div>
                                         </div>
                                     </div>
@@ -148,14 +153,16 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-2">
-                                                <label for="DateUpdate" class="form-label mb-1 small">Datum posljednje izmjene</label>
-                                                <input class="form-control form-control-sm rounded shadow-sm" id="DateUpdate" disabled="true" value="@((_model.DateUpdate ?? _model.DateInsert)?.ToString("dd.MMMM.yyyy HH:mm:ss"))" />
+                                                <ReadOnlyInputText Label="Datum posljednje izmjene"
+                                                                   Value="@((_model.DateUpdate ?? _model.DateInsert)?.ToString("dd.MM.yyyy HH:mm:ss"))"
+                                                                   InputClass="form-control rounded shadow-sm"/>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-2">
-                                                <label for="DateUpdate" class="form-label mb-1 small">Korisnik</label>
-                                                <input class="form-control form-control-sm rounded shadow-sm" id="DateUpdate" disabled="true" value="@((_model.UserUpdate ?? _model.UserInsert))" />
+                                                <ReadOnlyInputText Label="Korisnik"
+                                                                   Value="@((_model.UserUpdate ?? _model.UserInsert))"
+                                                                   InputClass="form-control rounded shadow-sm"/>
                                             </div>
                                         </div>
                                     </div>
