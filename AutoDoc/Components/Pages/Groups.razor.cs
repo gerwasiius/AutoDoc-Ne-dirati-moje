@@ -14,7 +14,7 @@ namespace AutoDocFront.Components.Pages
     /// </summary>
     public partial class Groups
     {
-        // --- DEPENDENCY INJECTION ---
+        // --- INJECTION ---
 
         [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
         [Inject] private NavigationManager Navigation { get; set; } = default!;
@@ -23,30 +23,30 @@ namespace AutoDocFront.Components.Pages
         // --- POLJA ---
 
         private HttpClient _httpClient;
-        private List<SectionGroupGetDTO> groupList = new();
-        private string searchTerm = string.Empty;
-        private string statusFilter = "all";
-        private int currentPage = 1;
-        private int itemsPerPage = 30;
-        private int totalGroupCount = 0;
-        private bool isGroupModalVisible;
-        private SectionGroupUpsertDTO selectedGroupDto;
-        private bool isLoading;
+        private List<SectionGroupGetDTO> _groups = new();
+        private string _groupSearchTerm = string.Empty;
+        private string _groupStatusFilter = "all";
+        private int _currentPage = 1;
+        private int _groupsPerPage = 30;
+        private int _totalGroupCount = 0;
+        private bool _isGroupModalVisible;
+        private SectionGroupUpsertDTO _selectedGroup;
+        private bool _isLoading;
 
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
-        private int TotalPages => (int)Math.Ceiling((double)totalGroupCount / itemsPerPage);
+        private int TotalPages => (int)Math.Ceiling((double)_totalGroupCount / _groupsPerPage);
 
         /// <summary>
         /// Početni indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int StartIndex => totalGroupCount == 0 ? 0 : (currentPage - 1) * itemsPerPage;
+        private int StartIndex => _totalGroupCount == 0 ? 0 : (_currentPage - 1) * _groupsPerPage;
 
         /// <summary>
         /// Krajnji indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int EndIndex => Math.Min(StartIndex + groupList.Count, totalGroupCount);
+        private int EndIndex => Math.Min(StartIndex + _groups.Count, _totalGroupCount);
 
         /// <summary>
         /// Inicijalizuje komponentu i učitava grupe sa servera.
@@ -64,20 +64,20 @@ namespace AutoDocFront.Components.Pages
         {
             try
             {
-                isLoading = true;
-                int offset = (currentPage - 1) * itemsPerPage;
+                _isLoading = true;
+                int offset = (_currentPage - 1) * _groupsPerPage;
 
                 var query = new List<string>
                 {
                     $"offset={offset}",
-                    $"pageSize={itemsPerPage}"
+                    $"pageSize={_groupsPerPage}"
                 };
 
-                if (!string.IsNullOrWhiteSpace(searchTerm))
-                    query.Add($"name={Uri.EscapeDataString(searchTerm)}");
+                if (!string.IsNullOrWhiteSpace(_groupSearchTerm))
+                    query.Add($"name={Uri.EscapeDataString(_groupSearchTerm)}");
 
-                if (statusFilter != "all")
-                    query.Add($"status={statusFilter}");
+                if (_groupStatusFilter != "all")
+                    query.Add($"status={_groupStatusFilter}");
 
                 var apiUrl = "/api/contract-generation/section-groups";
                 if (query.Count > 0)
@@ -88,27 +88,27 @@ namespace AutoDocFront.Components.Pages
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>() ?? new();
-                    groupList = result.Items ?? [];
-                    totalGroupCount = result.TotalItems;
+                    _groups = result.Items ?? [];
+                    _totalGroupCount = result.TotalItems;
                 }
                 else
                 {
                     if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
                         throw new Exception("Greška prilikom učitavanja grupa.");
 
-                    groupList = [];
-                    totalGroupCount = 0;
+                    _groups = [];
+                    _totalGroupCount = 0;
                 }
             }
             catch (Exception ex)
             {
                 ToastService.ShowError($"Greška prilikom učitavanja grupa: {ex.Message}");
-                groupList = [];
-                totalGroupCount = 0;
+                _groups = [];
+                _totalGroupCount = 0;
             }
             finally
             {
-                isLoading = false;
+                _isLoading = false;
                 await InvokeAsync(StateHasChanged);
             }
         }
@@ -118,8 +118,8 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task ChangePageAsync(int page)
         {
-            if (page < 1 || page > TotalPages || page == currentPage) return;
-            currentPage = page;
+            if (page < 1 || page > TotalPages || page == _currentPage) return;
+            _currentPage = page;
             await LoadGroupsAsync();
         }
 
@@ -136,53 +136,53 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task SearchGroupsAsync()
         {
-            currentPage = 1;
+            _currentPage = 1;
             await LoadGroupsAsync();
         }
 
         /// <summary>
         /// Mijenja filter statusa i ponovo učitava grupe.
         /// </summary>
-        private async Task HandleStatusFilterChanged(ChangeEventArgs e)
+        private async Task OnGroupStatusFilterChangedAsync(ChangeEventArgs e)
         {
-            statusFilter = e.Value?.ToString() ?? "all";
-            currentPage = 1;
+            _groupStatusFilter = e.Value?.ToString() ?? "all";
+            _currentPage = 1;
             await LoadGroupsAsync();
         }
 
         /// <summary>
         /// Čisti sve filtere i resetira prikaz grupa.
         /// </summary>
-        private async Task ClearFiltersAsync()
+        private async Task ClearGroupFiltersAsync()
         {
-            searchTerm = string.Empty;
-            statusFilter = "all";
-            currentPage = 1;
+            _groupSearchTerm = string.Empty;
+            _groupStatusFilter = "all";
+            _currentPage = 1;
             await LoadGroupsAsync();
         }
 
         /// <summary>
         /// Otvara modal za unos nove grupe.
         /// </summary>
-        private void ShowCreateGroupModal()
+        private void OpenNewGroupModal()
         {
-            selectedGroupDto = null;
-            isGroupModalVisible = true;
+            _selectedGroup = null;
+            _isGroupModalVisible = true;
         }
 
         /// <summary>
         /// Otvara modal za uređivanje postojeće grupe.
         /// </summary>
-        private void ShowEditGroupModal(SectionGroupGetDTO group)
+        private void OpenEditGroupModal(SectionGroupGetDTO group)
         {
-            selectedGroupDto = new SectionGroupUpsertDTO
+            _selectedGroup = new SectionGroupUpsertDTO
             {
                 ID = group.ID,
                 Name = group.Name,
                 Description = group.Description,
                 Status = group.Status
             };
-            isGroupModalVisible = true;
+            _isGroupModalVisible = true;
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task OnGroupModalSavedAsync()
         {
-            isGroupModalVisible = false;
+            _isGroupModalVisible = false;
             await LoadGroupsAsync();
         }
     }

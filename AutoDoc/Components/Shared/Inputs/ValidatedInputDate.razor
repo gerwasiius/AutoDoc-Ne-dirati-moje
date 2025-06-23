@@ -1,17 +1,25 @@
 ﻿@using System.Linq.Expressions
 @typeparam TValue
 
-<div class="mb-2">
-    @if (!string.IsNullOrEmpty(Label))
+<div class="form-group">
+    @if (!string.IsNullOrWhiteSpace(Label))
     {
-        <label class="form-label">@Label @if (IsRequired) { <span class="text-danger">*</span> }</label>
+        <label class="form-label mb-1" for="@FieldId">
+            @Label
+            @if (IsRequired)
+            {
+                <span class="text-danger">*</span>
+            }
+        </label>
     }
     <InputDate TValue="TValue"
-               class="form-control @InputClass"
-               @bind-Value="Value"
+               Value="Value"
+               ValueChanged="OnValueChanged"
                ValueExpression="FieldExpression"
-               disabled="Disabled"
-               style="@InputStyle" />
+               id="@FieldId"
+               class="@CssClass"
+               style="@InputStyle"
+               placeholder="@Placeholder"
+               disabled="@Disabled" />
     <ValidationMessage For="FieldExpression" />
 </div>
-

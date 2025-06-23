@@ -58,11 +58,25 @@
                                         FieldExpression="@(() => _model.ValidFrom)" />
                 </div>
                 <div class="col">
-                    <ValidatedInputDate Label="Važi do"
-                                        IsRequired="false"
-                                        Disabled="@(isUnlimitedValidTo || ModalMode == ModalMode.VIEW)"
-                                        @bind-Value="_model.ValidTo"
-                                        FieldExpression="@(() => _model.ValidTo)" />
+                    <label class="form-label">Važi do</label>
+                    <div class="input-group">
+                        <ValidatedInputDate Label=""
+                                            IsRequired="false"
+                                            Disabled="@(isUnlimitedValidTo || ModalMode == ModalMode.VIEW)"
+                                            @bind-Value="_model.ValidTo"
+                                            FieldExpression="@(() => _model.ValidTo)" />
+                        <span class="input-group-text ms-2" style="background: none; border: none;">
+                            <input type="checkbox"
+                                   class="form-check-input corporate-checkbox"
+                                   id="unlimitedValidTo"
+                                   checked="@isUnlimitedValidTo"
+                                   @onchange="ToggleUnlimitedValidTo"
+                                   disabled="@(ModalMode == ModalMode.VIEW)" />
+                            <label class="form-check-label ms-1" for="unlimitedValidTo">
+                                Bez vremenskog ograničenja
+                            </label>
+                        </span>
+                    </div>
                 </div>
             </div>
         </EditForm>

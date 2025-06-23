@@ -54,7 +54,6 @@ namespace AutoDocFront.Components.Modals
 
         protected override async Task OnParametersSetAsync()
         {
-
             loading = true;
             try
             {

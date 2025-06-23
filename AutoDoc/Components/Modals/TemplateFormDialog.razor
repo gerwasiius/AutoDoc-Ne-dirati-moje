@@ -1,4 +1,5 @@
-﻿@if (IsOpen)
+﻿@using AutoDocFront.Components.Shared.Inputs
+@if (IsOpen)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.2)">
         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -10,12 +11,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Naziv: </label>
-                        <input class="form-control corporate-input" @bind="FormData.Name" disabled="true" />
+                        <ReadOnlyInputText Label="Naziv"
+                                           Value="@FormData.Name" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Opis: </label>
-                        <textarea class="form-control corporate-input" @bind="FormData.Description" rows="3" disabled="true"></textarea>
+                        <ReadOnlyInputText Label="Opis"
+                                               Value="@FormData.Description"
+                                               IsTextArea="true"
+                                               Rows="3" />
                     </div>
                     <div class="mt-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -31,12 +34,6 @@
                                     Nema dodatih sekcija
                                 </div>
                             }
-                            @*  @if (FormData?.Sections == null || !FormData.Sections.Any())
-                            {
-                                <div class="text-center text-secondary py-3">
-                                    Nema dodatih sekcija
-                                </div>
-                            } *@
                             else
                             {
                                 @foreach (var (sectionItem, idx) in FormData.Relations.Select((s, i) => (s, i)))
@@ -82,9 +79,6 @@
                     <button class="btn btn-warning" @onclick="Submit">
                         Sačuvaj izmene
                     </button>
-                    @* <button class="btn btn-warning" @onclick="Submit">
-                        @((EditingTemplate != null) ? "Sačuvaj izmene" : "Kreiraj template")
-                    </button> *@
                 </div>
             </div>
         </div>

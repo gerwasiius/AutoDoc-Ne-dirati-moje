@@ -303,7 +303,11 @@ namespace AutoDocFront.Components.Pages
         {
             // Pronađi ID grupe po imenu (ako treba)
             var group = availableGroups.FirstOrDefault(g => g.Name == groupName);
-            if (group == null) return;
+            if (group == null)
+            {
+                availableSections = [];
+                return;
+            }
 
             var response = await _autoDocServiceClient.GetAsync($"/api/contract-generation/sections?groupId={group.ID}&isLatestOnly=true");
             if (response.IsSuccessStatusCode)
