@@ -69,7 +69,7 @@ else
 
         @if (TotalPages > 1)
         {
-            <Pagination _currentPage="@_currentPage"
+            <Pagination currentPage="@_currentPage"
                         TotalPages="@TotalPages"
                         OnPageChanged="ChangePageAsync" />
         }

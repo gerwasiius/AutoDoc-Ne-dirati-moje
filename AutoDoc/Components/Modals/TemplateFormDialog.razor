@@ -27,7 +27,8 @@
                                 <i class="fa fa-plus"></i> Dodaj sekcije
                             </button>
                         </div>
-                        <div class="bg-light border rounded p-2" style="min-height:200px;">
+                        <div class="bg-light border rounded p-2"
+                             style="min-height:200px; max-height:350px; overflow-y:auto;">
                             @if (FormData?.Relations == null || !FormData.Relations.Any())
                             {
                                 <div class="text-center text-secondary py-3">
@@ -76,8 +77,8 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="Close">Otkaži</button>
-                    <button class="btn btn-warning" @onclick="Submit">
-                        Sačuvaj izmene
+                    <button class="btn modal-corporate-button-primary" @onclick="Submit">
+                        Sačuvaj izmjene
                     </button>
                 </div>
             </div>

@@ -161,9 +161,6 @@ else
 @if (IsSectionPickerOpen){
 
     <SectionPickerDialog IsOpen="IsSectionPickerOpen"
-                         IsOpenChanged="@(v => IsSectionPickerOpen = v)"
-                         AvailableGroups="availableGroups"
-                         AvailableSections="availableSections"
-                         OnGroupChanged="HandleGroupChanged" />
+                         IsOpenChanged="@(v => IsSectionPickerOpen = v)" />
 
 }
