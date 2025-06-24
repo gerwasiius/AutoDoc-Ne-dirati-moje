@@ -2,6 +2,8 @@
 using AutoDocFront.Models.DTO;
 using AutoDocFront.Models.DTO.DocumentTemplate;
 using AutoDocFront.Models.DTO.DocumentTemplateDTO;
+using AutoDocFront.Models.DTO.Relations;
+using AutoDocFront.Models.DTO.Sections;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 using System.Net.Http;
@@ -14,41 +16,87 @@ namespace AutoDocFront.Components.Modals
         [Parameter] public bool IsOpen { get; set; }
         [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
         [Parameter] public DocumentTemplateAndRelatedItemsDTO FormData { get; set; } = new();
-        //[Parameter] public EventCallback<Template> FormDataChanged { get; set; }
-        //[Parameter] public Template? EditingTemplate { get; set; }
-        [Parameter] public EventCallback OnSubmit { get; set; }
-        [Parameter] public EventCallback OpenSectionPicker { get; set; }
-        [Parameter] public EventCallback<(int, int)> MoveSection { get; set; }
-        [Parameter] public EventCallback<int> RemoveSection { get; set; }
-        [Parameter] public EventCallback<int> OpenSectionConditions { get; set; }
-        [Parameter] public EventCallback<int> PreviewSection { get; set; }
         [Parameter] public DocumentTemplateGetDTO Template { get; set; }
+        [Parameter] public EventCallback OnSubmit { get; set; }
         [Parameter] public EventCallback OnClose { get; set; }
 
-        // --- INJECTION ---
-
-        /// <summary>
-        /// Fabrika za kreiranje HttpClient instanci.
-        /// </summary>
         [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
-
-        /// <summary>
-        /// Servis za prikaz notifikacija (toast poruka).
-        /// </summary>
         [Inject] private IToastService ToastService { get; set; }
-
-        /// <summary>
-        /// Servis za prikaz dijaloga.
-        /// </summary>
         [Inject] private IDialogService DialogService { get; set; }
+
         private DocumentTemplateAndRelatedItemsDTO templateWithSections;
         private bool loading = false;
+        private bool isSectionPickerOpen = false;
 
-        private async Task OpenSectionPickerClicked() => await OpenSectionPicker.InvokeAsync();
-        private async Task MoveSectionClicked(int idx, int direction) => await MoveSection.InvokeAsync((idx, direction));
-        private async Task RemoveSectionClicked(int idx) => await RemoveSection.InvokeAsync(idx);
-        private async Task OpenSectionConditionsClicked(int idx) => await OpenSectionConditions.InvokeAsync(idx);
-        private async Task PreviewSectionClicked(int idx) => await PreviewSection.InvokeAsync(idx);
+        // --- Sekcije logika unutar modala ---
+
+        private async Task OpenSectionPicker()
+        {
+            // Implementacija otvaranja pickera sekcija
+            // npr. prikazivanje internog dijaloga ili logike
+            isSectionPickerOpen = true;
+        }
+
+        private async Task OnSectionsPicked(List<SectionsGetDTO> pickedSections)
+        {
+            // Dodaj odabrane sekcije u FormData.Relations
+            if (FormData?.Relations == null)
+                FormData.Relations = new List<TemplateSectionRelationWithSectionDTO>();
+
+            foreach (var section in pickedSections)
+            {
+                if (!FormData.Relations.Any(r => r.Section.ID == section.ID))
+                {
+                    FormData.Relations.Add(new TemplateSectionRelationWithSectionDTO
+                    {
+                        Section = section
+                        // Popuni ostale potrebne podatke ako treba
+                    });
+                }
+            }
+            isSectionPickerOpen = false;
+            StateHasChanged();
+        }
+
+        private void CloseSectionPicker()
+        {
+            isSectionPickerOpen = false;
+        }
+
+        private async Task MoveSection(int idx, int direction)
+        {
+            // Implementacija pomjeranja sekcije u listi
+            if (FormData?.Relations == null) return;
+            int newIndex = idx + direction;
+            if (newIndex < 0 || newIndex >= FormData.Relations.Count) return;
+
+            var item = FormData.Relations[idx];
+            FormData.Relations.RemoveAt(idx);
+            FormData.Relations.Insert(newIndex, item);
+            StateHasChanged();
+        }
+
+        private void RemoveSection(int idx)
+        {
+            if (FormData?.Relations == null || idx < 0 || idx >= FormData.Relations.Count)
+                return;
+
+            FormData.Relations.RemoveAt(idx);
+            StateHasChanged();
+        }
+
+        private async Task OpenSectionConditions(int idx)
+        {
+            // Implementacija otvaranja uslova za sekciju
+            // npr. prikazivanje internog dijaloga
+        }
+
+        private async Task PreviewSection(int idx)
+        {
+            // Implementacija pregleda sekcije
+            // npr. prikazivanje preview dijaloga
+        }
+
         private async Task Submit() => await OnSubmit.InvokeAsync();
         private async Task Close() => await IsOpenChanged.InvokeAsync(false);
 

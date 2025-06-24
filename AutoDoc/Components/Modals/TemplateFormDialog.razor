@@ -12,23 +12,23 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <ReadOnlyInputText Label="Naziv"
-                                           Value="@FormData.Name" />
+                        Value="@FormData.Name" />
                     </div>
                     <div class="mb-3">
                         <ReadOnlyInputText Label="Opis"
-                                               Value="@FormData.Description"
-                                               IsTextArea="true"
-                                               Rows="3" />
+                        Value="@FormData.Description"
+                        IsTextArea="true"
+                        Rows="3" />
                     </div>
                     <div class="mt-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="form-label mb-0">Sekcije dokumenta</label>
-                            <button class="btn corporate-button-secondary btn-sm" @onclick="OpenSectionPickerClicked">
+                            <button class="btn corporate-button-secondary btn-sm" @onclick="OpenSectionPicker">
                                 <i class="fa fa-plus"></i> Dodaj sekcije
                             </button>
                         </div>
                         <div class="bg-light border rounded p-2"
-                             style="min-height:200px; max-height:350px; overflow-y:auto;">
+                        style="min-height:200px; max-height:350px; overflow-y:auto;">
                             @if (FormData?.Relations == null || !FormData.Relations.Any())
                             {
                                 <div class="text-center text-secondary py-3">
@@ -53,19 +53,19 @@
                                             </div>
                                         </div>
                                         <div class="d-flex gap-1">
-                                            <button class="btn btn-light btn-sm" @onclick="() => MoveSectionClicked(idx, -1)" disabled="@(idx == 0)">
+                                            <button class="btn btn-light btn-sm" @onclick="() => MoveSection(idx, -1)" disabled="@(idx == 0)">
                                                 <i class="fa fa-arrow-up"></i>
                                             </button>
-                                            <button class="btn btn-light btn-sm" @onclick="() => MoveSectionClicked(idx, 1)" disabled="@(idx == FormData.Relations.Count - 1)">
+                                            <button class="btn btn-light btn-sm" @onclick="() => MoveSection(idx, 1)" disabled="@(idx == FormData.Relations.Count - 1)">
                                                 <i class="fa fa-arrow-down"></i>
                                             </button>
-                                            <button class="btn btn-light btn-sm" title="Podesi uslove" @onclick="() => OpenSectionConditionsClicked(idx)">
+                                            <button class="btn btn-light btn-sm" title="Podesi uslove" @onclick="() => OpenSectionConditions(idx)">
                                                 <i class="fa fa-gear"></i>
                                             </button>
-                                            <button class="btn btn-light btn-sm" title="Pregled" @onclick="() => PreviewSectionClicked(idx)">
-                                                <i class="fa fa-arrows-fullscreen"></i>
+                                            <button class="btn btn-light btn-sm" title="Pregled" @onclick="() => PreviewSection(idx)">
+                                                <i class="fa fa-desktop"></i>
                                             </button>
-                                            <button class="btn btn-danger btn-sm" @onclick="() => RemoveSectionClicked(idx)">
+                                            <button class="btn btn-danger btn-sm" @onclick="() => RemoveSection(idx)">
                                                 <i class="fa fa-x"></i>
                                             </button>
                                         </div>
@@ -85,4 +85,12 @@
         </div>
     </div>
     <div class="modal-backdrop fade show"></div>
+}
+
+
+@if (isSectionPickerOpen)
+{
+    <SectionPickerDialog IsOpen="isSectionPickerOpen"
+                     IsOpenChanged="@(v => isSectionPickerOpen = v)"
+                     OnSectionsPicked="OnSectionsPicked" />
 }
