@@ -267,7 +267,7 @@ namespace AutoDocService.BL.Services
                     Version = template.Version,
                     Name = template.Name,
                     Description = template.Description,
-                    Status = Enum.TryParse<DocumentTemplateStatusType>(template.Status, out var status) ? status : (DocumentTemplateStatusType?)null,
+                    Status = Enum.TryParse<DocumentTemplateStatusType>(template.Status, out var parsedStatus) ? parsedStatus : (DocumentTemplateStatusType?)null,
                     UserInsert = template.UserInsert,
                     DateInsert = template.DateInsert,
                     UserUpdate = template.UserUpdate,

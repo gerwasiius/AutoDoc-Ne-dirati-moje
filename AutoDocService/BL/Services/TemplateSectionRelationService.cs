@@ -91,9 +91,9 @@ namespace AutoDocService.BL.Services
                 string allParams = string.Join(",",
                                                 id == null ? "idEmpty" : id.ToString(),
                                                 idTemplate == null ? "idTemplateEmpty" : idTemplate.ToString(),
-                                                templateVersion == null ? "templateVersion" : templateVersion.ToString(),
+                                                templateVersion == null ? "templateVersionEmpty" : templateVersion.ToString(),
                                                 idSection == null ? "idSectionEmpty" : idSection.ToString(),
-                                                sectionVersion == null ? "sectionVersion" : sectionVersion.ToString());
+                                                sectionVersion == null ? "sectionVersionEmpty" : sectionVersion.ToString());
                 var idExcep = await _logSvc.LogException(exceptionAt, ex, allParams).ConfigureAwait(false);
                 throw new Exception($"{ex.Message} -ExceptionID:{idExcep}", ex.InnerException);
             }
