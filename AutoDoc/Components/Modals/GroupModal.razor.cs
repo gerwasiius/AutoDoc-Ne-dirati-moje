@@ -85,10 +85,10 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Zatvara modal i emituje promjenu stanja.
         /// </summary>
-        private void CloseModal()
+        private async Task CloseModal()
         {
             IsOpen = false;
-            IsOpenChanged.InvokeAsync(false);
+            await IsOpenChanged.InvokeAsync(false);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         private async Task HandleValidSubmit()
         {
-            if (!ValidateForm())
+            if (!ValidateForm() || _loading)
                 return;
 
             _loading = true;
@@ -110,7 +110,7 @@ namespace AutoDocFront.Components.Modals
                 if (response.IsSuccessStatusCode)
                 {
                     ToastService.ShowSuccess(IsEditMode ? "Grupa je uspješno izmijenjena!" : "Grupa je uspješno kreirana!");
-                    CloseModal();
+                    await CloseModal();
                     await OnSave.InvokeAsync();
                 }
                 else
@@ -151,10 +151,10 @@ namespace AutoDocFront.Components.Modals
         /// <param name="newStatus">Novi status grupe</param>
         private async Task ChangeGroupStatusAsync(GroupStatusType newStatus)
         {
+            if (_loading) return;
             try
             {
                 _loading = true;
-
                 if (newStatus == GroupStatusType.DEACTIVATED)
                 {
                     var response = await _autoDocServiceClient.GetAsync($"/api/contract-generation/sections?groupId={_model.ID}&isActive=true&pageSize=1");
@@ -168,7 +168,6 @@ namespace AutoDocFront.Components.Modals
                         }
                     }
                 }
-
                 _model.Status = newStatus;
                 await HandleValidSubmit();
             }

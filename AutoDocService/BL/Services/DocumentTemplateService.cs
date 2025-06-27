@@ -260,6 +260,41 @@ namespace AutoDocService.BL.Services
 
                 //Uzimaju se svi template-i te se mapiraju ostali podaci.
                 // Mapiranje u DTO
+                //var result = templates.Select(template => new DocumentTemplateAndRelatedItemsDTO
+                //{
+                //    Id = template.Id,
+                //    IdTemplate = template.IdTemplate,
+                //    Version = template.Version,
+                //    Name = template.Name,
+                //    Description = template.Description,
+                //    Status = Enum.TryParse<DocumentTemplateStatusType>(template.Status, out var status) ? status : (DocumentTemplateStatusType?)null,
+                //    UserInsert = template.UserInsert,
+                //    DateInsert = template.DateInsert,
+                //    UserUpdate = template.UserUpdate,
+                //    DateUpdate = template.DateUpdate,
+                //    UserVerified = template.UserVerified,
+                //    ValidFrom = template.ValidFrom,
+                //    ValidTo = template.ValidTo,
+                //    // Lista relacija sa sekcijama
+                //    Relations = template.TemplateSectionsRelations
+                //        .OrderBy(r => r.SectionOrder)
+                //        .Select(rel => new TemplateSectionRelationWithSectionDTO
+                //        {
+                //            Id = rel.Id,
+                //            IdTemplate = rel.IdTemplate,
+                //            TemplateVersion = rel.TemplateVersion,
+                //            IdSection = rel.IdSection,
+                //            SectionVersion = rel.SectionVersion,
+                //            SectionOrder = rel.SectionOrder,
+                //            Condition = rel.Condition,
+                //            Action = rel.Action,
+                //            PageBreak = rel.PageBreak,
+                //            Section = rel.Section != null
+                //                ? _mapper.Map<SectionsGetDTO>(rel.Section)
+                //                : null
+                //        }).ToList()
+                //}).ToList();
+
                 var result = templates.Select(template => new DocumentTemplateAndRelatedItemsDTO
                 {
                     Id = template.Id,
@@ -277,22 +312,20 @@ namespace AutoDocService.BL.Services
                     ValidTo = template.ValidTo,
                     // Lista relacija sa sekcijama
                     Relations = template.TemplateSectionsRelations
-                        .OrderBy(r => r.SectionOrder)
-                        .Select(rel => new TemplateSectionRelationWithSectionDTO
-                        {
-                            Id = rel.Id,
-                            IdTemplate = rel.IdTemplate,
-                            TemplateVersion = rel.TemplateVersion,
-                            IdSection = rel.IdSection,
-                            SectionVersion = rel.SectionVersion,
-                            SectionOrder = rel.SectionOrder,
-                            Condition = rel.Condition,
-                            Action = rel.Action,
-                            PageBreak = rel.PageBreak,
-                            Section = rel.Section != null
-                                ? _mapper.Map<SectionsGetDTO>(rel.Section)
-                                : null
-                        }).ToList()
+        .OrderBy(r => r.SectionOrder)
+        .Select(rel => new TemplateSectionRelationWithSectionDTO
+        {
+            RelationId = rel.Id,
+            SectionId = rel.IdSection,
+            SectionVersion = rel.SectionVersion,
+            SectionOrder = rel.SectionOrder,
+            Condition = rel.Condition,
+            Action = rel.Action,
+            IsPageBreak = rel.PageBreak,
+            SectionUniqueId = rel.Section != null ? rel.Section.Id : 0,
+            SectionName = rel.Section != null ? rel.Section.Name : null,
+            SectionDescription = rel.Section != null ? rel.Section.Description : null
+        }).ToList()
                 }).ToList();
 
                 var retVal = new PagedList<DocumentTemplateAndRelatedItemsDTO>(result, pageSize, offset, totalItems);

@@ -105,7 +105,7 @@ else
                                     <i class="fa fa-info-circle me-1"></i> Osnovni podaci
                                 </button>
                                 <button class="btn corporate-button-secondary btn-sm"
-                                    @onclick="() => ShowSectionsModal(template)">
+                                        @onclick="() => ShowSectionsModal(template)">
 
                                     <i class="fa fa-list me-1"></i> Sekcije
                                 </button>
@@ -153,14 +153,6 @@ else
 {
     <TemplateFormDialog IsOpen="isSectionsModalOpen"
                         IsOpenChanged="@(v => isSectionsModalOpen = v)"
-                        OpenSectionPicker="@(EventCallback.Factory.Create(this, OpenSectionPickerAsync))"
                         Template="selectedTemplate"
                         OnSubmit="CloseSectionsModal" />
-}
-
-@if (IsSectionPickerOpen){
-
-    <SectionPickerDialog IsOpen="IsSectionPickerOpen"
-                         IsOpenChanged="@(v => IsSectionPickerOpen = v)" />
-
 }

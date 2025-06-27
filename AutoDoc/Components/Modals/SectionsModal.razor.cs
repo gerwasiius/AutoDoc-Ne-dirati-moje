@@ -112,10 +112,10 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Zatvara modal i emituje promjenu stanja.
         /// </summary>
-        private void CloseModal()
+        private async Task CloseModal()
         {
             IsOpen = false;
-            IsOpenChanged.InvokeAsync(false);
+            await IsOpenChanged.InvokeAsync(false);
         }
 
         /// <summary>

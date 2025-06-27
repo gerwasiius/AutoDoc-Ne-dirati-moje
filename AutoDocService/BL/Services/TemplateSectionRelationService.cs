@@ -12,6 +12,13 @@ using System.Text.Json;
 
 namespace AutoDocService.BL.Services
 {
+
+    public class TemplateSectionsRelationDiffResult
+    {
+        public List<TemplateSectionsRelationCreateDTO> ToAdd { get; set; } = new();
+        public List<TemplateSectionsRelationUpdateDTO> ToUpdate { get; set; } = new();
+        public List<int> ToDelete { get; set; } = new(); // List of Ids to delete
+    }
     /// <summary>
     /// Document template Service
     /// </summary>
@@ -159,6 +166,188 @@ namespace AutoDocService.BL.Services
                 var idExcep = await _logSvc.LogException(exceptionAt, ex, allParams).ConfigureAwait(false);
                 throw new Exception($"{ex.Message} -ExceptionID:{idExcep}", ex.InnerException);
             }
+        }
+
+        public async Task<DocumentTemplateAndRelatedItemsDTO> ManageRelationsForDocumentTemplate(DocumentTemplateAndRelatedItemsDTO documentTemplate)
+        {
+
+            // 1. Find differences
+            var differences = await CompareTemplateSectionsRelations(documentTemplate);
+
+            // 2. Insert new relations
+            foreach (var toAdd in differences.ToAdd)
+            {
+                var entity = _mapper.Map<TemplateSectionsRelation>(toAdd);
+                await _context.TemplateSectionsRelations.AddAsync(entity);
+            }
+
+            // 3. Update existing relations
+            foreach (var toUpdate in differences.ToUpdate)
+            {
+                var entity = await _context.TemplateSectionsRelations.FindAsync(toUpdate.Id);
+                if (entity != null)
+                {
+                    entity.SectionOrder = toUpdate.SectionOrder;
+                    entity.Condition = toUpdate.Condition;
+                    entity.Action = toUpdate.Action;
+                    entity.PageBreak = toUpdate.PageBreak;
+                    // Optionally update other fields if needed
+                }
+            }
+
+            // 4. Delete removed relations
+            foreach (var id in differences.ToDelete)
+            {
+                var entity = await _context.TemplateSectionsRelations.FindAsync(id);
+                if (entity != null)
+                {
+                    _context.TemplateSectionsRelations.Remove(entity);
+                }
+            }
+
+            // 5. Save all changes
+            await _context.SaveChangesAsync();
+
+            // 6. Return the updated template with relations
+            // (Assuming you want to return the latest state)
+            var updated = await _context.DocumentTemplates
+                .AsNoTracking()
+                .Include(dt => dt.TemplateSectionsRelations)
+                    .ThenInclude(rel => rel.Section)
+                .FirstOrDefaultAsync(dt => dt.Id == documentTemplate.Id);
+
+            if (updated == null)
+                throw new Exception("Template not found after update.");
+
+            // Map to DTO
+            var result = new DocumentTemplateAndRelatedItemsDTO
+            {
+                Id = updated.Id,
+                IdTemplate = updated.IdTemplate,
+                Version = updated.Version,
+                Name = updated.Name,
+                Description = updated.Description,
+                Status = Enum.TryParse<DocumentTemplateStatusType>(updated.Status, out var status) ? status : (DocumentTemplateStatusType?)null,
+                UserInsert = updated.UserInsert,
+                DateInsert = updated.DateInsert,
+                UserUpdate = updated.UserUpdate,
+                DateUpdate = updated.DateUpdate,
+                UserVerified = updated.UserVerified,
+                ValidFrom = updated.ValidFrom,
+                ValidTo = updated.ValidTo,
+                Relations = updated.TemplateSectionsRelations
+                    .OrderBy(r => r.SectionOrder)
+                    .Select(rel => new TemplateSectionRelationWithSectionDTO
+                    {
+                        RelationId = rel.Id,
+                        SectionId = rel.IdSection,
+                        SectionVersion = rel.SectionVersion,
+                        SectionOrder = rel.SectionOrder,
+                        Condition = rel.Condition,
+                        Action = rel.Action,
+                        IsPageBreak = rel.PageBreak,
+                        SectionUniqueId = rel.Section != null ? rel.Section.Id : 0,
+                        SectionName = rel.Section != null ? rel.Section.Name : null,
+                        SectionDescription = rel.Section != null ? rel.Section.Description : null
+                    }).ToList()
+            };
+
+            return result;
+        }
+
+        public async Task<TemplateSectionsRelationDiffResult> CompareTemplateSectionsRelations(DocumentTemplateAndRelatedItemsDTO dto)
+        {
+            try
+            {
+
+            // 1. Fetch current relations from DB for the given template and version
+            var dbRelations = await _context.TemplateSectionsRelations
+                .Where(r => r.IdTemplate == dto.IdTemplate && r.TemplateVersion == dto.Version)
+                .ToListAsync();
+
+            // 2. Prepare incoming relations for comparison
+            var incoming = dto.Relations ?? new List<TemplateSectionRelationWithSectionDTO>();
+
+            // 3. Find relations to add, update, and delete
+            var toAdd = new List<TemplateSectionsRelationCreateDTO>();
+            var toUpdate = new List<TemplateSectionsRelationUpdateDTO>();
+            var toDelete = new List<int>();
+
+            // Map DB relations by (SectionId, SectionVersion)
+            var dbMap = dbRelations.ToDictionary(
+                r => (r.IdSection, r.SectionVersion),
+                r => r
+            );
+
+            // Map incoming relations by (SectionId, SectionVersion)
+            var incomingMap = incoming.ToDictionary(
+                r => (r.SectionId, r.SectionVersion),
+                r => r
+            );
+
+            // 3a. Find to add or update
+            foreach (var rel in incoming)
+            {
+                var key = (rel.SectionId, rel.SectionVersion);
+                if (!dbMap.TryGetValue(key, out var dbRel))
+                {
+                    // Not in DB, needs to be added
+                    toAdd.Add(new TemplateSectionsRelationCreateDTO
+                    {
+                        IdTemplate = dto.IdTemplate,
+                        TemplateVersion = dto.Version,
+                        IdSection = rel.SectionId,
+                        SectionVersion = rel.SectionVersion,
+                        SectionOrder = rel.SectionOrder,
+                        Condition = rel.Condition,
+                        Action = rel.Action,
+                        PageBreak = rel.IsPageBreak
+                    });
+                }
+                else
+                {
+                    // Exists in DB, check if any field differs
+                    if (dbRel.SectionOrder != rel.SectionOrder ||
+                        dbRel.Condition != rel.Condition ||
+                        dbRel.Action != rel.Action ||
+                        dbRel.PageBreak != rel.IsPageBreak)
+                    {
+                        toUpdate.Add(new TemplateSectionsRelationUpdateDTO
+                        {
+                            Id = dbRel.Id,
+                            SectionOrder = rel.SectionOrder,
+                            Condition = rel.Condition,
+                            Action = rel.Action,
+                            PageBreak = rel.IsPageBreak
+                        });
+                    }
+                }
+            }
+
+            // 3b. Find to delete (in DB but not in incoming)
+            foreach (var dbRel in dbRelations)
+            {
+                var key = (dbRel.IdSection, dbRel.SectionVersion);
+                if (!incomingMap.ContainsKey(key))
+                {
+                    toDelete.Add(dbRel.Id);
+                }
+            }
+
+            return new TemplateSectionsRelationDiffResult
+            {
+                ToAdd = toAdd,
+                ToUpdate = toUpdate,
+                ToDelete = toDelete
+            };
+            }catch(Exception ex)
+            {
+                string exceptionAt = Utils.GetMethodAndClassName1(System.Reflection.MethodInfo.GetCurrentMethod()).ToString();
+                string allParams = JsonSerializer.Serialize(dto);
+                var idExcep = await _logSvc.LogException(exceptionAt, ex, allParams).ConfigureAwait(false);
+                throw new Exception($"{ex.Message} -ExceptionID:{idExcep}", ex.InnerException);
+            }
+
         }
     }
 }

@@ -103,5 +103,39 @@ namespace AutoDocService.API.Controllers
             }
         }
 
+        /// <summary>
+        ///  Method created to manage relations between template and sections
+        /// </summary>
+        /// <param name="documentTemplate"></param>
+        /// <returns></returns>
+        [HttpPost("manage-relations")]
+        [ProducesResponseType(typeof(TemplateSectionsRelationCreateDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Error), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ManageRelations([FromBody] DocumentTemplateAndRelatedItemsDTO documentTemplate)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (documentTemplate == null)
+                return BadRequest("Nema podataka za template.");
+
+            try
+            {
+                var retVal = await _templateSectionsRelationService.ManageRelationsForDocumentTemplate(documentTemplate);
+                return CreatedAtAction(nameof(Get), new { id = retVal.Id }, retVal);
+            }
+            catch (Exception ex)
+            {
+                string exceptionAt = Utils.GetMethodAndClassName(System.Reflection.MethodInfo.GetCurrentMethod()).ToString();
+                var reasons = new List<ErrorReason>();
+
+                var exceptionMsg = ex.Message.Split(" -ExceptionID:");
+                reasons.Add(new ErrorReason("COMMON_INTERNAL_ERROR", SeverityType.ERROR, exceptionMsg[0], exceptionAt));
+                return StatusCode(StatusCodes.Status500InternalServerError, new Error(exceptionMsg[1], 500, reasons));
+            }
+        }
     }
+
 }
