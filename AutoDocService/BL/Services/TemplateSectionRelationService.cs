@@ -160,23 +160,5 @@ namespace AutoDocService.BL.Services
                 throw new Exception($"{ex.Message} -ExceptionID:{idExcep}", ex.InnerException);
             }
         }
-
-
-        public async Task<DocumentTemplateAndRelatedItemsDTO> ManageRelationsForDocumentTemplate(DocumentTemplateAndRelatedItemsDTO documentTemplate)
-        {
-            // 1. Update/insert osnovnih podataka o šablonu
-            var template = await _context.DocumentTemplates
-                .FirstOrDefaultAsync(t => t.Id == documentTemplate.Id);
-
-            // 2. Sinhronizuj relacije
-            var existingRelations = await _context.TemplateSectionsRelations
-                .Where(r => r.IdTemplate == documentTemplate.IdTemplate && r.TemplateVersion == documentTemplate.Version)
-                .ToListAsync();
-
-            var newRelations = documentTemplate.Relations ?? new List<TemplateSectionRelationWithSectionDTO>();
-
-
-            throw new NotImplementedException();
-        }
     }
 }

@@ -153,6 +153,7 @@ else
 {
     <TemplateFormDialog IsOpen="isSectionsModalOpen"
                         IsOpenChanged="@(v => isSectionsModalOpen = v)"
+                        OpenSectionPicker="@(EventCallback.Factory.Create(this, OpenSectionPickerAsync))"
                         Template="selectedTemplate"
                         OnSubmit="CloseSectionsModal" />
 }

@@ -29,13 +29,5 @@ namespace AutoDocService.API.ServiceInterfaces
         /// <param name="templateSectionsRelation"></param>
         /// <returns></returns>
         Task<TemplateSectionsRelationGetDTO> Post(TemplateSectionsRelationCreateDTO templateSectionsRelation);
-
-        /// <summary>
-        /// Method created to manage relations between template and sections.
-        /// </summary>
-        /// <param name="documentTemplate"></param>
-        /// <returns></returns>
-        Task<DocumentTemplateAndRelatedItemsDTO> ManageRelationsForDocumentTemplate(DocumentTemplateAndRelatedItemsDTO documentTemplate);
-
     }
 }

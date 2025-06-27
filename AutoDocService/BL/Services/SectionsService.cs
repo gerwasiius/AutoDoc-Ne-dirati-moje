@@ -41,7 +41,7 @@ namespace AutoDocService.BL.Services
         /// If none parameter is provided, it will return all data.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="idSection"></param>
+        /// <param name="idTemplate"></param>
         /// <param name="groupId"></param>
         /// <param name="name"></param>
         /// <param name="version"></param>
@@ -51,7 +51,7 @@ namespace AutoDocService.BL.Services
         /// <param name="pageSize"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<PagedList<SectionsGetDTO>> Get(int? id = null, int? idSection = null, int? groupId = null, string name = null, int? version = null, bool? isActive = null, bool? isLatestOnly = null, int offset = 0, int pageSize = 0)
+        public async Task<PagedList<SectionsGetDTO>> Get(int? id = null, int? idTemplate = null, int? groupId = null, string name = null, int? version = null, bool? isActive = null, bool? isLatestOnly = null, int offset = 0, int pageSize = 0)
         {
             try
             {
@@ -63,8 +63,8 @@ namespace AutoDocService.BL.Services
                 if (id != null)
                     query = query.Where(e => e.Id == id);
 
-                if (idSection != null)
-                    query = query.Where(e => e.IdSection == idSection);
+                if (idTemplate != null)
+                    query = query.Where(e => e.IdSection == idTemplate);
 
                 if (groupId != null)
                     query = query.Where(e => e.GroupId == groupId);
@@ -107,7 +107,7 @@ namespace AutoDocService.BL.Services
                 string exceptionAt = Utils.GetMethodAndClassName1(System.Reflection.MethodInfo.GetCurrentMethod()).ToString();
                 string allParams = string.Join(",",
                                                 id == null ? "idEmpty" : id.ToString(),
-                                                groupId == null ? "groupIdEmpty" : groupId.ToString(),
+                                                groupId == null ? "statusEmpty" : groupId,
                                                 string.IsNullOrEmpty(name) ? "nameEmpty" : name);
                 var idExcep = await _logSvc.LogException(exceptionAt, ex, allParams).ConfigureAwait(false);
                 throw new Exception($"{ex.Message} -ExceptionID:{idExcep}", ex.InnerException);
@@ -169,7 +169,8 @@ namespace AutoDocService.BL.Services
             {
                 string exceptionAt = Utils.GetMethodAndClassName1(System.Reflection.MethodInfo.GetCurrentMethod()).ToString();
                 string allParams = JsonSerializer.Serialize(section);
-                var idExcep = await _logSvc.LogException(exceptionAt, ex, allParams).ConfigureAwait(false);
+                var idExcep = await _logSvc.LogException("test", ex, "test").ConfigureAwait(false);
+                //var idExcep = await _logSvc.LogException(exceptionAt, ex, allParams).ConfigureAwait(false);
                 throw new Exception($"{ex.Message} -ExceptionID:{idExcep}", ex.InnerException);
             }
         }
