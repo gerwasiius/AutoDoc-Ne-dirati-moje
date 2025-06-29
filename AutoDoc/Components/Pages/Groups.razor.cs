@@ -16,13 +16,12 @@ namespace AutoDocFront.Components.Pages
     {
         // --- INJECTION ---
 
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+        [Inject] private Services.SectionGroupApiService GroupService { get; set; } = default!;
         [Inject] private NavigationManager Navigation { get; set; } = default!;
         [Inject] private IToastService ToastService { get; set; } = default!;
 
         // --- POLJA ---
 
-        private HttpClient _httpClient;
         private List<SectionGroupGetDTO> _groups = new();
         private string _groupSearchTerm = string.Empty;
         private string _groupStatusFilter = "all";
@@ -53,7 +52,6 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            _httpClient = HttpClientFactory.CreateClient("AutoDocService");
             await LoadGroupsAsync();
         }
 
@@ -66,39 +64,9 @@ namespace AutoDocFront.Components.Pages
             {
                 _isLoading = true;
                 int offset = (_currentPage - 1) * _groupsPerPage;
-
-                var query = new List<string>
-                {
-                    $"offset={offset}",
-                    $"pageSize={_groupsPerPage}"
-                };
-
-                if (!string.IsNullOrWhiteSpace(_groupSearchTerm))
-                    query.Add($"name={Uri.EscapeDataString(_groupSearchTerm)}");
-
-                if (_groupStatusFilter != "all")
-                    query.Add($"status={_groupStatusFilter}");
-
-                var apiUrl = "/api/contract-generation/section-groups";
-                if (query.Count > 0)
-                    apiUrl += "?" + string.Join("&", query);
-
-                var response = await _httpClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>() ?? new();
-                    _groups = result.Items ?? [];
-                    _totalGroupCount = result.TotalItems;
-                }
-                else
-                {
-                    if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
-                        throw new Exception("Greška prilikom učitavanja grupa.");
-
-                    _groups = [];
-                    _totalGroupCount = 0;
-                }
+                var result = await GroupService.GetGroupsAsync(_groupSearchTerm, _groupStatusFilter, offset, _groupsPerPage);
+                _groups = result.Items ?? [];
+                _totalGroupCount = result.TotalItems;
             }
             catch (Exception ex)
             {
