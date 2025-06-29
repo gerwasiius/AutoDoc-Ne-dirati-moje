@@ -148,7 +148,7 @@ namespace AutoDocFront.Components.Modals
                 _loading = true;
                 if (newStatus == GroupStatusType.DEACTIVATED)
                 {
-                    if (await GroupService.HasActiveSectionsAsync(_model.ID))
+                    if (_model.ID.HasValue && await GroupService.HasActiveSectionsAsync(_model.ID.Value))
                     {
                         await ShowWarningAsync();
                         return;
