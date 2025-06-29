@@ -1,6 +1,7 @@
 ﻿//using Blazored.Toast;
 using AutoDocFront.Auth;
 using AutoDocFront.Middlewares;
+using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.FluentUI.AspNetCore.Components;
 
@@ -18,7 +19,8 @@ namespace AutoDocFront.IoC
             services.AddScoped<AuthenticationStateProvider, PersistingAuthenticationStateProvider>();
             //services.AddBlazoredToast();
             services.AddFluentUIComponents();
-            services.AddScoped<AutoDocFront.Services.SectionGroupApiService>();
+            services.AddScoped<SectionGroupApiService>();
+            services.AddScoped<DocumentTemplateApiService>();
         }
 
         /// <summary>

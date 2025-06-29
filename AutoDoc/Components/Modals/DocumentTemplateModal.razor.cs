@@ -1,5 +1,6 @@
 ﻿using AutoDocFront.Models.DTO.DocumentTemplateDTO;
 using AutoDocFront.Models.Enumerations;
+using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -14,7 +15,7 @@ namespace AutoDocFront.Components.Modals
         [Parameter] public EventCallback OnSave { get; set; }
         [Parameter] public EventCallback OnEdit { get; set; }
 
-        private HttpClient _autoDocServiceClient;
+        [Inject] private DocumentTemplateApiService TemplateService { get; set; }
         private EditContext _editContext;
         private ValidationMessageStore _validationMessageStore;
         private DocumentTemplateGetDTO _model;
@@ -33,7 +34,6 @@ namespace AutoDocFront.Components.Modals
 
         protected override void OnParametersSet()
         {
-            _autoDocServiceClient = httpClientFactory.CreateClient("AutoDocService");
 
             if ((ModalMode == ModalMode.EDIT || ModalMode == ModalMode.VIEW) && Template != null)
             {
@@ -104,9 +104,9 @@ namespace AutoDocFront.Components.Modals
                     UserInsert = "zlatan.kahriman"
                 };
 
-                var response = await _autoDocServiceClient.PostAsJsonAsync("/api/contract-generation/document-templates", createDTO);
+                var success = await TemplateService.CreateTemplateAsync(createDTO);
 
-                if (response.IsSuccessStatusCode)
+                if (success)
                 {
                     toastService.ShowSuccess("Predložak uspješno kreiran!");
                     CloseModal();
@@ -136,9 +136,9 @@ namespace AutoDocFront.Components.Modals
                     ValidTo = _model.ValidTo
                 };
 
-                var response = await _autoDocServiceClient.PutAsJsonAsync($"/api/contract-generation/document-templates/{_model.Id}", updateDTO);
+                var success = await TemplateService.UpdateTemplateAsync(_model.Id, updateDTO);
 
-                if (response.IsSuccessStatusCode)
+                if (success)
                 {
                     toastService.ShowSuccess("Predložak uspješno ažuriran!");
                     CloseModal();

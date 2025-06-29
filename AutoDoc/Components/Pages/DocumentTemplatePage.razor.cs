@@ -1,13 +1,13 @@
 ﻿using AutoDocFront.Models.DTO;
 using AutoDocFront.Models.DTO.DocumentTemplateDTO;
 using AutoDocFront.Models.Enumerations;
+using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Pages
 {
     public partial class DocumentTemplatePage
     {
-        private HttpClient _autoDocServiceClient;
         private List<DocumentTemplateGetDTO> templates = new();
         private DocumentTemplateGetDTO selectedTemplate;
         private bool _loading = false;
@@ -16,7 +16,6 @@ namespace AutoDocFront.Components.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            _autoDocServiceClient = httpClientFactory.CreateClient("AutoDocService");
             await LoadTemplatesAsync();
         }
 
@@ -25,18 +24,10 @@ namespace AutoDocFront.Components.Pages
             try
             {
                 _loading = true;
-                var response = await _autoDocServiceClient.GetAsync("/api/contract-generation/document-templates?offset=0&pageSize=0");
-                if (response.IsSuccessStatusCode)
-                {
-                    var pagedList = await response.Content.ReadFromJsonAsync<PagedList<DocumentTemplateGetDTO>>();
-                    templates = pagedList?.Items?.OrderByDescending(t => t.Version).ToList() ?? new();
-                }
-                else
-                {
-                    toastService.ShowError("Failed to load document templates!");
-                }
+                var pagedList = await TemplateService.GetTemplatesAsync(0, 0);
+                templates = pagedList.Items?.OrderByDescending(t => t.Version).ToList() ?? new();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception("problem");
             }
