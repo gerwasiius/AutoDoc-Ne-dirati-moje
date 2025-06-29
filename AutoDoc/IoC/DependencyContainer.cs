@@ -18,6 +18,7 @@ namespace AutoDocFront.IoC
             services.AddScoped<AuthenticationStateProvider, PersistingAuthenticationStateProvider>();
             //services.AddBlazoredToast();
             services.AddFluentUIComponents();
+            services.AddScoped<AutoDocFront.Services.SectionGroupApiService>();
         }
 
         /// <summary>

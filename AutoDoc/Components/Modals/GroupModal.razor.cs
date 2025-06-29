@@ -2,10 +2,10 @@
 using AutoDocFront.Models.DTO.GroupSection;
 using AutoDocFront.Models.DTO.Sections;
 using AutoDocFront.Models.Enumerations;
+using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.FluentUI.AspNetCore.Components;
-using System.Net.Http;
 
 namespace AutoDocFront.Components.Modals
 {
@@ -38,13 +38,12 @@ namespace AutoDocFront.Components.Modals
 
         // --- INJECTION ---
 
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
+        [Inject] private Services.SectionGroupApiService GroupService { get; set; }
         [Inject] private IToastService ToastService { get; set; }
         [Inject] private IDialogService DialogService { get; set; }
 
         // --- PRIVATNA POLJA ---
 
-        private HttpClient _autoDocServiceClient;
         private SectionGroupUpsertDTO _model = new();
         private EditContext _editContext;
         private ValidationMessageStore _validationMessageStore;
@@ -55,13 +54,6 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         private bool IsEditMode => Group != null && Group.ID > 0;
 
-        /// <summary>
-        /// Inicijalizacija komponente
-        /// </summary>
-        protected override void OnInitialized()
-        {
-            _autoDocServiceClient = HttpClientFactory.CreateClient("AutoDocService");
-        }
 
         /// <summary>
         /// On parameter set model i edit kontekst na osnovu proslijeđenih parametara.
@@ -103,11 +95,11 @@ namespace AutoDocFront.Components.Modals
             try
             {
                 _model.User = "zlatan.kahriman";
-                var response = IsEditMode
-                    ? await _autoDocServiceClient.PutAsJsonAsync("/api/contract-generation/section-groups", _model)
-                    : await _autoDocServiceClient.PostAsJsonAsync("/api/contract-generation/section-groups", _model);
+                bool success = IsEditMode
+                    ? await GroupService.UpdateGroupAsync(_model)
+                    : await GroupService.CreateGroupAsync(_model);
 
-                if (response.IsSuccessStatusCode)
+                if (success)
                 {
                     ToastService.ShowSuccess(IsEditMode ? "Grupa je uspješno izmijenjena!" : "Grupa je uspješno kreirana!");
                     await CloseModal();
@@ -115,8 +107,7 @@ namespace AutoDocFront.Components.Modals
                 }
                 else
                 {
-                    var error = await response.Content.ReadAsStringAsync();
-                    ToastService.ShowError($"Greška: {error}");
+                    ToastService.ShowError("Greška prilikom snimanja grupe.");
                 }
             }
             catch (Exception ex)
@@ -157,15 +148,10 @@ namespace AutoDocFront.Components.Modals
                 _loading = true;
                 if (newStatus == GroupStatusType.DEACTIVATED)
                 {
-                    var response = await _autoDocServiceClient.GetAsync($"/api/contract-generation/sections?groupId={_model.ID}&isActive=true&pageSize=1");
-                    if (response.IsSuccessStatusCode)
+                    if (await GroupService.HasActiveSectionsAsync(_model.ID))
                     {
-                        var result = await response.Content.ReadFromJsonAsync<PagedList<SectionsGetDTO>>();
-                        if (result != null && result.Items.Any())
-                        {
-                            await ShowWarningAsync();
-                            return;
-                        }
+                        await ShowWarningAsync();
+                        return;
                     }
                 }
                 _model.Status = newStatus;
