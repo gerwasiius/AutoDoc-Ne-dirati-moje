@@ -108,6 +108,16 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private SectionsGetDTO _selectedSection;
 
+        /// <summary>
+        /// Options for status dropdown in the filter bar.
+        /// </summary>
+        private static readonly IEnumerable<KeyValuePair<string, string>> _statusOptions = new[]
+        {
+            new KeyValuePair<string, string>("all", "Sve grupe"),
+            new KeyValuePair<string, string>("ACTIVE", "Aktivne"),
+            new KeyValuePair<string, string>("DEACTIVATED", "Deaktivirane")
+        };
+
         // --- PROPERTY-ji ZA UI ---
 
         /// <summary>
@@ -234,10 +244,10 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Mijenja filter statusa i učitava sekcije.
         /// </summary>
-        /// <param name="e">Argument promjene vrijednosti.</param>
-        private async Task OnStatusFilterChanged(ChangeEventArgs e)
+        /// <param name="value">Nova vrijednost filtera.</param>
+        private async Task OnStatusFilterChanged(string value)
         {
-            _statusFilter = e.Value?.ToString() ?? "all";
+            _statusFilter = value;
             _currentPage = 1;
             await LoadSectionsAsync();
         }

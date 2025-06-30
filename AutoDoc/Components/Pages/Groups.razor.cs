@@ -33,6 +33,16 @@ namespace AutoDocFront.Components.Pages
         private bool _isLoading;
 
         /// <summary>
+        /// Options for the status dropdown in the filter bar.
+        /// </summary>
+        private static readonly IEnumerable<KeyValuePair<string, string>> _statusOptions = new[]
+        {
+            new KeyValuePair<string, string>("all", "Sve grupe"),
+            new KeyValuePair<string, string>("ACTIVE", "Aktivne"),
+            new KeyValuePair<string, string>("DEACTIVATED", "Deaktivirane")
+        };
+
+        /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
         private int TotalPages => (int)Math.Ceiling((double)_totalGroupCount / _groupsPerPage);
@@ -111,9 +121,13 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Mijenja filter statusa i ponovo učitava grupe.
         /// </summary>
-        private async Task OnGroupStatusFilterChangedAsync(ChangeEventArgs e)
+        /// <summary>
+        /// Handles status filter change from the shared filter bar.
+        /// </summary>
+        /// <param name="value">Selected filter value.</param>
+        private async Task OnGroupStatusFilterChangedAsync(string value)
         {
-            _groupStatusFilter = e.Value?.ToString() ?? "all";
+            _groupStatusFilter = value;
             _currentPage = 1;
             await LoadGroupsAsync();
         }

@@ -6,6 +6,7 @@ using AutoDocFront.Models.DTO.Sections;
 using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
+using System.Linq;
 
 namespace AutoDocFront.Components.Pages
 {
@@ -33,9 +34,15 @@ namespace AutoDocFront.Components.Pages
         private ModalMode templateModalMode = ModalMode.INSERT;
         private DocumentTemplateGetDTO selectedTemplate = null;
         private bool isSectionsModalOpen = false;
-        private bool IsSectionPickerOpen = false;
-        private List<SectionGroupGetDTO> availableGroups = new();
-        private List<SectionsGetDTO> availableSections = new();
+
+        /// <summary>
+        /// Options for the status dropdown in the filter bar.
+        /// </summary>
+        private static readonly IEnumerable<KeyValuePair<string, string>> _statusOptions =
+            Enum.GetValues(typeof(DocumentTemplateStatusType))
+                .Cast<DocumentTemplateStatusType>()
+                .Select(s => new KeyValuePair<string, string>(s.ToString(), GetStatusDisplayName(s)))
+                .Prepend(new KeyValuePair<string, string>("all", "Svi statusi"));
 
 
 
@@ -151,10 +158,10 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Mijenja filter statusa i učitava grupe.
         /// </summary>
-        /// <param name="e">Argument promjene vrijednosti.</param>
-        private async Task OnStatusFilterChanged(ChangeEventArgs e)
+        /// <param name="value">Nova vrijednost filtera.</param>
+        private async Task OnStatusFilterChanged(string value)
         {
-            statusFilter = e.Value?.ToString() ?? "all";
+            statusFilter = value;
             currentPage = 1;
             await LoadDocumentTemplatesAsync();
         }
@@ -237,89 +244,6 @@ namespace AutoDocFront.Components.Pages
             StateHasChanged();
         }
 
-        private async Task OpenSectionPickerAsync()
-        {
-            IsSectionPickerOpen = true;
-            await LoadGroupsAsync();
-        }
-
-        /// <summary>
-        /// Učitava grupe sa API-ja uz primijenjene filtere i paginaciju.
-        /// </summary>
-        private async Task LoadGroupsAsync()
-        {
-            try
-            {
-                _loading = true;
-
-                var query = new List<string>
-                {
-                    $"offset=0",
-                    $"pageSize=0"
-                };
-
-                query.Add($"status=ACTIVE");
-
-                var apiUrl = "/api/contract-generation/section-groups";
-                if (query.Count > 0)
-                    apiUrl += "?" + string.Join("&", query);
-
-                var response = await _autoDocServiceClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var pagedResult = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>() ?? new PagedList<SectionGroupGetDTO>();
-                    availableGroups = pagedResult.Items ?? new List<SectionGroupGetDTO>();
-                }
-                else
-                {
-                    if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
-                        throw new Exception("Problem prilikom učitavanja grupa");
-
-                    availableGroups = [];
-                }
-            }
-            catch (Exception ex)
-            {
-                ToastService.ShowError($"Problem prilikom učitavanja grupa: {ex.Message}");
-                availableGroups = [];
-            }
-            finally
-            {
-                _loading = false;
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-
-        private async Task HandleGroupChanged(string groupName)
-        {
-            // Pozovi API za sekcije na osnovu groupName
-            await LoadSectionsForGroupAsync(groupName);
-            // Osvježi modal (ako treba)
-            StateHasChanged();
-        }
-
-        private async Task LoadSectionsForGroupAsync(string groupName)
-        {
-            // Pronađi ID grupe po imenu (ako treba)
-            var group = availableGroups.FirstOrDefault(g => g.Name == groupName);
-            if (group == null)
-            {
-                availableSections = [];
-                return;
-            }
-
-            var response = await _autoDocServiceClient.GetAsync($"/api/contract-generation/sections?groupId={group.ID}&isLatestOnly=true");
-            if (response.IsSuccessStatusCode)
-            {
-                var pagedResult = await response.Content.ReadFromJsonAsync<PagedList<SectionsGetDTO>>() ?? new PagedList<SectionsGetDTO>();
-                availableSections = pagedResult.Items ?? new List<SectionsGetDTO>();
-            }
-            else
-            {
-                availableSections = [];
-            }
-        }
 
         private bool isPreviewModalOpen = false;
         private string previewHtmlContent;

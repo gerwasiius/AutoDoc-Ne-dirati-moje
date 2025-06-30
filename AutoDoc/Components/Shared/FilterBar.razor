@@ -1,0 +1,18 @@
+@if (ShowStatus)
+{
+    <select class="form-select w-auto corporate-select" value="@StatusFilter" @onchange="OnStatusChanged">
+        @foreach (var option in StatusOptions)
+        {
+            <option value="@option.Key">@option.Value</option>
+        }
+    </select>
+}
+<div class="input-group mt-2 mb-2">
+    <input class="form-control" placeholder="@Placeholder" @bind="SearchTerm" @bind:event="oninput" />
+    <button class="btn corporate-button-secondary" type="button" @onclick="OnSearch">
+        <i class="fa fa-search"></i> Traži
+    </button>
+    <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClear" title="Očisti filtere">
+        <i class="fa fa-eraser" aria-hidden="true"></i>
+    </button>
+</div>

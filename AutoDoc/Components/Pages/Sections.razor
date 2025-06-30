@@ -23,21 +23,15 @@ else
         </div>
 
         <div class="d-flex align-items-center gap-3 mb-3">
-            <select class="form-select w-auto corporate-select" value="@_statusFilter" @onchange="OnStatusFilterChanged">
-                <option value="all">Sve grupe</option>
-                <option value="ACTIVE">Aktivne</option>
-                <option value="DEACTIVATED">Deaktivirane</option>
-            </select>
-            <div class="input-group">
-                <input class="form-control" placeholder="Pretraga po nazivu sekcije"
-                       @bind="_searchTerm" @bind:event="oninput" />
-                <button class="btn corporate-button-secondary" type="button" @onclick="OnSearchClicked" aria-label="Traži">
-                    <i class="fa fa-search"></i> Traži
-                </button>
-                <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClearFiltersClicked" title="Očisti filtere" aria-label="Očisti filtere">
-                    <i class="fa fa-eraser"></i>
-                </button>
-            </div>
+            <FilterBar SearchTerm="@_searchTerm"
+                       SearchTermChanged="v => _searchTerm = v"
+                       Placeholder="Pretraga po nazivu sekcije"
+                       StatusFilter="@_statusFilter"
+                       StatusOptions="_statusOptions"
+                       ShowStatus="true"
+                       StatusFilterChanged="OnStatusFilterChanged"
+                       OnSearch="OnSearchClicked"
+                       OnClear="OnClearFiltersClicked" />
         </div>
 
         <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">

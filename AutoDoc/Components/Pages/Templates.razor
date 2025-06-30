@@ -22,25 +22,15 @@ else
         </div>
 
         <div class="d-flex align-items-center gap-3 mb-3">
-            <select class="form-select w-auto corporate-select" value="@statusFilter" @onchange="OnStatusFilterChanged">
-                <option value="all">Svi statusi</option>
-                @foreach (var status in Enum.GetValues(typeof(AutoDocFront.Models.Enumerations.DocumentTemplateStatusType)).Cast<AutoDocFront.Models.Enumerations.DocumentTemplateStatusType>())
-                {
-                    <option value="@status">@GetStatusDisplayName(status)</option>
-                }
-            </select>
-            <div class="input-group">
-                <input @bind="searchTerm"
-                       placeholder="Pretraga po nazivu predloška"
-                       class="form-control"
-                       @bind:event="oninput" />
-                <button class="btn corporate-button-secondary" type="button" @onclick="OnSearchClicked">
-                    <i class="fa fa-search"></i> Traži
-                </button>
-                <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClearFiltersClicked" title="Očisti filtere">
-                    <i class="fa fa-eraser" aria-hidden="true"></i>
-                </button>
-            </div>
+            <FilterBar SearchTerm="@searchTerm"
+                       SearchTermChanged="v => searchTerm = v"
+                       Placeholder="Pretraga po nazivu predloška"
+                       StatusFilter="@statusFilter"
+                       StatusOptions="_statusOptions"
+                       ShowStatus="true"
+                       StatusFilterChanged="OnStatusFilterChanged"
+                       OnSearch="OnSearchClicked"
+                       OnClear="OnClearFiltersClicked" />
         </div>
 
         <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
