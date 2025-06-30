@@ -1,17 +1,7 @@
-﻿using AutoDocService.DL.DTO.SectionsDTO;
-
-namespace AutoDocService.DL.DTO.TemplateSectionsRelationDTO
+﻿namespace AutoDocService.DL.DTO.TemplateSectionsRelationDTO
 {
-    /// <summary>
-    /// Template Section Relation with Section
-    /// </summary>
-    public class TemplateSectionRelationWithSectionDTO //: TemplateSectionsRelationGetDTO
+    public class TemplateSectionRelationFlatDTO
     {
-        /// <summary>
-        /// Podaci o sekciji (verzija, naziv, sadržaj, opis, itd.)
-        /// </summary>
-        //public SectionsGetDTO Section { get; set; }
-
         public int RelationId { get; set; }
         public int SectionId { get; set; }
         public int SectionVersion { get; set; }
@@ -20,8 +10,9 @@ namespace AutoDocService.DL.DTO.TemplateSectionsRelationDTO
         public string ActionType { get; set; }
         public bool IsPageBreak { get; set; }
         public bool IsArticle { get; set; }
+
         // Section info
-        public int SectionUniqueId { get; set; }
+        public int SectionDbId { get; set; }
         public string SectionName { get; set; }
         public string SectionDescription { get; set; }
     }

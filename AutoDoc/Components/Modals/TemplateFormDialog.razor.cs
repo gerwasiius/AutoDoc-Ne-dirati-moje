@@ -28,6 +28,17 @@ namespace AutoDocFront.Components.Modals
         private bool loading = false;
         private bool isSectionPickerOpen = false;
 
+
+        private bool isPreviewModalOpen = false;
+        private string previewHtmlContent;
+        private bool previewLoading = false;
+        private string previewError;
+        private string previewTemplateName;
+
+
+        private HashSet<int> movingSectionIndexes = new();
+
+
         // --- Sekcije logika unutar modala ---
 
         private async Task OpenSectionPicker()
@@ -43,10 +54,17 @@ namespace AutoDocFront.Components.Modals
             if (FormData?.Relations == null)
                 FormData.Relations = new List<TemplateSectionRelationWithSectionDTO>();
 
+            // Pronađi trenutni maksimalni Order (ili 0 ako nema sekcija)
+            int currentMaxOrder = FormData.Relations.Any()
+                ? FormData.Relations.Max(r => r.Order)
+                : 0;
+
             foreach (var section in pickedSections)
             {
                 if (!FormData.Relations.Any(r => r.SectionUniqueId == section.ID))
                 {
+                    currentMaxOrder++; // Dodajemo na kraj
+
                     FormData.Relations.Add(new TemplateSectionRelationWithSectionDTO
                     {
                         SectionUniqueId = section.ID,
@@ -54,6 +72,7 @@ namespace AutoDocFront.Components.Modals
                         SectionVersion = section.Version,
                         SectionName = section.Name,
                         SectionDescription = section.Description,
+                        Order = currentMaxOrder
                     });
                 }
             }
@@ -77,10 +96,10 @@ namespace AutoDocFront.Components.Modals
             FormData.Relations.RemoveAt(idx);
             FormData.Relations.Insert(newIndex, item);
 
-            // Update SectionOrder for all items to match their new position
+            // Update Order for all items to match their new position
             for (int i = 0; i < FormData.Relations.Count; i++)
             {
-                FormData.Relations[i].SectionOrder = i + 1; // SectionOrder is usually 1-based
+                FormData.Relations[i].Order = i + 1; // Order is usually 1-based
             }
 
             StateHasChanged();
@@ -103,8 +122,45 @@ namespace AutoDocFront.Components.Modals
 
         private async Task PreviewSection(int idx)
         {
-            // Implementacija pregleda sekcije
-            // npr. prikazivanje preview dijaloga
+            if (FormData?.Relations == null || idx < 0 || idx >= FormData.Relations.Count)
+                return;
+
+            var section = FormData.Relations[idx];
+            previewTemplateName = section.SectionName;
+            previewLoading = true;
+            previewError = null;
+            previewHtmlContent = null;
+            isPreviewModalOpen = true;
+
+            try
+            {
+                var client = HttpClientFactory.CreateClient("AutoDocService");
+                // Pripremi payload kao lista sa jednom sekcijom
+                var singleSectionList = new List<TemplateSectionRelationWithSectionDTO> { section };
+                var response = await client.PostAsJsonAsync(
+                    "/api/document-render/preview",
+                    singleSectionList
+                );
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<PreviewResponse>();
+                    previewHtmlContent = result?.htmlContent;
+                }
+                else
+                {
+                    previewError = "Greška prilikom dohvata pregleda sekcije.";
+                }
+            }
+            catch (Exception ex)
+            {
+                previewError = $"Greška: {ex.Message}";
+            }
+            finally
+            {
+                previewLoading = false;
+                StateHasChanged();
+            }
         }
 
         private async Task Submit()
@@ -159,6 +215,49 @@ namespace AutoDocFront.Components.Modals
             {
                 loading = false;
             }
+        }
+
+
+        private async Task ShowPreview()
+        {
+            previewTemplateName = FormData.Name;
+            previewLoading = true;
+            previewError = null;
+            previewHtmlContent = null;
+            isPreviewModalOpen = true;
+
+            try
+            {
+                var client = HttpClientFactory.CreateClient("AutoDocService");
+                var response = await client.PostAsJsonAsync(
+                    "/api/document-render/preview",
+                    FormData.Relations // List<TemplateSectionRelationWithSectionDTO>
+                );
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<PreviewResponse>();
+                    previewHtmlContent = result?.htmlContent;
+                }
+                else
+                {
+                    previewError = "Greška prilikom dohvata pregleda.";
+                }
+            }
+            catch (Exception ex)
+            {
+                previewError = $"Greška: {ex.Message}";
+            }
+            finally
+            {
+                previewLoading = false;
+                StateHasChanged();
+            }
+        }
+
+        private class PreviewResponse
+        {
+            public string htmlContent { get; set; }
         }
     }
 }

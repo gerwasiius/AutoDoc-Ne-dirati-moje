@@ -109,7 +109,8 @@ else
 
                                     <i class="fa fa-list me-1"></i> Sekcije
                                 </button>
-                                <button class="btn corporate-button-secondary btn-sm">
+                                <button class="btn corporate-button-secondary btn-sm"
+                                        @onclick="() => ShowPreviewModal(template)">
                                     <i class="fa fa-eye me-1"></i> Pregled
                                 </button>
                             </div>
@@ -155,4 +156,15 @@ else
                         IsOpenChanged="@(v => isSectionsModalOpen = v)"
                         Template="selectedTemplate"
                         OnSubmit="CloseSectionsModal" />
+}
+
+@if (isPreviewModalOpen)
+{
+    <TemplatePreviewModal IsOpen="isPreviewModalOpen"
+                          IsOpenChanged="@(v => isPreviewModalOpen = v)"
+                          TemplateName="@previewTemplateName"
+                          HtmlContent="@previewHtmlContent"
+                          IsLoading="@previewLoading"
+                          ErrorMessage="@previewError" />
+
 }

@@ -258,6 +258,13 @@ namespace AutoDocService.BL.Services
                 //Dobavljanje svih template-a ovisno o queryiju
                 var templates = await query.ToListAsync().ConfigureAwait(false);
 
+                // Ako nema rezultata, vrati praznu listu
+                if (templates == null || templates.Count == 0)
+                {
+                    return new PagedList<DocumentTemplateAndRelatedItemsDTO>(
+                        new List<DocumentTemplateAndRelatedItemsDTO>(), pageSize, offset, totalItems);
+                }
+
                 //Uzimaju se svi template-i te se mapiraju ostali podaci.
                 // Mapiranje u DTO
                 //var result = templates.Select(template => new DocumentTemplateAndRelatedItemsDTO
@@ -277,7 +284,7 @@ namespace AutoDocService.BL.Services
                 //    ValidTo = template.ValidTo,
                 //    // Lista relacija sa sekcijama
                 //    Relations = template.TemplateSectionsRelations
-                //        .OrderBy(r => r.SectionOrder)
+                //        .OrderBy(r => r.Order)
                 //        .Select(rel => new TemplateSectionRelationWithSectionDTO
                 //        {
                 //            Id = rel.Id,
@@ -285,10 +292,10 @@ namespace AutoDocService.BL.Services
                 //            TemplateVersion = rel.TemplateVersion,
                 //            IdSection = rel.IdSection,
                 //            SectionVersion = rel.SectionVersion,
-                //            SectionOrder = rel.SectionOrder,
-                //            Condition = rel.Condition,
+                //            Order = rel.Order,
+                //            ConditionExpression = rel.ConditionExpression,
                 //            Action = rel.Action,
-                //            PageBreak = rel.PageBreak,
+                //            IsPageBreak = rel.IsPageBreak,
                 //            Section = rel.Section != null
                 //                ? _mapper.Map<SectionsGetDTO>(rel.Section)
                 //                : null
@@ -312,16 +319,16 @@ namespace AutoDocService.BL.Services
                     ValidTo = template.ValidTo,
                     // Lista relacija sa sekcijama
                     Relations = template.TemplateSectionsRelations
-        .OrderBy(r => r.SectionOrder)
+        .OrderBy(r => r.Order)
         .Select(rel => new TemplateSectionRelationWithSectionDTO
         {
             RelationId = rel.Id,
             SectionId = rel.IdSection,
             SectionVersion = rel.SectionVersion,
-            SectionOrder = rel.SectionOrder,
-            Condition = rel.Condition,
-            Action = rel.Action,
-            IsPageBreak = rel.PageBreak,
+            Order = rel.Order,
+            ConditionExpression = rel.ConditionExpression,
+            ActionType = rel.ActionType,
+            IsPageBreak = rel.IsPageBreak,
             SectionUniqueId = rel.Section != null ? rel.Section.Id : 0,
             SectionName = rel.Section != null ? rel.Section.Name : null,
             SectionDescription = rel.Section != null ? rel.Section.Description : null

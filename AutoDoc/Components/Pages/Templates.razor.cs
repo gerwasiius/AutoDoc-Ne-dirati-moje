@@ -320,5 +320,51 @@ namespace AutoDocFront.Components.Pages
                 availableSections = [];
             }
         }
+
+        private bool isPreviewModalOpen = false;
+        private string previewHtmlContent;
+        private bool previewLoading = false;
+        private string previewError;
+        private string previewTemplateName;
+
+
+        // Za spremljeni template
+        private async Task ShowPreviewModal(DocumentTemplateGetDTO template)
+        {
+            previewTemplateName = template.Name;
+            previewLoading = true;
+            previewError = null;
+            previewHtmlContent = null;
+            isPreviewModalOpen = true;
+
+            try
+            {
+                var client = HttpClientFactory.CreateClient("AutoDocService");
+                var response = await client.GetAsync($"/api/document-render/{template.IdTemplate}/render?version={template.Version}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<PreviewResponse>();
+                    previewHtmlContent = result?.htmlContent;
+                }
+                else
+                {
+                    previewError = "Greška prilikom dohvata pregleda dokumenta.";
+                }
+            }
+            catch (Exception ex)
+            {
+                previewError = $"Greška: {ex.Message}";
+            }
+            finally
+            {
+                previewLoading = false;
+                StateHasChanged();
+            }
+        }
+
+        private class PreviewResponse
+        {
+            public string htmlContent { get; set; }
+        }
     }
 }

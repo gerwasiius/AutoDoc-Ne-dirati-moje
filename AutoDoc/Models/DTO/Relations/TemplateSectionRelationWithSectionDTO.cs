@@ -15,9 +15,9 @@ namespace AutoDocFront.Models.DTO.Relations
         public int RelationId { get; set; }
         public int SectionId { get; set; }
         public int SectionVersion { get; set; }
-        public int SectionOrder { get; set; }
-        public string Condition { get; set; }
-        public string Action { get; set; }
+        public int Order { get; set; }
+        public string ConditionExpression { get; set; }
+        public string ActionType { get; set; }
         public bool IsPageBreak { get; set; }
         // Section info
         public int SectionUniqueId { get; set; }

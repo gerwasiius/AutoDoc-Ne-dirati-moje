@@ -21,6 +21,7 @@ namespace AutoDocService.IoC
             services.AddScoped<ISectionsService, SectionsService>();
             services.AddScoped<IDocumentTemplateService, DocumentTemplateService>();
             services.AddScoped<ITemplateSectionsRelationService, TemplateSectionsRelationService>();
+            services.AddScoped<IDocumentRenderService, DocumentRenderService>();
         }
 
         /// <summary>

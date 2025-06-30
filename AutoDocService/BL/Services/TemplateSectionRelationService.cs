@@ -178,6 +178,7 @@ namespace AutoDocService.BL.Services
             foreach (var toAdd in differences.ToAdd)
             {
                 var entity = _mapper.Map<TemplateSectionsRelation>(toAdd);
+                entity.ActionType = "NONE";
                 await _context.TemplateSectionsRelations.AddAsync(entity);
             }
 
@@ -187,10 +188,11 @@ namespace AutoDocService.BL.Services
                 var entity = await _context.TemplateSectionsRelations.FindAsync(toUpdate.Id);
                 if (entity != null)
                 {
-                    entity.SectionOrder = toUpdate.SectionOrder;
-                    entity.Condition = toUpdate.Condition;
-                    entity.Action = toUpdate.Action;
-                    entity.PageBreak = toUpdate.PageBreak;
+                    entity.Order = toUpdate.Order;
+                    entity.ConditionExpression = toUpdate.ConditionExpression;
+                    entity.ActionType = toUpdate.ActionType;
+                    entity.ActionType = "NONE";
+                    entity.IsPageBreak = toUpdate.IsPageBreak;
                     // Optionally update other fields if needed
                 }
             }
@@ -236,16 +238,16 @@ namespace AutoDocService.BL.Services
                 ValidFrom = updated.ValidFrom,
                 ValidTo = updated.ValidTo,
                 Relations = updated.TemplateSectionsRelations
-                    .OrderBy(r => r.SectionOrder)
+                    .OrderBy(r => r.Order)
                     .Select(rel => new TemplateSectionRelationWithSectionDTO
                     {
                         RelationId = rel.Id,
                         SectionId = rel.IdSection,
                         SectionVersion = rel.SectionVersion,
-                        SectionOrder = rel.SectionOrder,
-                        Condition = rel.Condition,
-                        Action = rel.Action,
-                        IsPageBreak = rel.PageBreak,
+                        Order = rel.Order,
+                        ConditionExpression = rel.ConditionExpression,
+                        ActionType = rel.ActionType,
+                        IsPageBreak = rel.IsPageBreak,
                         SectionUniqueId = rel.Section != null ? rel.Section.Id : 0,
                         SectionName = rel.Section != null ? rel.Section.Name : null,
                         SectionDescription = rel.Section != null ? rel.Section.Description : null
@@ -298,27 +300,27 @@ namespace AutoDocService.BL.Services
                         TemplateVersion = dto.Version,
                         IdSection = rel.SectionId,
                         SectionVersion = rel.SectionVersion,
-                        SectionOrder = rel.SectionOrder,
-                        Condition = rel.Condition,
-                        Action = rel.Action,
-                        PageBreak = rel.IsPageBreak
+                        Order = rel.Order,
+                        ConditionExpression = rel.ConditionExpression,
+                        ActionType = rel.ActionType,
+                        IsPageBreak = rel.IsPageBreak
                     });
                 }
                 else
                 {
                     // Exists in DB, check if any field differs
-                    if (dbRel.SectionOrder != rel.SectionOrder ||
-                        dbRel.Condition != rel.Condition ||
-                        dbRel.Action != rel.Action ||
-                        dbRel.PageBreak != rel.IsPageBreak)
+                    if (dbRel.Order != rel.Order ||
+                        dbRel.ConditionExpression != rel.ConditionExpression ||
+                        dbRel.ActionType != rel.ActionType ||
+                        dbRel.IsPageBreak != rel.IsPageBreak)
                     {
                         toUpdate.Add(new TemplateSectionsRelationUpdateDTO
                         {
                             Id = dbRel.Id,
-                            SectionOrder = rel.SectionOrder,
-                            Condition = rel.Condition,
-                            Action = rel.Action,
-                            PageBreak = rel.IsPageBreak
+                            Order = rel.Order,
+                            ConditionExpression = rel.ConditionExpression,
+                            ActionType = rel.ActionType,
+                            IsPageBreak = rel.IsPageBreak
                         });
                     }
                 }

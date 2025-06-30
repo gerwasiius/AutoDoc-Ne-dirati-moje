@@ -103,14 +103,16 @@ namespace AutoDocService.DL.DBContext
                 entity.ToTable("TemplateSectionsRelation", "dbo");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
-                entity.Property(e => e.Action).IsRequired().HasMaxLength(50).IsUnicode(false);
-                entity.Property(e => e.Condition);
                 entity.Property(e => e.IdSection);
                 entity.Property(e => e.IdTemplate);
-                entity.Property(e => e.PageBreak);
-                entity.Property(e => e.SectionOrder);
                 entity.Property(e => e.SectionVersion);
                 entity.Property(e => e.TemplateVersion);
+                entity.Property(e => e.Order).HasColumnName("Order");
+                entity.Property(e => e.ConditionExpression).HasMaxLength(300);
+                entity.Property(e => e.ActionType).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.IsPageBreak).HasDefaultValue(0);
+                entity.Property(e => e.IsArticle).HasDefaultValue(0);
+
 
                 entity.HasOne(d => d.Section).WithMany(p => p.TemplateSectionsRelations)
                     .HasPrincipalKey(p => new { p.IdSection, p.Version })
