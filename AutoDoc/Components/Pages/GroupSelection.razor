@@ -1,6 +1,7 @@
 ﻿@rendermode InteractiveServer
 @page "/group-selection"
 @using AutoDocFront.Components.Shared;
+@using AutoDocFront.Models.Enumerations
 
 @if (_loading)
 {
@@ -16,9 +17,13 @@ else
                     <p class="text-secondary mb-3">
                         Odaberite grupu za upravljanje sekcijama i članovima
                     </p>
-                    <FilterBar SearchTerm="@searchTerm"
+                    <FilterBar TStatusEnum="GroupStatusType"
+                               SearchTerm="@searchTerm"
                                SearchTermChanged="v => searchTerm = v"
                                Placeholder="Pretraga grupa..."
+                               StatusFilter="null"
+                               StatusValues="Array.Empty<GroupStatusType>()"
+                               ShowStatus="false"
                                OnSearch="OnSearchClicked"
                                OnClear="OnClearFiltersClicked" />
                 </div>

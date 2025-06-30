@@ -23,7 +23,7 @@ namespace AutoDocFront.Components.Pages
         private HttpClient _autoDocServiceClient;
         private List<DocumentTemplateGetDTO> templates = new();
         private string searchTerm = string.Empty;
-        private string statusFilter = "all";
+        private DocumentTemplateStatusType? statusFilter = null;
         private int currentPage = 1;
         private int itemsPerPage = 30;
         private int totalCount = 0;
@@ -38,11 +38,8 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Options for the status dropdown in the filter bar.
         /// </summary>
-        private static readonly IEnumerable<KeyValuePair<string, string>> _statusOptions =
-            Enum.GetValues(typeof(DocumentTemplateStatusType))
-                .Cast<DocumentTemplateStatusType>()
-                .Select(s => new KeyValuePair<string, string>(s.ToString(), GetStatusDisplayName(s)))
-                .Prepend(new KeyValuePair<string, string>("all", "Svi statusi"));
+        private static readonly IEnumerable<DocumentTemplateStatusType> _statusValues =
+            Enum.GetValues(typeof(DocumentTemplateStatusType)).Cast<DocumentTemplateStatusType>();
 
 
 
@@ -89,8 +86,8 @@ namespace AutoDocFront.Components.Pages
                 if (!string.IsNullOrWhiteSpace(searchTerm))
                     query.Add($"name={Uri.EscapeDataString(searchTerm)}");
 
-                if (statusFilter != "all")
-                    query.Add($"status={statusFilter}");
+                if (statusFilter.HasValue)
+                    query.Add($"status={statusFilter.Value}");
 
                 var apiUrl = "/api/contract-generation/document-templates/";
                 if (query.Count > 0)
@@ -159,7 +156,7 @@ namespace AutoDocFront.Components.Pages
         /// Mijenja filter statusa i učitava grupe.
         /// </summary>
         /// <param name="value">Nova vrijednost filtera.</param>
-        private async Task OnStatusFilterChanged(string value)
+        private async Task OnStatusFilterChanged(DocumentTemplateStatusType? value)
         {
             statusFilter = value;
             currentPage = 1;
@@ -172,7 +169,7 @@ namespace AutoDocFront.Components.Pages
         private async Task OnClearFiltersClicked()
         {
             searchTerm = string.Empty;
-            statusFilter = "all";
+            statusFilter = null;
             currentPage = 1;
             await LoadDocumentTemplatesAsync();
         }

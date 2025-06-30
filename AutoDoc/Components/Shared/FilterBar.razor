@@ -1,9 +1,12 @@
+@typeparam TStatusEnum
+
 @if (ShowStatus)
 {
-    <select class="form-select w-auto corporate-select" value="@StatusFilter" @onchange="OnStatusChanged">
-        @foreach (var option in StatusOptions)
+    <select class="form-select w-auto corporate-select" value="@SelectedStatusValue" @onchange="OnStatusChanged">
+        <option value="all">@AllLabel</option>
+        @foreach (var option in StatusValues)
         {
-            <option value="@option.Key">@option.Value</option>
+            <option value="@option.ToString()">@option.GetDescription()</option>
         }
     </select>
 }

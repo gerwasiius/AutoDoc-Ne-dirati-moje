@@ -24,7 +24,7 @@ namespace AutoDocFront.Components.Pages
 
         private List<SectionGroupGetDTO> _groups = new();
         private string _groupSearchTerm = string.Empty;
-        private string _groupStatusFilter = "all";
+        private GroupStatusType? _groupStatusFilter = null;
         private int _currentPage = 1;
         private int _groupsPerPage = 30;
         private int _totalGroupCount = 0;
@@ -33,14 +33,10 @@ namespace AutoDocFront.Components.Pages
         private bool _isLoading;
 
         /// <summary>
-        /// Options for the status dropdown in the filter bar.
+        /// Status values available in the filter bar dropdown.
         /// </summary>
-        private static readonly IEnumerable<KeyValuePair<string, string>> _statusOptions = new[]
-        {
-            new KeyValuePair<string, string>("all", "Sve grupe"),
-            new KeyValuePair<string, string>("ACTIVE", "Aktivne"),
-            new KeyValuePair<string, string>("DEACTIVATED", "Deaktivirane")
-        };
+        private static readonly IEnumerable<GroupStatusType> _statusValues =
+            Enum.GetValues(typeof(GroupStatusType)).Cast<GroupStatusType>();
 
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
@@ -74,7 +70,8 @@ namespace AutoDocFront.Components.Pages
             {
                 _isLoading = true;
                 int offset = (_currentPage - 1) * _groupsPerPage;
-                var result = await GroupService.GetGroupsAsync(_groupSearchTerm, _groupStatusFilter, offset, _groupsPerPage);
+                var status = _groupStatusFilter?.ToString() ?? "all";
+                var result = await GroupService.GetGroupsAsync(_groupSearchTerm, status, offset, _groupsPerPage);
                 _groups = result.Items ?? [];
                 _totalGroupCount = result.TotalItems;
             }
@@ -125,7 +122,7 @@ namespace AutoDocFront.Components.Pages
         /// Handles status filter change from the shared filter bar.
         /// </summary>
         /// <param name="value">Selected filter value.</param>
-        private async Task OnGroupStatusFilterChangedAsync(string value)
+        private async Task OnGroupStatusFilterChangedAsync(GroupStatusType? value)
         {
             _groupStatusFilter = value;
             _currentPage = 1;
@@ -138,7 +135,7 @@ namespace AutoDocFront.Components.Pages
         private async Task ClearGroupFiltersAsync()
         {
             _groupSearchTerm = string.Empty;
-            _groupStatusFilter = "all";
+            _groupStatusFilter = null;
             _currentPage = 1;
             await LoadGroupsAsync();
         }

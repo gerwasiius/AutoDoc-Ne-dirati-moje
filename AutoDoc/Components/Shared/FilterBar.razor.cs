@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Components;
+using AutoDocFront.Utilities;
 
 namespace AutoDocFront.Components.Shared;
 
 /// <summary>
 /// Reusable search and filter bar component.
 /// </summary>
-public partial class FilterBar
+public partial class FilterBar<TStatusEnum> where TStatusEnum : struct, Enum
 {
     private string _searchTerm = string.Empty;
 
@@ -42,13 +43,19 @@ public partial class FilterBar
     /// Currently selected status filter value.
     /// </summary>
     [Parameter]
-    public string StatusFilter { get; set; } = "all";
+    public TStatusEnum? StatusFilter { get; set; }
 
     /// <summary>
     /// Available status filter options where key is the value and value is the display text.
     /// </summary>
     [Parameter]
-    public IEnumerable<KeyValuePair<string, string>> StatusOptions { get; set; } = [];
+    public IEnumerable<TStatusEnum> StatusValues { get; set; } = [];
+
+    /// <summary>
+    /// Label shown for the option that selects all statuses.
+    /// </summary>
+    [Parameter]
+    public string AllLabel { get; set; } = "Svi";
 
     /// <summary>
     /// Indicates if the status dropdown should be displayed.
@@ -60,7 +67,7 @@ public partial class FilterBar
     /// Event triggered when the status filter changes.
     /// </summary>
     [Parameter]
-    public EventCallback<string> StatusFilterChanged { get; set; }
+    public EventCallback<TStatusEnum?> StatusFilterChanged { get; set; }
 
     /// <summary>
     /// Event triggered when the search button is clicked.
@@ -74,9 +81,30 @@ public partial class FilterBar
     [Parameter]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// Gets the value used for two-way binding of the status dropdown.
+    /// </summary>
+    private string SelectedStatusValue => StatusFilter?.ToString() ?? "all";
+
+    /// <summary>
+    /// Handles change events from the status dropdown.
+    /// </summary>
     private async Task OnStatusChanged(ChangeEventArgs e)
     {
-        StatusFilter = e.Value?.ToString() ?? "all";
+        var value = e.Value?.ToString();
+        if (string.IsNullOrEmpty(value) || value == "all")
+        {
+            StatusFilter = null;
+        }
+        else if (Enum.TryParse<TStatusEnum>(value, out var parsed))
+        {
+            StatusFilter = parsed;
+        }
+        else
+        {
+            StatusFilter = null;
+        }
+
         await StatusFilterChanged.InvokeAsync(StatusFilter);
     }
 }
