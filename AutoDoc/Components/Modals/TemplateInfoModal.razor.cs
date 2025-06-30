@@ -3,28 +3,72 @@ using AutoDocFront.Models.Enumerations;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Modals
 {
-    public partial class DocumentTemplateModal
+    /// <summary>
+    /// Modal za unos, izmjenu i pregled dokument template-a.
+    /// </summary>
+    public partial class TemplateInfoModal
     {
+        // --- PARAMETRI ---
+
+        /// <summary>
+        /// Da li je modal otvoren.
+        /// </summary>
         [Parameter] public bool IsOpen { get; set; }
+
+        /// <summary>
+        /// Event za promjenu stanja otvaranja modala.
+        /// </summary>
         [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+        /// <summary>
+        /// Template za prikaz ili izmjenu.
+        /// </summary>
         [Parameter] public DocumentTemplateGetDTO Template { get; set; }
+
+        /// <summary>
+        /// Režim rada modala (unos, izmjena, pregled).
+        /// </summary>
         [Parameter] public ModalMode ModalMode { get; set; }
+
+        /// <summary>
+        /// Event koji se poziva nakon uspješnog snimanja.
+        /// </summary>
         [Parameter] public EventCallback OnSave { get; set; }
+
+        /// <summary>
+        /// Event koji se poziva za prebacivanje u edit režim.
+        /// </summary>
         [Parameter] public EventCallback OnEdit { get; set; }
 
-        [Inject] private DocumentTemplateApiService TemplateService { get; set; }
+        // --- INJECTION ---
+
+        /// <summary>
+        /// Servis za rad sa dokument template-ima.
+        /// </summary>
+        [Inject] private DocumentTemplateApiService TemplateService { get; set; } = default!;
+
+        /// <summary>
+        /// Servis za prikaz notifikacija.
+        /// </summary>
+        [Inject] private IToastService ToastService { get; set; } = default!;
+
+        // --- POLJA ---
+
         private EditContext _editContext;
         private ValidationMessageStore _validationMessageStore;
         private DocumentTemplateGetDTO _model;
-        private DocumentTemplateGetDTO selectedTemplate;
         private bool _loading = false;
-        public bool isModalOpen = false;
-        public ModalMode modalMode;
+        private bool _isUnlimitedValidTo = false;
+
         private string _modalStyle => IsOpen ? "display: block;" : "display: none;";
 
+        /// <summary>
+        /// Naslov modala na osnovu režima.
+        /// </summary>
         private string ModalTitle => ModalMode switch
         {
             ModalMode.EDIT => "Izmjena predloška",
@@ -32,9 +76,11 @@ namespace AutoDocFront.Components.Modals
             _ => "Unos novog predloška"
         };
 
+        /// <summary>
+        /// Inicijalizuje model i EditContext na osnovu parametara i režima modala.
+        /// </summary>
         protected override void OnParametersSet()
         {
-
             if ((ModalMode == ModalMode.EDIT || ModalMode == ModalMode.VIEW) && Template != null)
             {
                 _model = new DocumentTemplateGetDTO
@@ -56,17 +102,24 @@ namespace AutoDocFront.Components.Modals
                 };
             }
 
+            _isUnlimitedValidTo = !_model.ValidTo.HasValue;
             _editContext = new EditContext(_model);
             _validationMessageStore = new ValidationMessageStore(_editContext);
         }
 
-        private void CloseModal()
+        /// <summary>
+        /// Zatvara modal i emituje promjenu stanja.
+        /// </summary>
+        private async Task CloseModalAsync()
         {
             IsOpen = false;
-            IsOpenChanged.InvokeAsync(false);
+            await IsOpenChanged.InvokeAsync(false);
         }
 
-        private async Task HandleValidSubmit()
+        /// <summary>
+        /// Validira formu i izvršava submit (insert ili update template-a).
+        /// </summary>
+        private async Task HandleValidSubmitAsync()
         {
             _validationMessageStore.Clear();
 
@@ -75,22 +128,25 @@ namespace AutoDocFront.Components.Modals
                 _loading = true;
                 if (ModalMode == ModalMode.EDIT)
                 {
-                    await UpdateTemplate();
+                    await UpdateTemplateAsync();
                 }
                 else
                 {
-                    await InsertTemplate();
+                    await InsertTemplateAsync();
                 }
                 _loading = false;
             }
             else
             {
                 _editContext.NotifyValidationStateChanged();
-                toastService.ShowError("Provjerite da li su sva polja ispravno unesena!");
+                ToastService.ShowError("Provjerite da li su sva polja ispravno unesena!");
             }
         }
 
-        private async Task InsertTemplate()
+        /// <summary>
+        /// Kreira novi template.
+        /// </summary>
+        private async Task InsertTemplateAsync()
         {
             try
             {
@@ -100,30 +156,33 @@ namespace AutoDocFront.Components.Modals
                     Description = _model.Description,
                     Status = DocumentTemplateStatusType.IN_PROGRESS,
                     ValidFrom = _model.ValidFrom,
-                    ValidTo = _model.ValidTo,
-                    UserInsert = "zlatan.kahriman"
+                    ValidTo = _isUnlimitedValidTo ? null : _model.ValidTo,
+                    UserInsert = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
                 };
 
-                var success = await TemplateService.CreateTemplateAsync(createDTO);
+                var (isSuccess, _, errorMessage) = await TemplateService.CreateTemplateAsync(createDTO);
 
-                if (success)
+                if (isSuccess)
                 {
-                    toastService.ShowSuccess("Predložak uspješno kreiran!");
-                    CloseModal();
+                    ToastService.ShowSuccess("Predložak uspješno kreiran!");
+                    await CloseModalAsync();
                     await OnSave.InvokeAsync();
                 }
                 else
                 {
-                    toastService.ShowError("Greška prilikom kreiranja predloška!");
+                    ToastService.ShowError(errorMessage ?? "Greška prilikom kreiranja predloška!");
                 }
             }
             catch (Exception ex)
             {
-                toastService.ShowError($"Neočekivana greška: {ex.Message}");
+                ToastService.ShowError($"Neočekivana greška: {ex.Message}");
             }
         }
 
-        private async Task UpdateTemplate()
+        /// <summary>
+        /// Ažurira postojeći template.
+        /// </summary>
+        private async Task UpdateTemplateAsync()
         {
             try
             {
@@ -133,52 +192,37 @@ namespace AutoDocFront.Components.Modals
                     Description = _model.Description,
                     Status = _model.Status,
                     ValidFrom = _model.ValidFrom,
-                    ValidTo = _model.ValidTo
+                    ValidTo = _isUnlimitedValidTo ? null : _model.ValidTo,
+                    UserUpdate = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
                 };
 
-                var success = await TemplateService.UpdateTemplateAsync(_model.Id, updateDTO);
+                var (isSuccess, _, errorMessage) = await TemplateService.UpdateTemplateAsync(_model.Id, updateDTO);
 
-                if (success)
+                if (isSuccess)
                 {
-                    toastService.ShowSuccess("Predložak uspješno ažuriran!");
-                    CloseModal();
+                    ToastService.ShowSuccess("Predložak uspješno ažuriran!");
+                    await CloseModalAsync();
                     await OnSave.InvokeAsync();
                 }
                 else
                 {
-                    toastService.ShowError("Greška prilikom ažuriranja predloška!");
+                    ToastService.ShowError(errorMessage ?? "Greška prilikom ažuriranja predloška!");
                 }
             }
             catch (Exception ex)
             {
-                toastService.ShowError($"Neočekivana greška: {ex.Message}");
+                ToastService.ShowError($"Neočekivana greška: {ex.Message}");
             }
         }
 
-        private void ShowCreateModal()
-        {
-            selectedTemplate = null;
-            modalMode = ModalMode.INSERT;
-            isModalOpen = true;
-        }
-
-        private void ShowEditModal()
-        {
-            modalMode = ModalMode.EDIT;
-            isModalOpen = true;
-        }
-
-        private async Task OnModalSave()
-        {
-            //await LoadTemplatesAsync();
-        }
-
-        private bool isUnlimitedValidTo = false;
-
+        /// <summary>
+        /// Postavlja ili uklanja neograničen datum ValidTo.
+        /// </summary>
+        /// <param name="e">Event sa novom vrijednošću.</param>
         private void ToggleUnlimitedValidTo(ChangeEventArgs e)
         {
-            isUnlimitedValidTo = (bool)e.Value;
-            if (isUnlimitedValidTo)
+            _isUnlimitedValidTo = (bool)e.Value;
+            if (_isUnlimitedValidTo)
             {
                 _model.ValidTo = null;
             }

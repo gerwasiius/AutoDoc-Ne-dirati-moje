@@ -1,291 +1,346 @@
-﻿using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.DocumentTemplate;
+﻿using AutoDocFront.Models.DTO.DocumentTemplate;
 using AutoDocFront.Models.DTO.DocumentTemplateDTO;
-using AutoDocFront.Models.DTO.GroupSection;
-using AutoDocFront.Models.DTO.Sections;
 using AutoDocFront.Models.Enumerations;
+using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
-using System.Linq;
 
 namespace AutoDocFront.Components.Pages
 {
+    /// <summary>
+    /// Stranica za upravljanje dokument template-ima.
+    /// Omogućava filtriranje, pretragu, paginaciju i rad sa template modalima.
+    /// </summary>
     public partial class Templates
     {
         // --- INJECTION ---
 
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
-        [Inject] private NavigationManager Navigation { get; set; }
-        [Inject] private IToastService ToastService { get; set; }
-
-        // --- PRIVATNA POLJA ---
-
-        private HttpClient _autoDocServiceClient;
-        private List<DocumentTemplateGetDTO> templates = new();
-        private string searchTerm = string.Empty;
-        private DocumentTemplateStatusType? statusFilter = null;
-        private int currentPage = 1;
-        private int itemsPerPage = 30;
-        private int totalCount = 0;
-        private bool isGroupModalOpen;
-        private SectionGroupUpsertDTO selectedGroupForEdit;
-        private bool _loading = false;
-        private bool isTemplateModalOpen = false;
-        private ModalMode templateModalMode = ModalMode.INSERT;
-        private DocumentTemplateGetDTO selectedTemplate = null;
-        private bool isSectionsModalOpen = false;
+        /// <summary>
+        /// Servis za rad sa dokument template-ima.
+        /// </summary>
+        [Inject] private DocumentTemplateApiService TemplateService { get; set; } = default!;
 
         /// <summary>
-        /// Options for the status dropdown in the filter bar.
+        /// Servis za prikaz notifikacija.
+        /// </summary>
+        [Inject] private IToastService ToastService { get; set; } = default!;
+
+        // --- POLJA ---
+
+        /// <summary>
+        /// Lista prikazanih template-a.
+        /// </summary>
+        private List<DocumentTemplateGetDTO> _templates = new();
+
+        /// <summary>
+        /// Tekući termin za pretragu po nazivu template-a.
+        /// </summary>
+        private string _searchTerm = string.Empty;
+
+        /// <summary>
+        /// Filter po statusu template-a.
+        /// </summary>
+        private DocumentTemplateStatusType? _statusFilter;
+
+        /// <summary>
+        /// Tekuća stranica u paginaciji.
+        /// </summary>
+        private int _currentPage = 1;
+
+        /// <summary>
+        /// Broj template-a po stranici.
+        /// </summary>
+        private const int ItemsPerPage = 30;
+
+        /// <summary>
+        /// Ukupan broj template-a (za paginaciju).
+        /// </summary>
+        private int _totalCount = 0;
+
+        /// <summary>
+        /// Prikazuje da li je učitavanje u toku.
+        /// </summary>
+        private bool _isLoading = false;
+
+        // --- MODAL STANJE ---
+
+        /// <summary>
+        /// Da li je modal za template otvoren.
+        /// </summary>
+        private bool _isTemplateModalOpen = false;
+
+        /// <summary>
+        /// Režim rada template modala (unos, izmjena, pregled).
+        /// </summary>
+        private ModalMode _templateModalMode = ModalMode.INSERT;
+
+        /// <summary>
+        /// Selektovani template za modal.
+        /// </summary>
+        private DocumentTemplateGetDTO? _selectedTemplate;
+
+        /// <summary>
+        /// Da li je modal za sekcije otvoren.
+        /// </summary>
+        private bool _isSectionsModalOpen = false;
+
+        /// <summary>
+        /// Da li je modal za preview otvoren.
+        /// </summary>
+        private bool _isPreviewModalOpen = false;
+
+        /// <summary>
+        /// HTML sadržaj za preview template-a.
+        /// </summary>
+        private string? _previewHtmlContent;
+
+        /// <summary>
+        /// Prikazuje da li je učitavanje preview-a u toku.
+        /// </summary>
+        private bool _previewLoading = false;
+
+        /// <summary>
+        /// Poruka o grešci za preview modal.
+        /// </summary>
+        private string? _previewError;
+
+        /// <summary>
+        /// Naziv template-a za preview modal.
+        /// </summary>
+        private string? _previewTemplateName;
+
+        /// <summary>
+        /// Svi mogući statusi template-a (za filter bar).
         /// </summary>
         private static readonly IEnumerable<DocumentTemplateStatusType> _statusValues =
             Enum.GetValues(typeof(DocumentTemplateStatusType)).Cast<DocumentTemplateStatusType>();
 
-
+        // --- PAGINATION PROPERTIES ---
 
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
-        private int TotalPages => (int)Math.Ceiling((double)totalCount / itemsPerPage);
+        private int TotalPages => (int)Math.Ceiling((double)_totalCount / ItemsPerPage);
 
         /// <summary>
-        /// Početni indeks prikazanih grupa na trenutnoj stranici.
+        /// Indeks prvog prikazanog template-a na trenutnoj stranici.
         /// </summary>
-        private int StartIndex => totalCount == 0 ? 0 : (currentPage - 1) * itemsPerPage;
+        private int StartIndex => _totalCount == 0 ? 0 : (_currentPage - 1) * ItemsPerPage;
 
         /// <summary>
-        /// Krajnji indeks prikazanih grupa na trenutnoj stranici.
+        /// Indeks zadnjeg prikazanog template-a na trenutnoj stranici.
         /// </summary>
-        private int EndIndex => Math.Min(StartIndex + templates.Count, totalCount);
+        private int EndIndex => Math.Min(StartIndex + _templates.Count, _totalCount);
+
+        // --- LIFECYCLE ---
 
         /// <summary>
-        /// Inicijalizuje komponentu i učitava grupe sa servera.
+        /// Inicijalizuje komponentu i učitava template-e.
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            _autoDocServiceClient = HttpClientFactory.CreateClient("AutoDocService");
-            await LoadDocumentTemplatesAsync();
+            await LoadTemplatesAsync();
         }
 
+        // --- API POZIVI ---
+
         /// <summary>
-        /// Učitava grupe sa API-ja uz primijenjene filtere i paginaciju.
+        /// Učitava template-e sa servera uz filtere i paginaciju.
         /// </summary>
-        private async Task LoadDocumentTemplatesAsync()
+        private async Task LoadTemplatesAsync()
         {
             try
             {
-                _loading = true;
-
-                int offset = (currentPage - 1) * itemsPerPage;
-                var query = new List<string>
-                {
-                    $"offset={offset}",
-                    $"pageSize={itemsPerPage}"
-                };
-
-                if (!string.IsNullOrWhiteSpace(searchTerm))
-                    query.Add($"name={Uri.EscapeDataString(searchTerm)}");
-
-                if (statusFilter.HasValue)
-                    query.Add($"status={statusFilter.Value}");
-
-                var apiUrl = "/api/contract-generation/document-templates/";
-                if (query.Count > 0)
-                    apiUrl += "?" + string.Join("&", query);
-
-                var response = await _autoDocServiceClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var pagedResult = await response.Content.ReadFromJsonAsync<PagedList<DocumentTemplateGetDTO>>() ?? new PagedList<DocumentTemplateGetDTO>();
-                    templates = pagedResult.Items ?? new List<DocumentTemplateGetDTO>();
-                    totalCount = pagedResult.TotalItems;
-                }
-                else
-                {
-                    if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
-                        throw new Exception("Problem prilikom učitavanja grupa");
-
-                    templates = [];
-                    totalCount = 0;
-                }
+                _isLoading = true;
+                var result = await TemplateService.GetTemplatesAsync(_searchTerm, _statusFilter, (_currentPage - 1) * ItemsPerPage, ItemsPerPage);
+                _templates = result.Items ?? [];
+                _totalCount = result.TotalItems;
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Problem prilikom učitavanja grupa: {ex.Message}");
-                templates = [];
-                totalCount = 0;
+                ToastService.ShowError($"Greška prilikom učitavanja template-a: {ex.Message}");
+                _templates = [];
+                _totalCount = 0;
             }
             finally
             {
-                _loading = false;
-                await InvokeAsync(StateHasChanged);
+                _isLoading = false;
             }
         }
+
+        // --- PAGINATION & FILTERS ---
 
         /// <summary>
         /// Mijenja trenutnu stranicu u paginaciji.
         /// </summary>
-        /// <param name="page">Broj stranice na koju se prelazi.</param>
-        private async Task ChangePage(int page)
+        /// <param name="page">Nova stranica.</param>
+        private async Task ChangePageAsync(int page)
         {
-            if (page < 1 || page > TotalPages || page == currentPage) return;
-            currentPage = page;
-            await LoadDocumentTemplatesAsync();
+            if (page < 1 || page > TotalPages || page == _currentPage) return;
+            _currentPage = page;
+            await LoadTemplatesAsync();
         }
 
         /// <summary>
-        /// Preusmjerava korisnika na stranicu sekcija za odabranu grupu.
+        /// Pokreće pretragu po nazivu template-a.
         /// </summary>
-        /// <param name="group">Odabrana grupa.</param>
-        private void HandleViewMembers(SectionGroupGetDTO group)
+        private async Task SearchTemplatesAsync()
         {
-            Navigation.NavigateTo($"/sections?groupId={group.ID}&groupName={Uri.EscapeDataString(group.Name)}");
+            _currentPage = 1;
+            await LoadTemplatesAsync();
         }
 
         /// <summary>
-        /// Pokreće pretragu po nazivu grupe.
+        /// Mijenja filter statusa i učitava template-e.
         /// </summary>
-        private async Task OnSearchClicked()
+        /// <param name="value">Novi status filtera.</param>
+        private async Task OnStatusFilterChangedAsync(DocumentTemplateStatusType? value)
         {
-            currentPage = 1;
-            await LoadDocumentTemplatesAsync();
+            _statusFilter = value;
+            _currentPage = 1;
+            await LoadTemplatesAsync();
         }
 
         /// <summary>
-        /// Mijenja filter statusa i učitava grupe.
+        /// Briše sve filtere i učitava sve template-e.
         /// </summary>
-        /// <param name="value">Nova vrijednost filtera.</param>
-        private async Task OnStatusFilterChanged(DocumentTemplateStatusType? value)
+        private async Task ClearTemplateFiltersAsync()
         {
-            statusFilter = value;
-            currentPage = 1;
-            await LoadDocumentTemplatesAsync();
+            if (string.IsNullOrWhiteSpace(_searchTerm) && _statusFilter == null)
+                return;
+
+            _searchTerm = string.Empty;
+            _statusFilter = null;
+            _currentPage = 1;
+            await LoadTemplatesAsync();
+        }
+
+        // --- MODAL LOGIKA ---
+
+        /// <summary>
+        /// Otvara modal za unos novog template-a.
+        /// </summary>
+        private void OpenInsertTemplateModal()
+        {
+            _selectedTemplate = null;
+            _templateModalMode = ModalMode.INSERT;
+            _isTemplateModalOpen = true;
         }
 
         /// <summary>
-        /// Briše sve filtere i učitava sve grupe.
+        /// Otvara modal za izmjenu postojećeg template-a.
         /// </summary>
-        private async Task OnClearFiltersClicked()
+        /// <param name="template">Template za izmjenu.</param>
+        private void OpenEditTemplateModal(DocumentTemplateGetDTO template)
         {
-            searchTerm = string.Empty;
-            statusFilter = null;
-            currentPage = 1;
-            await LoadDocumentTemplatesAsync();
+            _selectedTemplate = template;
+            _templateModalMode = ModalMode.EDIT;
+            _isTemplateModalOpen = true;
         }
 
-        private void ShowEditTemplateModal()
+        /// <summary>
+        /// Otvara modal za pregled template-a.
+        /// </summary>
+        /// <param name="template">Template za pregled.</param>
+        private void OpenViewTemplateModal(DocumentTemplateGetDTO template)
         {
-            templateModalMode = ModalMode.EDIT;
-            // isTemplateModalOpen ostaje true
-            StateHasChanged();
+            _selectedTemplate = template;
+            _templateModalMode = ModalMode.VIEW;
+            _isTemplateModalOpen = true;
         }
 
-        private async Task OnTemplateModalSave()
+        /// <summary>
+        /// Handler nakon uspješnog snimanja template-a iz modala.
+        /// </summary>
+        private async Task OnTemplateModalSavedAsync()
         {
-            isTemplateModalOpen = false;
-            await LoadDocumentTemplatesAsync();
+            _isTemplateModalOpen = false;
+            await LoadTemplatesAsync();
         }
 
-        private void CloseTemplateModal()
+        /// <summary>
+        /// Otvara modal za uređivanje sekcija template-a.
+        /// </summary>
+        /// <param name="template">Template za uređivanje sekcija.</param>
+        private void OpenSectionsModal(DocumentTemplateGetDTO template)
         {
-            isTemplateModalOpen = false;
+            _selectedTemplate = template;
+            _isSectionsModalOpen = true;
         }
 
-        private void ShowViewTemplateModal(DocumentTemplateGetDTO template)
-        {
-            selectedTemplate = template;
-            templateModalMode = ModalMode.VIEW;
-            isTemplateModalOpen = true;
-        }
-
-        private void ShowCreateTemplateModal()
-        {
-            selectedTemplate = null;
-            templateModalMode = ModalMode.INSERT;
-            isTemplateModalOpen = true;
-        }
-
-        private string GetStatusBadgeClass(DocumentTemplateStatusType? status)
-        {
-            return status switch
-            {
-                DocumentTemplateStatusType.ACTIVE => "bg-success",
-                DocumentTemplateStatusType.IN_PROGRESS => "bg-warning text-dark",
-                DocumentTemplateStatusType.PENDING => "bg-info text-dark",
-                DocumentTemplateStatusType.DEACTIVATED => "bg-secondary",
-                _ => "bg-light text-dark"
-            };
-        }
-
-        private string GetStatusDisplayName(DocumentTemplateStatusType? status)
-        {
-            return status switch
-            {
-                DocumentTemplateStatusType.ACTIVE => "ACTIVE",
-                DocumentTemplateStatusType.IN_PROGRESS => "IN PROGRESS",
-                DocumentTemplateStatusType.PENDING => "PENDING",
-                DocumentTemplateStatusType.DEACTIVATED => "DEACTIVATED",
-                _ => "UNKNOWN"
-            };
-        }
-
-        private void ShowSectionsModal(DocumentTemplateGetDTO template)
-        {
-            selectedTemplate = template;
-            isSectionsModalOpen = true;
-        }
+        /// <summary>
+        /// Zatvara modal za sekcije.
+        /// </summary>
         private void CloseSectionsModal()
         {
-            isSectionsModalOpen = false;
-            StateHasChanged();
+            _isSectionsModalOpen = false;
         }
 
-
-        private bool isPreviewModalOpen = false;
-        private string previewHtmlContent;
-        private bool previewLoading = false;
-        private string previewError;
-        private string previewTemplateName;
-
-
-        // Za spremljeni template
-        private async Task ShowPreviewModal(DocumentTemplateGetDTO template)
+        /// <summary>
+        /// Otvara modal za preview template-a.
+        /// </summary>
+        /// <param name="template">Template za preview.</param>
+        private async Task ShowPreviewModalAsync(DocumentTemplateGetDTO template)
         {
-            previewTemplateName = template.Name;
-            previewLoading = true;
-            previewError = null;
-            previewHtmlContent = null;
-            isPreviewModalOpen = true;
+            ResetPreviewModal();
+            _previewTemplateName = template.Name;
+            _isPreviewModalOpen = true;
+            _previewLoading = true;
 
             try
             {
-                var client = HttpClientFactory.CreateClient("AutoDocService");
-                var response = await client.GetAsync($"/api/document-render/{template.IdTemplate}/render?version={template.Version}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<PreviewResponse>();
-                    previewHtmlContent = result?.htmlContent;
-                }
-                else
-                {
-                    previewError = "Greška prilikom dohvata pregleda dokumenta.";
-                }
+                var html = await TemplateService.GetTemplatePreviewAsync(template.IdTemplate, template.Version);
+                _previewHtmlContent = html;
             }
             catch (Exception ex)
             {
-                previewError = $"Greška: {ex.Message}";
+                _previewError = $"Greška: {ex.Message}";
             }
             finally
             {
-                previewLoading = false;
-                StateHasChanged();
+                _previewLoading = false;
             }
         }
 
-        private class PreviewResponse
+        /// <summary>
+        /// Resetuje stanje preview modala.
+        /// </summary>
+        private void ResetPreviewModal()
         {
-            public string htmlContent { get; set; }
+            _previewHtmlContent = null;
+            _previewError = null;
+            _previewTemplateName = null;
+            _previewLoading = false;
         }
+
+        // --- HELPERI ---
+
+        /// <summary>
+        /// Vraća CSS klasu za badge statusa template-a.
+        /// </summary>
+        /// <param name="status">Status template-a.</param>
+        /// <returns>CSS klasa za badge.</returns>
+        private string GetStatusBadgeClass(DocumentTemplateStatusType? status) => status switch
+        {
+            DocumentTemplateStatusType.ACTIVE => "bg-success",
+            DocumentTemplateStatusType.IN_PROGRESS => "bg-warning text-dark",
+            DocumentTemplateStatusType.PENDING => "bg-info text-dark",
+            DocumentTemplateStatusType.DEACTIVATED => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+
+        /// <summary>
+        /// Vraća prikazni naziv statusa template-a.
+        /// </summary>
+        /// <param name="status">Status template-a.</param>
+        /// <returns>Prikazni naziv statusa.</returns>
+        private string GetStatusDisplayName(DocumentTemplateStatusType? status) => status switch
+        {
+            DocumentTemplateStatusType.ACTIVE => "ACTIVE",
+            DocumentTemplateStatusType.IN_PROGRESS => "IN PROGRESS",
+            DocumentTemplateStatusType.PENDING => "PENDING",
+            DocumentTemplateStatusType.DEACTIVATED => "DEACTIVATED",
+            _ => "UNKNOWN"
+        };
     }
 }

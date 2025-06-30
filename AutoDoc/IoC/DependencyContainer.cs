@@ -21,6 +21,7 @@ namespace AutoDocFront.IoC
             services.AddFluentUIComponents();
             services.AddScoped<SectionGroupApiService>();
             services.AddScoped<DocumentTemplateApiService>();
+            services.AddScoped<SectionsApiService>();
         }
 
         /// <summary>

@@ -1,56 +1,138 @@
-﻿using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.DocumentTemplateDTO;
-using Microsoft.Extensions.Logging;
+﻿using AutoDocFront.Models.DTO.DocumentTemplateDTO;
+using AutoDocFront.Models.DTO.Relations;
+using AutoDocFront.Models.Enumerations;
 using System.Net.Http.Json;
+using System.Net;
+using AutoDocFront.Models.DTO;
+using AutoDocFront.Models.DTO.DocumentTemplate;
 
-namespace AutoDocFront.Services;
-
-/// <summary>
-/// Service that centralizes API calls for document templates.
-/// </summary>
-public class DocumentTemplateApiService
+namespace AutoDocFront.Services
 {
-    private readonly HttpClient _client;
-    private readonly ILogger<DocumentTemplateApiService> _logger;
-
-    public DocumentTemplateApiService(IHttpClientFactory httpClientFactory, ILogger<DocumentTemplateApiService> logger)
-    {
-        _client = httpClientFactory.CreateClient("AutoDocService");
-        _logger = logger;
-    }
-
     /// <summary>
-    /// Retrieves document templates.
+    /// Servis za rad sa dokument template-ima i njihovim sekcijama.
     /// </summary>
-    public async Task<PagedList<DocumentTemplateGetDTO>> GetTemplatesAsync(int offset = 0, int pageSize = 0)
+    public class DocumentTemplateApiService
     {
-        var url = $"/api/contract-generation/document-templates?offset={offset}&pageSize={pageSize}";
-        var response = await _client.GetAsync(url);
-        if (response.IsSuccessStatusCode)
+        private readonly HttpClient _client;
+
+        public DocumentTemplateApiService(IHttpClientFactory factory)
         {
-            return await response.Content.ReadFromJsonAsync<PagedList<DocumentTemplateGetDTO>>()
-                   ?? new PagedList<DocumentTemplateGetDTO>();
+            _client = factory.CreateClient("AutoDocService");
         }
 
-        _logger.LogWarning("Failed to load templates. Status code: {Status}", response.StatusCode);
-        return new PagedList<DocumentTemplateGetDTO> { Items = new List<DocumentTemplateGetDTO>(), TotalItems = 0 };
-    }
+        /// <summary>
+        /// Dohvata template-e sa paginacijom i filtrima.
+        /// </summary>
+        public async Task<PagedList<DocumentTemplateGetDTO>> GetTemplatesAsync(
+            string? name = null,
+            DocumentTemplateStatusType? status = null,
+            int offset = 0,
+            int pageSize = 30)
+        {
+            var query = new List<string>
+            {
+                $"offset={offset}",
+                $"pageSize={pageSize}"
+            };
+            if (!string.IsNullOrWhiteSpace(name))
+                query.Add($"name={Uri.EscapeDataString(name)}");
+            if (status.HasValue)
+                query.Add($"status={status.Value}");
 
-    /// <summary>
-    /// Creates a new document template.
-    /// </summary>
-    public async Task<bool> CreateTemplateAsync(DocumentTemplateCreateDTO dto)
-    {
-        var response = await _client.PostAsJsonAsync("/api/contract-generation/document-templates", dto);
-        return response.IsSuccessStatusCode;
-    }
+            var url = "/api/contract-generation/document-templates";
+            if (query.Count > 0)
+                url += "?" + string.Join("&", query);
 
-    /// <summary>
-    /// Updates an existing template.
-    /// </summary>
-    public async Task<bool> UpdateTemplateAsync(int id, DocumentTemplateUpdateDTO dto)
-    {
-        var response = await _client.PutAsJsonAsync($"/api/contract-generation/document-templates/{id}", dto);
-        return response.IsSuccessStatusCode;
+            var response = await _client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("Problem prilikom učitavanja template-a");
+
+            return await response.Content.ReadFromJsonAsync<PagedList<DocumentTemplateGetDTO>>() ?? new PagedList<DocumentTemplateGetDTO>();
+        }
+
+        /// <summary>
+        /// Kreira novi template.
+        /// </summary>
+        public async Task<(bool IsSuccess, HttpStatusCode StatusCode, string? ErrorMessage)> CreateTemplateAsync(DocumentTemplateCreateDTO dto)
+        {
+            var response = await _client.PostAsJsonAsync("/api/contract-generation/document-templates", dto);
+            if (response.IsSuccessStatusCode)
+                return (true, response.StatusCode, null);
+
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            return (false, response.StatusCode, errorMsg);
+        }
+
+        /// <summary>
+        /// Ažurira postojeći template.
+        /// </summary>
+        public async Task<(bool IsSuccess, HttpStatusCode StatusCode, string? ErrorMessage)> UpdateTemplateAsync(int id, DocumentTemplateUpdateDTO dto)
+        {
+            var response = await _client.PutAsJsonAsync($"/api/contract-generation/document-templates/{id}", dto);
+            if (response.IsSuccessStatusCode)
+                return (true, response.StatusCode, null);
+
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            return (false, response.StatusCode, errorMsg);
+        }
+
+        /// <summary>
+        /// Dohvata template sa svim povezanim sekcijama (za prikaz u formi).
+        /// </summary>
+        public async Task<DocumentTemplateAndRelatedItemsDTO?> GetTemplateWithSectionsAsync(int templateId)
+        {
+            var url = $"/api/contract-generation/document-templates/template-items?id={templateId}";
+            var response = await _client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var paged = await response.Content.ReadFromJsonAsync<PagedList<DocumentTemplateAndRelatedItemsDTO>>();
+            return paged?.Items?.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Snima relacije između template-a i sekcija.
+        /// </summary>
+        public async Task<(bool IsSuccess, HttpStatusCode StatusCode, string? ErrorMessage)> SaveTemplateSectionsAsync(DocumentTemplateAndRelatedItemsDTO dto)
+        {
+            var response = await _client.PostAsJsonAsync("/api/contract-generation/template-sections-relations/manage-relations", dto);
+            if (response.IsSuccessStatusCode)
+                return (true, response.StatusCode, null);
+
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            return (false, response.StatusCode, errorMsg);
+        }
+
+        /// <summary>
+        /// Prikazuje preview template-a (HTML render).
+        /// </summary>
+        public async Task<string?> GetTemplatePreviewAsync(int idTemplate, int version)
+        {
+            var url = $"/api/document-render/{idTemplate}/render?version={version}";
+            var response = await _client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var result = await response.Content.ReadFromJsonAsync<TemplatePreviewResult>();
+            return result?.HtmlContent;
+        }
+
+        /// <summary>
+        /// Prikazuje preview za listu sekcija (HTML render).
+        /// </summary>
+        public async Task<string?> GetSectionsPreviewAsync(List<TemplateSectionRelationWithSectionDTO> relations)
+        {
+            var response = await _client.PostAsJsonAsync("/api/document-render/preview", relations);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var result = await response.Content.ReadFromJsonAsync<TemplatePreviewResult>();
+            return result?.HtmlContent;
+        }
+
+        private class TemplatePreviewResult
+        {
+            public string HtmlContent { get; set; }
+        }
     }
 }

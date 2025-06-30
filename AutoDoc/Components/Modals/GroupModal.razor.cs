@@ -1,6 +1,4 @@
-﻿using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.GroupSection;
-using AutoDocFront.Models.DTO.Sections;
+﻿using AutoDocFront.Models.DTO.GroupSection;
 using AutoDocFront.Models.Enumerations;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
@@ -29,7 +27,7 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// DTO objekat grupe za izmjenu (null za unos nove grupe).
         /// </summary>
-        [Parameter] public SectionGroupUpsertDTO Group { get; set; }
+        [Parameter] public SectionGroupUpsertDTO? Group { get; set; }
 
         /// <summary>
         /// Event koji se poziva nakon uspješnog snimanja.
@@ -77,7 +75,7 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Zatvara modal i emituje promjenu stanja.
         /// </summary>
-        private async Task CloseModal()
+        private async Task CloseModalAsync()
         {
             IsOpen = false;
             await IsOpenChanged.InvokeAsync(false);
@@ -86,9 +84,9 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Validira i šalje podatke za unos ili izmjenu grupe.
         /// </summary>
-        private async Task HandleValidSubmit()
+        private async Task HandleValidSubmitAsync()
         {
-            if (!ValidateForm() || _loading)
+            if (_loading || !ValidateForm())
                 return;
 
             _loading = true;
@@ -102,7 +100,7 @@ namespace AutoDocFront.Components.Modals
                 if (success)
                 {
                     ToastService.ShowSuccess(IsEditMode ? "Grupa je uspješno izmijenjena!" : "Grupa je uspješno kreirana!");
-                    await CloseModal();
+                    await CloseModalAsync();
                     await OnSave.InvokeAsync();
                 }
                 else
@@ -142,7 +140,8 @@ namespace AutoDocFront.Components.Modals
         /// <param name="newStatus">Novi status grupe</param>
         private async Task ChangeGroupStatusAsync(GroupStatusType newStatus)
         {
-            if (_loading) return;
+            if (_loading) 
+                return;
             try
             {
                 _loading = true;
@@ -155,7 +154,7 @@ namespace AutoDocFront.Components.Modals
                     }
                 }
                 _model.Status = newStatus;
-                await HandleValidSubmit();
+                await HandleValidSubmitAsync();
             }
             catch (Exception ex)
             {

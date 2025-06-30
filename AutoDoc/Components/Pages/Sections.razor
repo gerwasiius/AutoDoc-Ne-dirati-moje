@@ -1,11 +1,10 @@
 ﻿@rendermode InteractiveServer
 @page "/sections/{GroupId}"
-@using System.Web
 @using AutoDocFront.Components.Modals
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Models.Enumerations
 
-@if (_loading)
+@if (_isLoading)
 {
     <div class="spinner mt-5"></div>
 }
@@ -17,7 +16,7 @@ else
                 <h1 class="h2 fw-bold text-dark">Sekcije grupe: @_group?.Name</h1>
                 <p class="text-secondary">Upravljanje sekcijama i članovima grupe</p>
             </div>
-            <button class="btn corporate-button-primary" @onclick="ShowSectionModalForInsert">
+            <button class="btn corporate-button-primary" @onclick="OpenInsertSectionModal">
                 <i class="fa fa-plus"></i> Nova sekcija
             </button>
         </div>
@@ -31,14 +30,14 @@ else
                        StatusValues="_statusValues"
                        AllLabel="Sve sekcije"
                        ShowStatus="true"
-                       StatusFilterChanged="OnStatusFilterChanged"
-                       OnSearch="OnSearchClicked"
-                       OnClear="OnClearFiltersClicked" />
+                       StatusFilterChanged="OnStatusFilterChangedAsync"
+                       OnSearch="SearchSectionsAsync"
+                       OnClear="ClearSectionFiltersAsync" />
         </div>
 
         <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
             <span>
-                Prikazano @(StartIndex + 1)-@EndIndex od @_sections.Count sekcija
+                Prikazano @(StartIndex + 1)-@EndIndex od @_totalCount sekcija
             </span>
             @if (TotalPages > 1)
             {
@@ -47,7 +46,7 @@ else
         </div>
 
         <div class="row g-4">
-            @foreach (var sectionItem in CurrentSections)
+            @foreach (var sectionItem in _sections)
             {
                 <div class="corporate-card shadow-sm p-0" style="min-height: 120px;">
                     <div class="card-body d-flex flex-row align-items-start justify-content-between gap-3">
@@ -66,15 +65,11 @@ else
                             </div>
                         </div>
                         <div class="text-end flex-shrink-0 ms-3" style="min-width: 120px;">
-                            @*                             <div class="fw-medium small">
-                                v @sectionItem.Version
-                            </div> *@
                             <div class="fw-medium small">
                                 <span class="badge corporate-badge" style="font-size: 0.85em;">
                                     v @sectionItem.Version
                                 </span>
                             </div>
-
                             <div class="text-secondary small">
                                 Posljednje ažuriranje:
                                 @(sectionItem.DateUpdate != null
@@ -83,7 +78,7 @@ else
                             </div>
                             <div class="d-flex gap-2 mt-2">
                                 <button class="btn corporate-button-secondary btn-sm"
-                                        @onclick="() => OpenHistoricalSectionModal(sectionItem)">
+                                        @onclick="() => OpenViewSectionModal(sectionItem)">
                                     <i class="fa fa-eye me-1"></i> Pregled
                                 </button>
                                 <button class="btn corporate-button-secondary btn-sm"
@@ -101,7 +96,7 @@ else
         {
             <Pagination CurrentPage="@_currentPage"
                         TotalPages="@TotalPages"
-                        OnPageChanged="ChangePage" />
+                        OnPageChanged="ChangePageAsync" />
         }
 
         @if (!_sections.Any())
@@ -119,5 +114,10 @@ else
 
 @if (_isSectionModalVisible)
 {
-    <SectionsModal IsOpen="@_isSectionModalVisible" IsOpenChanged="@((value) => _isSectionModalVisible = value)" Group="_group" Section="_selectedSection" ModalMode="_sectionModalMode" OnSave="OnSectionModalSave" />
+    <SectionsModal IsOpen="_isSectionModalVisible"
+                   IsOpenChanged="@(v => _isSectionModalVisible = v)"
+                   Group="_group"
+                   Section="_selectedSection"
+                   ModalMode="_sectionModalMode"
+                   OnSave="OnSectionModalSavedAsync" />
 }

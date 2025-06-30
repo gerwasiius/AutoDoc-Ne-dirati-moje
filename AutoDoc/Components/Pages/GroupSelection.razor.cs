@@ -1,6 +1,8 @@
 ﻿using AutoDocFront.Models.DTO;
 using AutoDocFront.Models.DTO.GroupSection;
+using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FluentUI.AspNetCore.Components;
 using System.Net.Http.Json;
 
@@ -14,25 +16,35 @@ namespace AutoDocFront.Components.Pages
         [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
         [Inject] private NavigationManager Navigation { get; set; }
         [Inject] private IToastService ToastService { get; set; }
+        [Inject] private Services.SectionGroupApiService GroupService { get; set; } = default!;
 
-        private HttpClient _autoDocServiceClient;
-        private List<SectionGroupGetDTO> groups = new();
-        private string searchTerm = string.Empty;
-        private int currentPage = 1;
-        private int itemsPerPage = 30;
-        private int totalCount = 0;
-        private bool _loading = false;
+        private List<SectionGroupGetDTO> _groups = new();
+        private string _searchTerm = string.Empty;
+        private int _currentPage = 1;
+        private const int ItemsPerPage = 30;
+        private int _totalCount = 0;
+        private bool _isLoading = false;
 
-        private int TotalPages => (int)Math.Ceiling((double)totalCount / itemsPerPage);
-        private int StartIndex => totalCount == 0 ? 0 : (currentPage - 1) * itemsPerPage;
-        private int EndIndex => Math.Min(StartIndex + groups.Count, totalCount);
+        /// <summary>
+          /// Ukupan broj stranica za paginaciju.
+          /// </summary>
+        private int TotalPages => (int)Math.Ceiling((double)_totalCount / ItemsPerPage);
+
+        /// <summary>
+        /// Početni indeks prikazanih grupa na trenutnoj stranici.
+        /// </summary>
+        private int StartIndex => _totalCount == 0 ? 0 : (_currentPage - 1) * ItemsPerPage;
+
+        /// <summary>
+        /// Krajnji indeks prikazanih grupa na trenutnoj stranici.
+        /// </summary>
+        private int EndIndex => Math.Min(StartIndex + _groups.Count, _totalCount);
 
         /// <summary>
         /// Inicijalizuje komponentu i učitava aktivne grupe sa servera.
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            _autoDocServiceClient = HttpClientFactory.CreateClient("AutoDocService");
             await LoadGroupsAsync();
         }
 
@@ -43,78 +55,54 @@ namespace AutoDocFront.Components.Pages
         {
             try
             {
-                _loading = true;
-                int offset = (currentPage - 1) * itemsPerPage;
-                var query = new List<string>
-                {
-                    $"status=ACTIVE",
-                    $"offset={offset}",
-                    $"pageSize={itemsPerPage}"
-                };
-
-                if (!string.IsNullOrWhiteSpace(searchTerm))
-                    query.Add($"name={Uri.EscapeDataString(searchTerm)}");
-
-                var apiUrl = "/api/contract-generation/section-groups";
-                if (query.Count > 0)
-                    apiUrl += "?" + string.Join("&", query);
-
-                var response = await _autoDocServiceClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var pagedResult = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>() ?? new PagedList<SectionGroupGetDTO>();
-                    groups = pagedResult.Items ?? new List<SectionGroupGetDTO>();
-                    totalCount = pagedResult.TotalItems;
-                }
-                else
-                {
-                    if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
-                        throw new Exception("Problem prilikom učitavanja grupa");
-
-                    groups = [];
-                    totalCount = 0;
-                }
+                _isLoading = true;
+                int offset = (_currentPage - 1) * ItemsPerPage;
+                var status = GroupStatusType.ACTIVE.ToString();
+                var result = await GroupService.GetGroupsAsync(_searchTerm, status, offset, ItemsPerPage);
+                _groups = result.Items ?? [];
+                _totalCount = result.TotalItems;
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Problem prilikom učitavanja grupa: {ex.Message}");
-                groups = [];
-                totalCount = 0;
+                ToastService.ShowError($"Greška prilikom učitavanja grupa: {ex.Message}");
+                _groups = [];
+                _totalCount = 0;
             }
             finally
             {
-                _loading = false;
-                await InvokeAsync(StateHasChanged);
+                _isLoading = false;
             }
         }
 
         /// <summary>
         /// Mijenja trenutnu stranicu u paginaciji.
         /// </summary>
-        private async Task ChangePage(int page)
+        private async Task ChangePageAsync(int page)
         {
-            if (page < 1 || page > TotalPages || page == currentPage) return;
-            currentPage = page;
+            if (page < 1 || page > TotalPages || page == _currentPage) return;
+            _currentPage = page;
             await LoadGroupsAsync();
         }
 
         /// <summary>
         /// Pokreće pretragu po nazivu grupe.
         /// </summary>
-        private async Task OnSearchClicked()
+        private async Task SearchGroupsAsync()
         {
-            currentPage = 1;
+            _currentPage = 1;
             await LoadGroupsAsync();
         }
 
         /// <summary>
         /// Briše filter pretrage i učitava sve aktivne grupe.
         /// </summary>
-        private async Task OnClearFiltersClicked()
+        private async Task ClearGroupFiltersAsync()
         {
-            searchTerm = string.Empty;
-            currentPage = 1;
+            if (string.IsNullOrWhiteSpace(_searchTerm))
+                return;
+
+            _searchTerm = string.Empty;
+            _currentPage = 1;
             await LoadGroupsAsync();
         }
 
@@ -123,7 +111,8 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private void HandleGroupSelect(int groupId, string groupName)
         {
-            Navigation.NavigateTo($"/sections/{groupId}?groupName={Uri.EscapeDataString(groupName)}");
+            var uri = QueryHelpers.AddQueryString($"/sections/{groupId}", "groupName", groupName);
+            Navigation.NavigateTo(uri);
         }
     }
 }

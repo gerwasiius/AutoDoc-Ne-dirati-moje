@@ -6,6 +6,7 @@ using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.FluentUI.AspNetCore.Components;
+using System.Net;
 using System.Net.Http.Json;
 using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons;
 
@@ -52,9 +53,9 @@ namespace AutoDocFront.Components.Modals
         // --- INJECTION ---
 
         /// <summary>
-        /// Fabrika za kreiranje HttpClient instanci.
+        /// Servis za rad sa sekcijama.
         /// </summary>
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
+        [Inject] private SectionsApiService SectionsService { get; set; } = default!;
 
         /// <summary>
         /// Servis za prikaz notifikacija (toast poruka).
@@ -81,9 +82,8 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Inicijalizuje modal, priprema model i učitava verzije sekcije ako je u VIEW modu.
         /// </summary>
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnParametersSetAsync()
         {
-            _client = HttpClientFactory.CreateClient("AutoDocService");
             _model = new SectionsGetDTO();
 
             switch (ModalMode)
@@ -103,7 +103,7 @@ namespace AutoDocFront.Components.Modals
 
             if (ModalMode == ModalMode.VIEW)
             {
-                await LoadAllVersionsForSection();
+                await LoadAllVersionsForSectionAsync();
             }
         }
 
@@ -112,7 +112,7 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Zatvara modal i emituje promjenu stanja.
         /// </summary>
-        private async Task CloseModal()
+        private async Task CloseModalAsync()
         {
             IsOpen = false;
             await IsOpenChanged.InvokeAsync(false);
@@ -121,7 +121,7 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Validira formu i izvršava submit (insert ili update sekcije).
         /// </summary>
-        private async Task HandleValidSubmit()
+        private async Task HandleValidSubmitAsync()
         {
             _validationMessageStore.Clear();
 
@@ -135,12 +135,12 @@ namespace AutoDocFront.Components.Modals
             {
                 if (ModalMode == ModalMode.EDIT)
                 {
-                    await UpdateSection();
+                    await UpdateSectionAsync();
                 }
                 else if (ModalMode == ModalMode.INSERT)
                 {
                     _model.GroupId = Group.ID;
-                    await InsertNewSection();
+                    await InsertNewSectionAsync();
                 }
             }
             else
@@ -153,7 +153,7 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Kreira novu sekciju (prva verzija).
         /// </summary>
-        private async Task InsertNewSection()
+        private async Task InsertNewSectionAsync()
         {
             try
             {
@@ -169,24 +169,19 @@ namespace AutoDocFront.Components.Modals
                     UserInsert = _model.UserInsert
                 };
 
-                var response = await _client.PostAsJsonAsync("/api/contract-generation/sections", createDTO);
+                var result = await SectionsService.InsertSectionAsync(createDTO);
 
-                if (!response.IsSuccessStatusCode)
+                if (!result.IsSuccess)
                 {
-                    if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
-                    {
-                        var errorMessage = await response.Content.ReadAsStringAsync();
-                        ToastService.ShowError(errorMessage);
-                    }
+                    if (result.StatusCode == HttpStatusCode.Conflict)
+                        ToastService.ShowError(result.ErrorMessage ?? "Sekcija sa istim nazivom već postoji.");
                     else
-                    {
-                        ToastService.ShowError("Problem prilikom upisa člana!");
-                    }
+                        ToastService.ShowError("Problem prilikom upisa sekcije!");
                 }
                 else
                 {
-                    ToastService.ShowSuccess("Član je uspješno spašen!");
-                    CloseModal();
+                    ToastService.ShowSuccess("Sekcija je uspješno spašena!");
+                    await CloseModalAsync();
                     await OnSave.InvokeAsync();
                 }
             }
@@ -203,7 +198,7 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Ažurira postojeću sekciju (kreira novu verziju).
         /// </summary>
-        private async Task UpdateSection()
+        private async Task UpdateSectionAsync()
         {
             try
             {
@@ -219,16 +214,16 @@ namespace AutoDocFront.Components.Modals
                     UserUpdate = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
                 };
 
-                var response = await _client.PutAsJsonAsync($"/api/contract-generation/sections/{Section.ID}/manage-section", updateDTO);
+                var result = await SectionsService.UpdateSectionAsync(_model.ID, updateDTO);
 
-                if (!response.IsSuccessStatusCode)
+                if (!result.IsSuccess)
                 {
-                    ToastService.ShowError("Problem prilikom ažuriranja člana!");
+                    ToastService.ShowError(result.ErrorMessage ?? "Problem prilikom ažuriranja sekcije!");
                 }
                 else
                 {
-                    ToastService.ShowSuccess("Član je uspješno ažuriran!");
-                    CloseModal();
+                    ToastService.ShowSuccess("Sekcija je uspješno ažurirana!");
+                    await CloseModalAsync();
                     await OnSave.InvokeAsync();
                 }
             }
@@ -245,25 +240,20 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Učitava sve verzije sekcije za prikaz u VIEW modu.
         /// </summary>
-        private async Task LoadAllVersionsForSection()
+        private async Task LoadAllVersionsForSectionAsync()
         {
             try
             {
-                var response = await _client.GetAsync($"/api/contract-generation/sections?idSection={Section.IdSection}&offset=0&pageSize=0");
-                if (response.IsSuccessStatusCode)
-                {
-                    _listSections = (await response.Content.ReadFromJsonAsync<PagedList<SectionsGetDTO>>())?.Items
-                        ?.OrderByDescending(e => e.Version)
-                        .ToList();
-                }
-                else
-                {
-                    ToastService.ShowError("Problem prilikom dobavljanja ostalih verzija člana/sekcije!");
-                }
+                if (Section?.IdSection == null)
+                    return;
+
+                var result = await SectionsService.GetAllVersionsForSectionAsync(Section.IdSection.Value);
+
+                _listSections = result?.OrderByDescending(e => e.Version).ToList() ?? new List<SectionsGetDTO>();
             }
-            catch (HttpRequestException)
+            catch (Exception ex)
             {
-                // Dodatna obrada greške po potrebi
+                ToastService.ShowError($"Problem prilikom dobavljanja ostalih verzija sekcije: {ex.Message}");
             }
         }
 
@@ -282,26 +272,20 @@ namespace AutoDocFront.Components.Modals
         /// Aktivira ili deaktivira sekciju.
         /// </summary>
         /// <param name="isActive">True za aktivaciju, False za deaktivaciju.</param>
-        private async Task ToggleSectionStatus(bool isActive)
+        private async Task ToggleSectionStatusAsync(bool isActive)
         {
             try
             {
                 _loading = true;
-
-                var statusUpdateDTO = new { IsActive = isActive };
-
-                var response = await _client.PatchAsJsonAsync(
-                    $"/api/contract-generation/sections/update-status?sectionId={Section.IdSection}&isActiveStatus={isActive}",
-                    statusUpdateDTO);
-
-                if (!response.IsSuccessStatusCode)
+                var success = await SectionsService.UpdateSectionStatusAsync(_model.ID, _model.IdSection, isActive);
+                if (!success)
                 {
-                    ToastService.ShowError(isActive ? "Problem prilikom aktivacije člana!" : "Problem prilikom deaktivacije člana!");
+                    ToastService.ShowError(isActive ? "Problem prilikom aktivacije sekcije!" : "Problem prilikom deaktivacije sekcije!");
                 }
                 else
                 {
-                    ToastService.ShowSuccess(isActive ? "Član je uspješno aktiviran!" : "Član je uspješno deaktiviran!");
-                    CloseModal();
+                    ToastService.ShowSuccess(isActive ? "Sekcija je uspješno aktivirana!" : "Sekcija je uspješno deaktivirana!");
+                    await CloseModalAsync();
                     await OnSave.InvokeAsync();
                 }
             }
@@ -319,7 +303,7 @@ namespace AutoDocFront.Components.Modals
         /// Prikazuje dijalog za potvrdu aktivacije ili deaktivacije sekcije.
         /// </summary>
         /// <param name="isActive">True za aktivaciju, False za deaktivaciju.</param>
-        private async Task ShowConfirmationDialog(bool isActive)
+        private async Task ShowConfirmationDialogAsync(bool isActive)
         {
             var action = isActive ? "aktivirati" : "deaktivirati";
 
@@ -328,7 +312,7 @@ namespace AutoDocFront.Components.Modals
                 Content = new()
                 {
                     Title = "Da li ste sigurni?",
-                    MarkupMessage = new MarkupString($"Da li ste sigurni da želite <b>{action}</b> član?"),
+                    MarkupMessage = new MarkupString($"Da li ste sigurni da želite <b>{action}</b> sekciju?"),
                     Icon = new Icons.Regular.Size24.QuestionCircle(),
                     IconColor = isActive ? Color.Success : Color.Error,
                 },
@@ -343,7 +327,7 @@ namespace AutoDocFront.Components.Modals
 
             if (!result.Cancelled)
             {
-                await ToggleSectionStatus(isActive);
+                await ToggleSectionStatusAsync(isActive);
             }
         }
     }

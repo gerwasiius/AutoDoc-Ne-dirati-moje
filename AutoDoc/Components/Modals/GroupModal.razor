@@ -4,7 +4,7 @@
 
 <BaseModalLayout IsOpen="@IsOpen" Title="@((IsEditMode ? $"Izmjena grupe {_model.Name}" : "Nova grupa"))" IsOpenChanged="@IsOpenChanged">
     <BodyContent>
-        <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit">
+        <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmitAsync">
             <DataAnnotationsValidator />
 
             <div class="mb-3">
@@ -50,7 +50,7 @@
                 }
             </div>
             <div>
-                <button type="submit" class="btn modal-corporate-button-primary btn-sm" @onclick="HandleValidSubmit" disabled="@_loading">
+                <button type="submit" class="btn modal-corporate-button-primary btn-sm" disabled="@_loading">
                     @(_loading ? "Spremanje..." : (IsEditMode ? "Sačuvaj izmjene" : "Kreiraj grupu"))
                 </button>
             </div>

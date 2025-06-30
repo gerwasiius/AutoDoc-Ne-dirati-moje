@@ -4,7 +4,7 @@
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Models.Enumerations
 
-@if (_loading)
+@if (_isLoading)
 {
     <div class="spinner mt-5"></div>
 }
@@ -16,37 +16,37 @@ else
                 <h1 class="h2 fw-bold text-dark">Document Template-i</h1>
                 <p class="text-secondary">Kreiranje i organizacija template-a od postojećih sekcija</p>
             </div>
-            <button class="btn corporate-button-primary" @onclick="ShowCreateTemplateModal">
+            <button class="btn corporate-button-primary" @onclick="OpenInsertTemplateModal">
                 <i class="fa fa-plus"></i> Novi template
             </button>
         </div>
 
         <div class="d-flex align-items-center gap-3 mb-3">
             <FilterBar TStatusEnum="DocumentTemplateStatusType"
-                       SearchTerm="@searchTerm"
-                       SearchTermChanged="v => searchTerm = v"
+                       SearchTerm="@_searchTerm"
+                       SearchTermChanged="v => _searchTerm = v"
                        Placeholder="Pretraga po nazivu predloška"
-                       StatusFilter="@statusFilter"
+                       StatusFilter="@_statusFilter"
                        StatusValues="_statusValues"
                        AllLabel="Svi predlošci"
                        ShowStatus="true"
-                       StatusFilterChanged="OnStatusFilterChanged"
-                       OnSearch="OnSearchClicked"
-                       OnClear="OnClearFiltersClicked" />
+                       StatusFilterChanged="OnStatusFilterChangedAsync"
+                       OnSearch="SearchTemplatesAsync"
+                       OnClear="ClearTemplateFiltersAsync" />
         </div>
 
         <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
             <span>
-                Prikazano @(StartIndex + 1)-@EndIndex od @totalCount template-a
+                Prikazano @(StartIndex + 1)-@EndIndex od @_totalCount template-a
             </span>
             @if (TotalPages > 1)
             {
-                <span>Stranica @currentPage od @TotalPages</span>
+                <span>Stranica @_currentPage od @TotalPages</span>
             }
         </div>
 
         <div class="row g-4 mt-2">
-            @foreach (var template in templates)
+            @foreach (var template in _templates)
             {
                 <div class="col-md-6">
                     <div class="corporate-card h-100 d-flex flex-column">
@@ -56,11 +56,6 @@ else
                                     <div class="template-card-title text-truncate">@template.Name</div>
                                     <div class="text-secondary text-truncate-2 mt-1">@template.Description</div>
                                 </div>
-                                @*                      <div class="col-2 d-flex justify-content-end align-items-center">
-                                 <span class="template-card-badge" title="Broj sekcija: ">
-                                    <i class="fa fa-layer-group"></i> @template.Relations.Count
-                                </span> 
-                            </div> *@
                             </div>
                         </div>
                         <div class="card-body flex-grow-1">
@@ -93,16 +88,15 @@ else
                             </div>
                             <div class="d-flex gap-2">
                                 <button class="btn corporate-button-secondary btn-sm"
-                                        @onclick="() => ShowViewTemplateModal(template)">
+                                        @onclick="() => OpenViewTemplateModal(template)">
                                     <i class="fa fa-info-circle me-1"></i> Osnovni podaci
                                 </button>
                                 <button class="btn corporate-button-secondary btn-sm"
-                                        @onclick="() => ShowSectionsModal(template)">
-
+                                        @onclick="() => OpenSectionsModal(template)">
                                     <i class="fa fa-list me-1"></i> Sekcije
                                 </button>
                                 <button class="btn corporate-button-secondary btn-sm"
-                                        @onclick="() => ShowPreviewModal(template)">
+                                        @onclick="() => ShowPreviewModalAsync(template)">
                                     <i class="fa fa-eye me-1"></i> Pregled
                                 </button>
                             </div>
@@ -113,13 +107,13 @@ else
 
             @if (TotalPages > 1)
             {
-                <Pagination CurrentPage="@currentPage"
+                <Pagination CurrentPage="@_currentPage"
                             TotalPages="@TotalPages"
-                            OnPageChanged="ChangePage" />
+                            OnPageChanged="ChangePageAsync" />
             }
         </div>
 
-        @if (!templates.Any())
+        @if (!_templates.Any())
         {
             <div class="text-center py-5">
                 <div class="bg-light rounded-circle mx-auto mb-3" style="width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;">
@@ -132,31 +126,31 @@ else
     </div>
 }
 
-@if (isTemplateModalOpen)
+@if (_isTemplateModalOpen)
 {
-    <DocumentTemplateModal IsOpen="isTemplateModalOpen"
-                           IsOpenChanged="@(v => isTemplateModalOpen = v)"
-                           Template="selectedTemplate"
-                           ModalMode="templateModalMode"
-                           OnSave="OnTemplateModalSave"
-                           OnEdit="ShowEditTemplateModal" />
+    <TemplateInfoModal IsOpen="_isTemplateModalOpen"
+                           IsOpenChanged="@(v => _isTemplateModalOpen = v)"
+                           Template="_selectedTemplate"
+                           ModalMode="_templateModalMode"
+                           OnSave="OnTemplateModalSavedAsync"
+                           OnEdit="() => OpenEditTemplateModal(_selectedTemplate)" />
 }
 
-@if (isSectionsModalOpen)
+@if (_isSectionsModalOpen)
 {
-    <TemplateFormDialog IsOpen="isSectionsModalOpen"
-                        IsOpenChanged="@(v => isSectionsModalOpen = v)"
-                        Template="selectedTemplate"
+    <TemplateRelationsModal IsOpen="_isSectionsModalOpen"
+                        IsOpenChanged="@(v => _isSectionsModalOpen = v)"
+                        Template="_selectedTemplate"
                         OnSubmit="CloseSectionsModal" />
 }
 
-@if (isPreviewModalOpen)
+@if (_isPreviewModalOpen)
 {
-    <TemplatePreviewModal IsOpen="isPreviewModalOpen"
-                          IsOpenChanged="@(v => isPreviewModalOpen = v)"
-                          TemplateName="@previewTemplateName"
-                          HtmlContent="@previewHtmlContent"
-                          IsLoading="@previewLoading"
-                          ErrorMessage="@previewError" />
-
+    <TemplatePreviewModal IsOpen="_isPreviewModalOpen"
+                          IsOpenChanged="@(v => _isPreviewModalOpen = v)"
+                          TemplateName="@_previewTemplateName"
+                          HtmlContent="@_previewHtmlContent"
+                          IsLoading="@_previewLoading"
+                          ErrorMessage="@_previewError" />
 }
+

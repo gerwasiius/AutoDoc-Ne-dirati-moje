@@ -3,7 +3,7 @@
 @using AutoDocFront.Components.Shared;
 @using AutoDocFront.Models.Enumerations
 
-@if (_loading)
+@if (_isLoading)
 {
     <div class="spinner mt-5"></div>
 }
@@ -18,14 +18,14 @@ else
                         Odaberite grupu za upravljanje sekcijama i članovima
                     </p>
                     <FilterBar TStatusEnum="GroupStatusType"
-                               SearchTerm="@searchTerm"
-                               SearchTermChanged="v => searchTerm = v"
+                               SearchTerm="@_searchTerm"
+                               SearchTermChanged="v => _searchTerm = v"
                                Placeholder="Pretraga grupa..."
                                StatusFilter="null"
                                StatusValues="Array.Empty<GroupStatusType>()"
                                ShowStatus="false"
-                               OnSearch="OnSearchClicked"
-                               OnClear="OnClearFiltersClicked" />
+                               OnSearch=" SearchGroupsAsync"
+                               OnClear="ClearGroupFiltersAsync" />
                 </div>
                 <div class="col-md-4 d-flex align-items-start justify-content-md-end">
                     <div class="p-4 rounded bg-warning bg-opacity-25" style="max-width: 420px;">
@@ -40,16 +40,16 @@ else
 
         <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
             <span>
-                Prikazano @(StartIndex + 1)-@EndIndex od @totalCount grupa
+                Prikazano @(StartIndex + 1)-@EndIndex od @_totalCount grupa
             </span>
             @if (TotalPages > 1)
             {
-                <span>Stranica @currentPage od @TotalPages</span>
+                <span>Stranica @_currentPage od @TotalPages</span>
             }
         </div>
 
         <div class="row g-4">
-            @foreach (var group in groups)
+            @foreach (var group in _groups)
             {
                 <GroupCard Group="group"
                            Mode="select"
@@ -59,12 +59,12 @@ else
 
         @if (TotalPages > 1)
         {
-            <Pagination CurrentPage="@currentPage"
+            <Pagination CurrentPage="@_currentPage"
                         TotalPages="@TotalPages"
-                        OnPageChanged="ChangePage" />
+                        OnPageChanged="ChangePageAsync" />
         }
 
-        @if (!groups.Any())
+        @if (!_groups.Any())
         {
             <div class="text-center py-5">
                 <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">

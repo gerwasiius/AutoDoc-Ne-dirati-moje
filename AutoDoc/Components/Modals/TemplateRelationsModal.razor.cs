@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace AutoDocFront.Components.Modals
 {
-    public partial class TemplateFormDialog
+    public partial class TemplateRelationsModal
     {
         [Parameter] public bool IsOpen { get; set; }
         [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }

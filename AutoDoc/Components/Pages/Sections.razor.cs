@@ -1,60 +1,31 @@
-﻿using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.GroupSection;
+﻿using AutoDocFront.Models.DTO.GroupSection;
 using AutoDocFront.Models.DTO.Sections;
 using AutoDocFront.Models.Enumerations;
+using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
-using Microsoft.JSInterop;
-using System.Net.Http.Json;
 
 namespace AutoDocFront.Components.Pages
 {
     /// <summary>
-    /// Stranica za upravljanje sekcijama i članovima unutar grupe.
+    /// Blazor stranica za upravljanje sekcijama unutar grupe.
     /// Omogućava filtriranje, pretragu, paginaciju i izmjenu statusa sekcija.
     /// </summary>
     public partial class Sections
     {
         // --- PARAMETRI ---
 
-        /// <summary>
-        /// ID grupe sekcija (preko URL-a).
-        /// </summary>
         [Parameter] public string GroupId { get; set; }
-
-        /// <summary>
-        /// Naziv grupe sekcija (preko query stringa, opciono).
-        /// </summary>
         [Parameter, SupplyParameterFromQuery] public string? GroupName { get; set; }
 
         // --- INJECTION ---
+        [Inject] private SectionsApiService SectionsService { get; set; } = default!;
 
-        /// <summary>
-        /// Fabrika za kreiranje HttpClient instanci.
-        /// </summary>
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
+        [Inject] private SectionGroupApiService GroupService { get; set; } = default!;
 
-        /// <summary>
-        /// Servis za upravljanje navigacijom.
-        /// </summary>
-        [Inject] private NavigationManager Navigation { get; set; }
+        [Inject] private IToastService ToastService { get; set; } = default!;
 
-        /// <summary>
-        /// Servis za prikaz notifikacija (toast poruka).
-        /// </summary>
-        [Inject] private IToastService ToastService { get; set; }
-
-        /// <summary>
-        /// JavaScript runtime servis.
-        /// </summary>
-        [Inject] private IJSRuntime JSRuntime { get; set; }
-
-        // --- PRIVATNA POLJA ---
-
-        /// <summary>
-        /// HttpClient za komunikaciju sa API-jem.
-        /// </summary>
-        private HttpClient _client;
+        // --- POLJA ---
 
         /// <summary>
         /// DTO objekat grupe sekcija.
@@ -62,7 +33,7 @@ namespace AutoDocFront.Components.Pages
         private SectionGroupGetDTO _group;
 
         /// <summary>
-        /// Lista svih sekcija u grupi.
+        /// Lista sekcija u grupi.
         /// </summary>
         private List<SectionsGetDTO> _sections = new();
 
@@ -74,7 +45,7 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Filter za status sekcije (sve, aktivne, deaktivirane).
         /// </summary>
-        private SectionStatusType? _statusFilter = null;
+        private SectionStatusType? _statusFilter;
 
         /// <summary>
         /// Trenutna stranica u paginaciji.
@@ -84,12 +55,17 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Broj sekcija po stranici.
         /// </summary>
-        private readonly int _itemsPerPage = 20;
+        private const int ItemsPerPage = 20;
+
+        /// <summary>
+        /// Ukupan broj sekcija (za paginaciju).
+        /// </summary>
+        private int _totalCount = 0;
 
         /// <summary>
         /// Da li je trenutno učitavanje u toku.
         /// </summary>
-        private bool _loading = false;
+        private bool _isLoading = false;
 
         // --- MODAL STANJE ---
 
@@ -109,32 +85,27 @@ namespace AutoDocFront.Components.Pages
         private SectionsGetDTO _selectedSection;
 
         /// <summary>
-        /// Status values available in the filter bar dropdown.
+        /// Status vrijednosti dostupne u filter dropdown-u.
         /// </summary>
         private static readonly IEnumerable<SectionStatusType> _statusValues =
             Enum.GetValues(typeof(SectionStatusType)).Cast<SectionStatusType>();
 
-        // --- PROPERTY-ji ZA UI ---
+        // --- PAGINATION PROPERTIES ---
 
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
-        private int TotalPages => (int)Math.Ceiling((double)_sections.Count / _itemsPerPage);
+        private int TotalPages => (int)Math.Ceiling((double)_totalCount / ItemsPerPage);
 
         /// <summary>
         /// Početni indeks prikazanih sekcija na trenutnoj stranici.
         /// </summary>
-        private int StartIndex => (_currentPage - 1) * _itemsPerPage;
+        private int StartIndex => _totalCount == 0 ? 0 : (_currentPage - 1) * ItemsPerPage;
 
         /// <summary>
         /// Krajnji indeks prikazanih sekcija na trenutnoj stranici.
         /// </summary>
-        private int EndIndex => Math.Min(StartIndex + _itemsPerPage, _sections.Count);
-
-        /// <summary>
-        /// Sekcije koje se prikazuju na trenutnoj stranici.
-        /// </summary>
-        private IEnumerable<SectionsGetDTO> CurrentSections => _sections.Skip(StartIndex).Take(_itemsPerPage);
+        private int EndIndex => Math.Min(StartIndex + _sections.Count, _totalCount);
 
         // --- LIFECYCLE ---
 
@@ -143,12 +114,11 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            _client = HttpClientFactory.CreateClient("AutoDocService");
             await LoadGroupAsync();
             await LoadSectionsAsync();
         }
 
-        // --- METODE ---
+        // --- API POZIVI ---
 
         /// <summary>
         /// Učitava podatke o grupi sekcija sa servera.
@@ -157,25 +127,17 @@ namespace AutoDocFront.Components.Pages
         {
             try
             {
-                _loading = true;
-                var response = await _client.GetAsync($"/api/contract-generation/section-groups?id={GroupId}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>();
-                    _group = result?.Items?.FirstOrDefault() ?? new SectionGroupGetDTO();
-                }
-                else
-                {
-                    ToastService.ShowError("Problem prilikom učitavanja grupe članova!");
-                }
+                _isLoading = true;
+                var result = await GroupService.GetGroupsAsync(null, "all", 0, 1);
+                _group = result.Items?.FirstOrDefault(g => g.ID.ToString() == GroupId) ?? new SectionGroupGetDTO();
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Greška: {ex.Message}");
+                ToastService.ShowError($"Greška prilikom učitavanja grupe: {ex.Message}");
             }
             finally
             {
-                _loading = false;
+                _isLoading = false;
             }
         }
 
@@ -186,62 +148,56 @@ namespace AutoDocFront.Components.Pages
         {
             try
             {
-                _loading = true;
-                var query = new List<string>
-                {
-                    $"groupId={GroupId}",
-                    "isLatestOnly=true"
-                };
+                _isLoading = true;
+                var result = await SectionsService.GetSectionsAsync(
+                    int.Parse(GroupId),
+                    _searchTerm,
+                    _statusFilter,
+                    (_currentPage - 1) * ItemsPerPage,
+                    ItemsPerPage);
 
-                if (!string.IsNullOrWhiteSpace(_searchTerm))
-                    query.Add($"name={Uri.EscapeDataString(_searchTerm)}");
-
-                if (_statusFilter == SectionStatusType.ACTIVE)
-                    query.Add("isActive=true");
-                else if (_statusFilter == SectionStatusType.DEACTIVATED)
-                    query.Add("isActive=false");
-
-                var url = "/api/contract-generation/sections";
-                if (query.Count > 0)
-                    url += "?" + string.Join("&", query);
-
-                var response = await _client.GetAsync(url);
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<PagedList<SectionsGetDTO>>();
-                    _sections = result?.Items?.ToList() ?? new List<SectionsGetDTO>();
-                }
-                else
-                {
-                    ToastService.ShowError("Problem prilikom učitavanja članova/sekcija");
-                }
+                _sections = result.Items ?? [];
+                _totalCount = result.TotalItems;
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Greška: {ex.Message}");
+                ToastService.ShowError($"Greška prilikom učitavanja sekcija: {ex.Message}");
+                _sections = [];
+                _totalCount = 0;
             }
             finally
             {
-                _loading = false;
+                _isLoading = false;
             }
         }
+
+        // --- PAGINATION & FILTERS ---
 
         /// <summary>
         /// Mijenja trenutnu stranicu u paginaciji.
         /// </summary>
         /// <param name="page">Broj stranice na koju se prelazi.</param>
-        private async Task ChangePage(int page)
+        private async Task ChangePageAsync(int page)
         {
             if (page < 1 || page > TotalPages || page == _currentPage) return;
             _currentPage = page;
-            await InvokeAsync(StateHasChanged);
+            await LoadSectionsAsync();
+        }
+
+        /// <summary>
+        /// Pokreće pretragu po nazivu sekcije.
+        /// </summary>
+        private async Task SearchSectionsAsync()
+        {
+            _currentPage = 1;
+            await LoadSectionsAsync();
         }
 
         /// <summary>
         /// Mijenja filter statusa i učitava sekcije.
         /// </summary>
         /// <param name="value">Nova vrijednost filtera.</param>
-        private async Task OnStatusFilterChanged(SectionStatusType? value)
+        private async Task OnStatusFilterChangedAsync(SectionStatusType? value)
         {
             _statusFilter = value;
             _currentPage = 1;
@@ -249,29 +205,25 @@ namespace AutoDocFront.Components.Pages
         }
 
         /// <summary>
-        /// Pokreće pretragu po nazivu sekcije.
-        /// </summary>
-        private async Task OnSearchClicked()
-        {
-            _currentPage = 1;
-            await LoadSectionsAsync();
-        }
-
-        /// <summary>
         /// Briše sve filtere i učitava sve sekcije.
         /// </summary>
-        private async Task OnClearFiltersClicked()
+        private async Task ClearSectionFiltersAsync()
         {
+            if (string.IsNullOrWhiteSpace(_searchTerm) && _statusFilter == null)
+                return;
+
             _searchTerm = string.Empty;
             _statusFilter = null;
             _currentPage = 1;
             await LoadSectionsAsync();
         }
 
+        // --- MODAL LOGIKA ---
+
         /// <summary>
         /// Otvara modal za unos nove sekcije.
         /// </summary>
-        private void ShowSectionModalForInsert()
+        private void OpenInsertSectionModal()
         {
             _selectedSection = null;
             _sectionModalMode = ModalMode.INSERT;
@@ -290,10 +242,10 @@ namespace AutoDocFront.Components.Pages
         }
 
         /// <summary>
-        /// Otvara modal za pregled historijskih podataka sekcije.
+        /// Otvara modal za pregled sekcije.
         /// </summary>
         /// <param name="section">Sekcija za pregled.</param>
-        private void OpenHistoricalSectionModal(SectionsGetDTO section)
+        private void OpenViewSectionModal(SectionsGetDTO section)
         {
             _selectedSection = section;
             _sectionModalMode = ModalMode.VIEW;
@@ -311,34 +263,32 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Handler koji se poziva nakon uspješnog snimanja sekcije u modalnom dijalogu.
         /// </summary>
-        private async Task OnSectionModalSave()
+        private async Task OnSectionModalSavedAsync()
         {
             _isSectionModalVisible = false;
             await LoadSectionsAsync();
         }
+
+        // --- STATUS TOGGLE ---
 
         /// <summary>
         /// Aktivira ili deaktivira sekciju.
         /// </summary>
         /// <param name="section">Sekcija kojoj se mijenja status.</param>
         /// <param name="isActive">Novi status (true=aktivna, false=neaktivna).</param>
-        private async Task ToggleSectionStatus(SectionsGetDTO section, bool isActive)
+        private async Task ToggleSectionStatusAsync(SectionsGetDTO section, bool isActive)
         {
             try
             {
-                _loading = true;
-                var statusUpdateDTO = new { IsActive = isActive };
-                var response = await _client.PatchAsJsonAsync(
-                    $"/api/contract-generation/sections/update-status?sectionId={section.IdSection}&isActiveStatus={isActive}",
-                    statusUpdateDTO);
-
-                if (!response.IsSuccessStatusCode)
+                _isLoading = true;
+                var success = await SectionsService.UpdateSectionStatusAsync(section.ID, section.IdSection, isActive);
+                if (!success)
                 {
-                    ToastService.ShowError(isActive ? "Problem prilikom aktivacije člana!" : "Problem prilikom deaktivacije člana!");
+                    ToastService.ShowError(isActive ? "Problem prilikom aktivacije sekcije!" : "Problem prilikom deaktivacije sekcije!");
                 }
                 else
                 {
-                    ToastService.ShowSuccess(isActive ? "Član je uspješno aktiviran!" : "Član je uspješno deaktiviran!");
+                    ToastService.ShowSuccess(isActive ? "Sekcija je uspješno aktivirana!" : "Sekcija je uspješno deaktivirana!");
                     await LoadSectionsAsync();
                 }
             }
@@ -348,7 +298,7 @@ namespace AutoDocFront.Components.Pages
             }
             finally
             {
-                _loading = false;
+                _isLoading = false;
             }
         }
     }

@@ -1,7 +1,5 @@
 ﻿@rendermode InteractiveServer
 @page "/groups"
-@using System.Globalization
-@using System.Net.Http.Json
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Components.Modals
 @using AutoDocFront.Models.Enumerations
@@ -22,7 +20,7 @@ else
                 <h1 class="h2 fw-bold text-dark">Grupe članova</h1>
                 <p class="text-secondary">Upravljanje grupama sekcija i članova dokumenta</p>
             </div>
-            <button class="btn corporate-button-primary" @onclick="OpenNewGroupModal">
+            <button class="btn corporate-button-primary" @onclick="OpenNewGroupModal" disabled="@_isLoading">
                 <i class="fa fa-plus" aria-hidden="true"></i>
                 Nova Grupa
             </button>
@@ -64,14 +62,14 @@ else
 
         @if (TotalPages > 1)
         {
-            <Pagination currentPage="@_currentPage"
+            <Pagination CurrentPage="@_currentPage"
                         TotalPages="@TotalPages"
                         OnPageChanged="ChangePageAsync" />
         }
 
         @if (!_groups.Any())
         {
-            <div class="text-center py-5">
+            <div class="text-center py-5" aria-live="polite">
                 <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">
                     <i class="fa fa-search position text-secondary" style="font-size: 2rem;"></i>
                 </div>
