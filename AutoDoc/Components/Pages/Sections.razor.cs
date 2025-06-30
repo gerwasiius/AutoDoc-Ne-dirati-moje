@@ -74,7 +74,7 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Filter za status sekcije (sve, aktivne, deaktivirane).
         /// </summary>
-        private string _statusFilter = "all";
+        private SectionStatusType? _statusFilter = null;
 
         /// <summary>
         /// Trenutna stranica u paginaciji.
@@ -107,6 +107,12 @@ namespace AutoDocFront.Components.Pages
         /// Odabrana sekcija za prikaz ili izmjenu.
         /// </summary>
         private SectionsGetDTO _selectedSection;
+
+        /// <summary>
+        /// Status values available in the filter bar dropdown.
+        /// </summary>
+        private static readonly IEnumerable<SectionStatusType> _statusValues =
+            Enum.GetValues(typeof(SectionStatusType)).Cast<SectionStatusType>();
 
         // --- PROPERTY-ji ZA UI ---
 
@@ -190,9 +196,9 @@ namespace AutoDocFront.Components.Pages
                 if (!string.IsNullOrWhiteSpace(_searchTerm))
                     query.Add($"name={Uri.EscapeDataString(_searchTerm)}");
 
-                if (_statusFilter == "ACTIVE")
+                if (_statusFilter == SectionStatusType.ACTIVE)
                     query.Add("isActive=true");
-                else if (_statusFilter == "DEACTIVATED")
+                else if (_statusFilter == SectionStatusType.DEACTIVATED)
                     query.Add("isActive=false");
 
                 var url = "/api/contract-generation/sections";
@@ -234,10 +240,10 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Mijenja filter statusa i učitava sekcije.
         /// </summary>
-        /// <param name="e">Argument promjene vrijednosti.</param>
-        private async Task OnStatusFilterChanged(ChangeEventArgs e)
+        /// <param name="value">Nova vrijednost filtera.</param>
+        private async Task OnStatusFilterChanged(SectionStatusType? value)
         {
-            _statusFilter = e.Value?.ToString() ?? "all";
+            _statusFilter = value;
             _currentPage = 1;
             await LoadSectionsAsync();
         }
@@ -257,7 +263,7 @@ namespace AutoDocFront.Components.Pages
         private async Task OnClearFiltersClicked()
         {
             _searchTerm = string.Empty;
-            _statusFilter = "all";
+            _statusFilter = null;
             _currentPage = 1;
             await LoadSectionsAsync();
         }

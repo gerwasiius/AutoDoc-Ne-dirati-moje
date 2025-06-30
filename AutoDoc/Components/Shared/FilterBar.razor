@@ -1,0 +1,23 @@
+﻿@using AutoDocFront.Utilities;
+
+@typeparam TStatusEnum
+
+@if (ShowStatus)
+{
+    <select class="form-select w-auto corporate-select" value="@SelectedStatusValue" @onchange="OnStatusChanged">
+        <option value="all">@AllLabel</option>
+        @foreach (var option in StatusValues)
+        {
+            <option value="@option.ToString()">@option.GetDescription()</option>
+        }
+    </select>
+}
+<div class="input-group mt-2 mb-2">
+    <input class="form-control" placeholder="@Placeholder" @bind="SearchTerm" @bind:event="oninput" />
+    <button class="btn corporate-button-secondary" type="button" @onclick="OnSearch">
+        <i class="fa fa-search"></i> Traži
+    </button>
+    <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClear" title="Očisti filtere">
+        <i class="fa fa-eraser" aria-hidden="true"></i>
+    </button>
+</div>

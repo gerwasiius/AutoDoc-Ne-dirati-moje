@@ -1,6 +1,7 @@
 ﻿@rendermode InteractiveServer
 @page "/group-selection"
 @using AutoDocFront.Components.Shared;
+@using AutoDocFront.Models.Enumerations
 
 @if (_loading)
 {
@@ -16,18 +17,15 @@ else
                     <p class="text-secondary mb-3">
                         Odaberite grupu za upravljanje sekcijama i članovima
                     </p>
-                    <div class="input-group mb-2">
-                        <input class="form-control border-start-0 ps-2 corporate-input"
-                               placeholder="Pretraga grupa..."
-                               @bind="searchTerm"
-                               @bind:event="oninput" />
-                        <button class="btn corporate-button-secondary" type="button" @onclick="OnSearchClicked" aria-label="Traži">
-                            <i class="fa fa-search"></i> Traži
-                        </button>
-                        <button class="btn corporate-button-secondary btn-sm ms-1" type="button" @onclick="OnClearFiltersClicked" title="Očisti filtere" aria-label="Očisti filtere">
-                            <i class="fa fa-eraser" aria-hidden="true"></i>
-                        </button>
-                    </div>
+                    <FilterBar TStatusEnum="GroupStatusType"
+                               SearchTerm="@searchTerm"
+                               SearchTermChanged="v => searchTerm = v"
+                               Placeholder="Pretraga grupa..."
+                               StatusFilter="null"
+                               StatusValues="Array.Empty<GroupStatusType>()"
+                               ShowStatus="false"
+                               OnSearch="OnSearchClicked"
+                               OnClear="OnClearFiltersClicked" />
                 </div>
                 <div class="col-md-4 d-flex align-items-start justify-content-md-end">
                     <div class="p-4 rounded bg-warning bg-opacity-25" style="max-width: 420px;">

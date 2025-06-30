@@ -38,7 +38,7 @@ namespace AutoDocFront.Components.Modals
 
         // --- INJECTION ---
 
-        [Inject] private Services.SectionGroupApiService GroupService { get; set; }
+        [Inject] private SectionGroupApiService GroupService { get; set; }
         [Inject] private IToastService ToastService { get; set; }
         [Inject] private IDialogService DialogService { get; set; }
 
