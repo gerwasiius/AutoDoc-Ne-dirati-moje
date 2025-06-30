@@ -1,9 +1,8 @@
-﻿using AutoDocFront.Components.Pages;
-using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.DocumentTemplate;
-using AutoDocFront.Models.DTO.DocumentTemplateDTO;
-using AutoDocFront.Models.DTO.Relations;
-using AutoDocFront.Models.DTO.Sections;
+﻿using AutoDoc.Shared.Model.DTO.Common;
+using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.SectionsDTO;
+using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
+using AutoDocFront.Components.Pages;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 using System.Net.Http;

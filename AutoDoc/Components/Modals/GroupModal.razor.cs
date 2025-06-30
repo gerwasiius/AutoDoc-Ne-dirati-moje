@@ -1,5 +1,5 @@
-﻿using AutoDocFront.Models.DTO.GroupSection;
-using AutoDocFront.Models.Enumerations;
+﻿using AutoDoc.Shared.Model.DTO.Enumerations;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -94,8 +94,21 @@ namespace AutoDocFront.Components.Modals
             {
                 _model.User = "zlatan.kahriman";
                 bool success = IsEditMode
-                    ? await GroupService.UpdateGroupAsync(_model)
-                    : await GroupService.CreateGroupAsync(_model);
+    ? await GroupService.UpdateGroupAsync(new SectionGroupUpdateDTO
+    {
+        ID = _model.ID ?? 0,
+        Name = _model.Name,
+        Description = _model.Description,
+        Status = _model.Status,
+        UserUpdated = _model.User
+    })
+    : await GroupService.CreateGroupAsync(new SectionGroupCreateDTO
+    {
+        Name = _model.Name,
+        Description = _model.Description,
+        Status = _model.Status ?? GroupStatusType.ACTIVE,
+        UserInserted = _model.User
+    });
 
                 if (success)
                 {
@@ -140,7 +153,7 @@ namespace AutoDocFront.Components.Modals
         /// <param name="newStatus">Novi status grupe</param>
         private async Task ChangeGroupStatusAsync(GroupStatusType newStatus)
         {
-            if (_loading) 
+            if (_loading)
                 return;
             try
             {

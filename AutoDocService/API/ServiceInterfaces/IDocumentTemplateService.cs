@@ -1,5 +1,5 @@
-﻿using AutoDocService.DL.DTO.DocumentTemplateDTO;
-using AutoDocService.DL.Enums;
+﻿using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.Enumerations;
 using AutoDocService.Helpers.Utils;
 
 namespace AutoDocService.API.ServiceInterfaces

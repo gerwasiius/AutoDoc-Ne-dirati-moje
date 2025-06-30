@@ -1,4 +1,5 @@
-﻿using AutoDocFront.Models.DTO.DocumentTemplateDTO;
+﻿using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.Enumerations;
 using AutoDocFront.Models.Enumerations;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
@@ -157,7 +158,7 @@ namespace AutoDocFront.Components.Modals
                     Status = DocumentTemplateStatusType.IN_PROGRESS,
                     ValidFrom = _model.ValidFrom,
                     ValidTo = _isUnlimitedValidTo ? null : _model.ValidTo,
-                    UserInsert = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
+                    UserInserted = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
                 };
 
                 var (isSuccess, _, errorMessage) = await TemplateService.CreateTemplateAsync(createDTO);
@@ -193,7 +194,7 @@ namespace AutoDocFront.Components.Modals
                     Status = _model.Status,
                     ValidFrom = _model.ValidFrom,
                     ValidTo = _isUnlimitedValidTo ? null : _model.ValidTo,
-                    UserUpdate = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
+                    UserUpdated = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
                 };
 
                 var (isSuccess, _, errorMessage) = await TemplateService.UpdateTemplateAsync(_model.Id, updateDTO);

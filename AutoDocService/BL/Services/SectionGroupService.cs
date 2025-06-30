@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.DL.DBContext;
-using AutoDocService.DL.DTO.SectionGroupDTO;
 using AutoDocService.DL.Entities;
-using AutoDocService.DL.Enums;
 using AutoDocService.Helpers.TrimHelper;
 using AutoDocService.Helpers.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
+using AutoDoc.Shared.Model.DTO.Enumerations;
 
 namespace AutoDocService.BL.Services
 {

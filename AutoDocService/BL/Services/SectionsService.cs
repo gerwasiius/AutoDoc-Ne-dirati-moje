@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.DL.DBContext;
-using AutoDocService.DL.DTO.SectionsDTO;
 using AutoDocService.DL.Entities;
 using AutoDocService.Helpers.TrimHelper;
 using AutoDocService.Helpers.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using static System.Collections.Specialized.BitVector32;
+using AutoDoc.Shared.Model.DTO.SectionsDTO;
 
 namespace AutoDocService.BL.Services
 {
@@ -193,7 +192,7 @@ namespace AutoDocService.BL.Services
 
                 _mapper.Map(section, sectionToUpdate);
 
-                sectionToUpdate.DateUpdate = DateTime.Now;
+                sectionToUpdate.DateUpdated = DateTime.Now;
 
                 await contractGenerationContext.SaveChangesAsync();
 
@@ -236,7 +235,7 @@ namespace AutoDocService.BL.Services
                     createSection.Description = section.Description;
                     createSection.Content = section.Content;
                     createSection.IsActive = section.IsActive;
-                    createSection.UserInsert = section.UserUpdate;
+                    createSection.UserInserted = section.UserUpdated;
                     await Post(createSection);
                 }
                 return true;
@@ -273,7 +272,7 @@ namespace AutoDocService.BL.Services
                         return false;
 
                     section.IsActive = isActiveStatus;
-                    section.DateUpdate = DateTime.Now;
+                    section.DateUpdated = DateTime.Now;
                 }
                 else if (sectionId.HasValue)
                 {
@@ -289,7 +288,7 @@ namespace AutoDocService.BL.Services
                     foreach (var section in sections)
                     {
                         section.IsActive = isActiveStatus;
-                        section.DateUpdate = DateTime.Now;
+                        section.DateUpdated = DateTime.Now;
                     }
                 }
 

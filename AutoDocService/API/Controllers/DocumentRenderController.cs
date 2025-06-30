@@ -1,5 +1,5 @@
-﻿using AutoDocService.API.ServiceInterfaces;
-using AutoDocService.DL.DTO.TemplateSectionsRelationDTO;
+﻿using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
+using AutoDocService.API.ServiceInterfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoDocService.API.Controllers

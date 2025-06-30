@@ -1,10 +1,5 @@
-﻿using AutoDocService.DL.DTO.SectionGroupDTO;
-using AutoDocService.DL.DTO.SectionsDTO;
-using AutoDocService.DL.Entities;
-using AutoDocService.DL.Enums;
+﻿using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using AutoDocService.Helpers.Utils;
-using Microsoft.AspNetCore.Mvc;
-using NodaTime;
 
 namespace AutoDocService.API.ServiceInterfaces
 {

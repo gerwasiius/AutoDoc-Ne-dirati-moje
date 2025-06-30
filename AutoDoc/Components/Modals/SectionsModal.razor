@@ -1,7 +1,6 @@
 ﻿@using AutoDocFront.Components.Shared.Inputs
 @using Microsoft.AspNetCore.Components.Forms
 @using AutoDocFront.Components.Shared
-@using AutoDocFront.Models.DTO.GroupSection
 @using AutoDocFront.Models.Enumerations
 @using Microsoft.FluentUI.AspNetCore.Components
 @rendermode InteractiveServer
@@ -154,14 +153,14 @@
                                         <div class="col-md-6">
                                             <div class="mb-2">
                                                 <ReadOnlyInputText Label="Datum posljednje izmjene"
-                                                                   Value="@((_model.DateUpdate ?? _model.DateInsert)?.ToString("dd.MM.yyyy HH:mm:ss"))"
+                                                                   Value="@((_model.DateUpdated ?? _model.DateInserted)?.ToString("dd.MM.yyyy HH:mm:ss"))"
                                                                    InputClass="form-control rounded shadow-sm"/>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-2">
                                                 <ReadOnlyInputText Label="Korisnik"
-                                                                   Value="@((_model.UserUpdate ?? _model.UserInsert))"
+                                                                   Value="@((_model.UserUpdated ?? _model.UserInserted))"
                                                                    InputClass="form-control rounded shadow-sm"/>
                                             </div>
                                         </div>

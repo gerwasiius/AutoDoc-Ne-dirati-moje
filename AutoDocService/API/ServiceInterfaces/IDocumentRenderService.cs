@@ -1,4 +1,4 @@
-﻿using AutoDocService.DL.DTO.TemplateSectionsRelationDTO;
+﻿using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
 
 namespace AutoDocService.API.ServiceInterfaces
 {

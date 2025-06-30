@@ -1,5 +1,5 @@
-﻿using AutoDocFront.Models.DTO.DocumentTemplate;
-using AutoDocFront.Models.DTO.DocumentTemplateDTO;
+﻿using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.Enumerations;
 using AutoDocFront.Models.Enumerations;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;

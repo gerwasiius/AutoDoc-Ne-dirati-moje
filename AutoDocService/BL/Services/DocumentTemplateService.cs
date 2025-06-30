@@ -1,16 +1,13 @@
 ﻿using AutoMapper;
 using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.DL.DBContext;
-using AutoDocService.DL.DTO.DocumentTemplateDTO;
 using AutoDocService.DL.Entities;
-using AutoDocService.DL.Enums;
 using AutoDocService.Helpers.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using static System.Collections.Specialized.BitVector32;
-using AutoDocService.DL.DTO.TemplateSectionsRelationDTO;
-using Polly;
-using AutoDocService.DL.DTO.SectionsDTO;
+using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
+using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.Enumerations;
 
 namespace AutoDocService.BL.Services
 {
@@ -310,10 +307,10 @@ namespace AutoDocService.BL.Services
                     Name = template.Name,
                     Description = template.Description,
                     Status = Enum.TryParse<DocumentTemplateStatusType>(template.Status, out var status) ? status : (DocumentTemplateStatusType?)null,
-                    UserInsert = template.UserInsert,
-                    DateInsert = template.DateInsert,
-                    UserUpdate = template.UserUpdate,
-                    DateUpdate = template.DateUpdate,
+                    UserInserted = template.UserInserted,
+                    DateInserted = template.DateInserted,
+                    UserUpdated = template.UserUpdated,
+                    DateUpdated = template.DateUpdated,
                     UserVerified = template.UserVerified,
                     ValidFrom = template.ValidFrom,
                     ValidTo = template.ValidTo,

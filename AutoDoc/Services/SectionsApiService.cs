@@ -1,5 +1,5 @@
-﻿using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.Sections;
+﻿using AutoDoc.Shared.Model.DTO.Common;
+using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using AutoDocFront.Models.Enumerations;
 using System.Net;
 

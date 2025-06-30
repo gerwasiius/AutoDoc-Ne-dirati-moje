@@ -1,6 +1,5 @@
-﻿using AutoDocService.DL.DTO.DocumentTemplateDTO;
-using AutoDocService.DL.DTO.TemplateSectionsRelationDTO;
-using AutoDocService.DL.Enums;
+﻿using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
 using AutoDocService.Helpers.Utils;
 
 namespace AutoDocService.API.ServiceInterfaces

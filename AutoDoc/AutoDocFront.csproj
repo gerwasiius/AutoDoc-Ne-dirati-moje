@@ -10,8 +10,6 @@
 
   <ItemGroup>
     <Compile Remove="Components\Pages\SectionPage.razor.cs" />
-    <Compile Remove="Models\DTO\GroupSection\SectionGroupCreateDTO.cs" />
-    <Compile Remove="Models\DTO\GroupSection\SectionGroupUpdateDTO.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,6 +30,10 @@
     <PackageReference Include="Serilog.Formatting.Elasticsearch" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Splunk" Version="5.0.1" />
     <PackageReference Include="Serilog.Sinks.Splunk.TCP" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AutoDoc.Shared\AutoDoc.Shared.csproj" />
   </ItemGroup>
 
 </Project>

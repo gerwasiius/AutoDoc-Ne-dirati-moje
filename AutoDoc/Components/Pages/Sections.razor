@@ -72,9 +72,9 @@ else
                             </div>
                             <div class="text-secondary small">
                                 Posljednje ažuriranje:
-                                @(sectionItem.DateUpdate != null
-                                    ? sectionItem.DateUpdate?.ToString("dd.MM.yyyy")
-                                    : sectionItem.DateInsert?.ToString("dd.MM.yyyy"))
+                                @(sectionItem.DateUpdated != null
+                                    ? sectionItem.DateUpdated?.ToString("dd.MM.yyyy")
+                                    : sectionItem.DateInserted?.ToString("dd.MM.yyyy"))
                             </div>
                             <div class="d-flex gap-2 mt-2">
                                 <button class="btn corporate-button-secondary btn-sm"

@@ -1,5 +1,5 @@
-﻿using AutoDocService.DL.DTO.SectionGroupDTO;
-using AutoDocService.DL.Enums;
+﻿using AutoDoc.Shared.Model.DTO.Enumerations;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using AutoDocService.Helpers.Utils;
 
 namespace AutoDocService.API.ServiceInterfaces

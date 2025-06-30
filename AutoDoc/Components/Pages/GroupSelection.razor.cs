@@ -1,5 +1,5 @@
-﻿using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.GroupSection;
+﻿using AutoDoc.Shared.Model.DTO.Enumerations;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;

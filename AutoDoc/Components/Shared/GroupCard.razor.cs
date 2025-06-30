@@ -1,4 +1,4 @@
-﻿using AutoDocFront.Models.DTO.GroupSection;
+﻿using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using Microsoft.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Shared

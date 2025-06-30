@@ -1,5 +1,5 @@
-﻿using AutoDocFront.Models.DTO.GroupSection;
-using AutoDocFront.Models.Enumerations;
+﻿using AutoDoc.Shared.Model.DTO.Enumerations;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -28,7 +28,7 @@ namespace AutoDocFront.Components.Pages
         private int _currentPage = 1;
         private int _totalGroupCount;
         private bool _isGroupModalVisible;
-        private SectionGroupUpsertDTO? _selectedGroup;
+        private SectionGroupUpsertDTO _selectedGroup;
         private bool _isLoading;
 
         /// <summary>

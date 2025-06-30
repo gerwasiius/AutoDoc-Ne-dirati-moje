@@ -1,4 +1,5 @@
 ﻿@using System
+@using AutoDoc.Shared.Model.DTO.Enumerations
 
 <div class="col-md-6 col-lg-4">
     <div class="corporate-card h-100 d-flex flex-column justify-content-between @(Mode == "select" ? "pointer" : "")" @onclick="HandleClick">
@@ -7,7 +8,7 @@
                 <h5 class="text-corporate-black mb-0">@Group.Name</h5>
                 @if (Mode == "admin")
                 {
-                    @if (Group.Status == Models.Enumerations.GroupStatusType.ACTIVE)
+                    @if (Group.Status == GroupStatusType.ACTIVE)
                     {
                         <span class="badge bg-green-100 text-green-800 border border-success d-flex align-items-center gap-1">
                             <i class="fa fa-eye"></i> Aktivna

@@ -1,5 +1,6 @@
 ﻿@rendermode InteractiveServer
 @page "/templates"
+@using AutoDoc.Shared.Model.DTO.Enumerations
 @using AutoDocFront.Components.Modals
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Models.Enumerations
@@ -76,7 +77,7 @@ else
                                 <span>
                                     <i class="fa fa-history"></i>
                                     <b>Poslednje ažuriranje:</b>
-                                    @(template.DateUpdate?.ToString("dd.MM.yyyy HH:mm") ?? template.DateInsert.ToString("dd.MM.yyyy HH:mm"))
+                                    @(template.DateUpdated?.ToString("dd.MM.yyyy HH:mm") ?? template.DateInserted?.ToString("dd.MM.yyyy HH:mm"))
                                 </span>
                             </div>
                         </div>

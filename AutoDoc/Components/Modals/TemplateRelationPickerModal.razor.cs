@@ -1,6 +1,6 @@
-﻿using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.GroupSection;
-using AutoDocFront.Models.DTO.Sections;
+﻿using AutoDoc.Shared.Model.DTO.Common;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
+using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http;

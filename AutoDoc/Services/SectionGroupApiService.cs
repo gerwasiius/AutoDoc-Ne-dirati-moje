@@ -1,6 +1,6 @@
-using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.GroupSection;
-using AutoDocFront.Models.DTO.Sections;
+using AutoDoc.Shared.Model.DTO.Common;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
+using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 
@@ -54,7 +54,7 @@ namespace AutoDocFront.Services
         /// <summary>
         /// Creates a new section group.
         /// </summary>
-        public async Task<bool> CreateGroupAsync(SectionGroupUpsertDTO dto)
+        public async Task<bool> CreateGroupAsync(SectionGroupCreateDTO dto)
         {
             var response = await _client.PostAsJsonAsync("/api/contract-generation/section-groups", dto);
             return response.IsSuccessStatusCode;
@@ -63,7 +63,7 @@ namespace AutoDocFront.Services
         /// <summary>
         /// Updates an existing section group.
         /// </summary>
-        public async Task<bool> UpdateGroupAsync(SectionGroupUpsertDTO dto)
+        public async Task<bool> UpdateGroupAsync(SectionGroupUpdateDTO dto)
         {
             var response = await _client.PutAsJsonAsync("/api/contract-generation/section-groups", dto);
             return response.IsSuccessStatusCode;

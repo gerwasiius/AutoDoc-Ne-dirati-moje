@@ -1,6 +1,6 @@
-﻿using AutoDocService.API.ServiceInterfaces;
-using AutoDocService.DL.DTO.DocumentTemplateDTO;
-using AutoDocService.DL.Enums;
+﻿using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.Enumerations;
+using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.Helpers.ErrorDTO;
 using AutoDocService.Helpers.Utils;
 using Microsoft.AspNetCore.Mvc;

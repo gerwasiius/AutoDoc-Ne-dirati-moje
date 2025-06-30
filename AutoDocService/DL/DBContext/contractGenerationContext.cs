@@ -59,15 +59,15 @@ namespace AutoDocService.DL.DBContext
                 entity.HasIndex(e => new { e.IdTemplate, e.Version }, "UC_DocumentTemplate").IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
-                entity.Property(e => e.DateInsert).HasDefaultValueSql("GETDATE()").HasColumnType("datetime");
-                entity.Property(e => e.DateUpdate).HasColumnType("datetime");
+                entity.Property(e => e.DateInserted).HasDefaultValueSql("GETDATE()").HasColumnType("datetime");
+                entity.Property(e => e.DateUpdated).HasColumnType("datetime");
                 entity.Property(e => e.DateVerified).HasColumnType("datetime");
                 entity.Property(e => e.Description).HasMaxLength(250).IsUnicode(false);
                 entity.Property(e => e.IdTemplate);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100).IsUnicode(false);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20).IsUnicode(false);
-                entity.Property(e => e.UserInsert).IsRequired().HasMaxLength(50).IsUnicode(false);
-                entity.Property(e => e.UserUpdate).HasMaxLength(50).IsUnicode(false);
+                entity.Property(e => e.UserInserted).IsRequired().HasMaxLength(50).IsUnicode(false);
+                entity.Property(e => e.UserUpdated).HasMaxLength(50).IsUnicode(false);
                 entity.Property(e => e.UserVerified).HasMaxLength(50).IsUnicode(false);
                 entity.Property(e => e.ValidFrom).HasColumnType("datetime");
                 entity.Property(e => e.ValidTo).HasColumnType("datetime");
@@ -84,15 +84,15 @@ namespace AutoDocService.DL.DBContext
 
                 entity.Property(e => e.Id).HasColumnName("ID");
                 entity.Property(e => e.Content);
-                entity.Property(e => e.DateInsert).HasDefaultValueSql("GETDATE()").HasColumnType("datetime");
-                entity.Property(e => e.DateUpdate).HasColumnType("datetime");
+                entity.Property(e => e.DateInserted).HasDefaultValueSql("GETDATE()").HasColumnType("datetime");
+                entity.Property(e => e.DateUpdated).HasColumnType("datetime");
                 entity.Property(e => e.Description).HasMaxLength(250).IsUnicode(false);
                 entity.Property(e => e.GroupId);
                 entity.Property(e => e.IdSection);
                 entity.Property(e => e.IsActive);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.UserInsert).IsRequired().HasMaxLength(50).IsUnicode(false);
-                entity.Property(e => e.UserUpdate).HasMaxLength(50).IsUnicode(false);
+                entity.Property(e => e.UserInserted).IsRequired().HasMaxLength(50).IsUnicode(false);
+                entity.Property(e => e.UserUpdated).HasMaxLength(50).IsUnicode(false);
                 entity.Property(e => e.Version);
             });
             #endregion

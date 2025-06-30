@@ -1,7 +1,6 @@
-﻿using AutoDocService.API.ServiceInterfaces;
+﻿using AutoDoc.Shared.Model.DTO.SectionsDTO;
+using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.BL.Services;
-using AutoDocService.DL.DTO.SectionsDTO;
-using AutoDocService.DL.Enums;
 using AutoDocService.DL.FolderParamZaObrisati;
 using AutoDocService.Helpers.ErrorDTO;
 using AutoDocService.Helpers.Utils;

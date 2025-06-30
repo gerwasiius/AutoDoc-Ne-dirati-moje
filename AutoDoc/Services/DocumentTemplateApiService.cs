@@ -1,10 +1,10 @@
-﻿using AutoDocFront.Models.DTO.DocumentTemplateDTO;
-using AutoDocFront.Models.DTO.Relations;
-using AutoDocFront.Models.Enumerations;
+﻿using AutoDocFront.Models.Enumerations;
 using System.Net.Http.Json;
 using System.Net;
-using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.DocumentTemplate;
+using AutoDoc.Shared.Model.DTO.Enumerations;
+using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.Common;
+using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
 
 namespace AutoDocFront.Services
 {

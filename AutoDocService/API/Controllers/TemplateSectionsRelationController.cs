@@ -1,9 +1,8 @@
-﻿using AutoDocService.API.ServiceInterfaces;
+﻿using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
+using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.BL.Services;
-using AutoDocService.DL.DTO.DocumentTemplateDTO;
-using AutoDocService.DL.DTO.TemplateSectionsRelationDTO;
 using AutoDocService.DL.Entities;
-using AutoDocService.DL.Enums;
 using AutoDocService.Helpers.ErrorDTO;
 using AutoDocService.Helpers.Utils;
 using Microsoft.AspNetCore.Mvc;

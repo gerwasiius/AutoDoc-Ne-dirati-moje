@@ -42,4 +42,8 @@
   <ItemGroup>
     <Folder Include="Models\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AutoDoc.Shared\AutoDoc.Shared.csproj" />
+  </ItemGroup>
 </Project>

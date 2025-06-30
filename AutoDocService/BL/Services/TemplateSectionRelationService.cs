@@ -2,13 +2,13 @@
 using AutoDocService.API.Controllers;
 using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.DL.DBContext;
-using AutoDocService.DL.DTO.DocumentTemplateDTO;
-using AutoDocService.DL.DTO.TemplateSectionsRelationDTO;
 using AutoDocService.DL.Entities;
-using AutoDocService.DL.Enums;
 using AutoDocService.Helpers.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
+using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
+using AutoDoc.Shared.Model.DTO.Enumerations;
 
 namespace AutoDocService.BL.Services
 {
@@ -230,10 +230,10 @@ namespace AutoDocService.BL.Services
                 Name = updated.Name,
                 Description = updated.Description,
                 Status = Enum.TryParse<DocumentTemplateStatusType>(updated.Status, out var status) ? status : (DocumentTemplateStatusType?)null,
-                UserInsert = updated.UserInsert,
-                DateInsert = updated.DateInsert,
-                UserUpdate = updated.UserUpdate,
-                DateUpdate = updated.DateUpdate,
+                UserInserted = updated.UserInserted,
+                DateInserted = updated.DateInserted,
+                UserUpdated = updated.UserUpdated,
+                DateUpdated = updated.DateUpdated,
                 UserVerified = updated.UserVerified,
                 ValidFrom = updated.ValidFrom,
                 ValidTo = updated.ValidTo,

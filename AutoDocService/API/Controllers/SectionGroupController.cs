@@ -1,6 +1,6 @@
-﻿using AutoDocService.API.ServiceInterfaces;
-using AutoDocService.DL.DTO.SectionGroupDTO;
-using AutoDocService.DL.Enums;
+﻿using AutoDoc.Shared.Model.DTO.Enumerations;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
+using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.Helpers.ErrorDTO;
 using AutoDocService.Helpers.Utils;
 using Microsoft.AspNetCore.Mvc;

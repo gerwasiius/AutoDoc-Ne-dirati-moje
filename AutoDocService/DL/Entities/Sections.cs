@@ -48,22 +48,22 @@
         /// <summary>
         /// Datum kada je sekcija unesena
         /// </summary>
-        public DateTime? DateInsert { get; set; }
+        public DateTime? DateInserted { get; set; }
 
         /// <summary>
         /// Korisnik koji je unio sekciju
         /// </summary>
-        public string UserInsert { get; set; }
+        public string UserInserted { get; set; }
 
         /// <summary>
         /// Datum kada je sekcija posljednji put ažurirana
         /// </summary>
-        public DateTime? DateUpdate { get; set; }
+        public DateTime? DateUpdated { get; set; }
 
         /// <summary>
         /// Korisnik koji je posljednji put ažurirao sekciju
         /// </summary>
-        public string UserUpdate { get; set; }
+        public string UserUpdated { get; set; }
         /// <summary>
         /// Lista TemplateSection relacija
         /// </summary>

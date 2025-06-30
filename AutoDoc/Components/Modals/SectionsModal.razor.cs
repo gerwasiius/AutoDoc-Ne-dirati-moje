@@ -1,7 +1,6 @@
-﻿using AutoDocFront.Components.Shared;
-using AutoDocFront.Models.DTO;
-using AutoDocFront.Models.DTO.GroupSection;
-using AutoDocFront.Models.DTO.Sections;
+﻿using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
+using AutoDoc.Shared.Model.DTO.SectionsDTO;
+using AutoDocFront.Components.Shared;
 using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -89,7 +88,7 @@ namespace AutoDocFront.Components.Modals
             switch (ModalMode)
             {
                 case ModalMode.INSERT:
-                    _model.UserInsert = "zlatan.kahriman"; // TODO: Zamijeniti sa stvarnim korisnikom
+                    _model.UserInserted = "zlatan.kahriman"; // TODO: Zamijeniti sa stvarnim korisnikom
                     _model.IsActive = true;
                     break;
                 case ModalMode.EDIT:
@@ -166,7 +165,7 @@ namespace AutoDocFront.Components.Modals
                     Description = _model.Description,
                     Content = _model.Content,
                     IsActive = _model.IsActive,
-                    UserInsert = _model.UserInsert
+                    UserInserted = _model.UserInserted
                 };
 
                 var result = await SectionsService.InsertSectionAsync(createDTO);
@@ -211,7 +210,7 @@ namespace AutoDocFront.Components.Modals
                     Description = _model.Description,
                     Content = _model.Content,
                     IsActive = _model.IsActive,
-                    UserUpdate = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
+                    UserUpdated = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
                 };
 
                 var result = await SectionsService.UpdateSectionAsync(_model.ID, updateDTO);

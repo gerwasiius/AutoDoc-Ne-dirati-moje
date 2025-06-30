@@ -48,22 +48,22 @@
         /// <summary>
         /// Datum kada je predložak unesen
         /// </summary>
-        public DateTime DateInsert { get; set; }
+        public DateTime DateInserted { get; set; }
 
         /// <summary>
         /// Korisnik koji je unio predložak
         /// </summary>
-        public string UserInsert { get; set; }
+        public string UserInserted { get; set; }
 
         /// <summary>
         /// Datum kada je predložak posljednji put ažuriran
         /// </summary>
-        public DateTime? DateUpdate { get; set; }
+        public DateTime? DateUpdated { get; set; }
 
         /// <summary>
         /// Korisnik koji je posljednji put ažurirao predložak
         /// </summary>
-        public string UserUpdate { get; set; }
+        public string UserUpdated { get; set; }
 
         /// <summary>
         /// Datum kada je predložak verificiran
