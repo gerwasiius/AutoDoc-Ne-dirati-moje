@@ -11,10 +11,8 @@ using System.Runtime.CompilerServices;
 
 namespace AutoDocFront.Components.Modals
 {
-    public partial class TemplateRelationsModal
+    public partial class TemplateRelationsModal : ModalBase
     {
-        [Parameter] public bool IsOpen { get; set; }
-        [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
         [Parameter] public DocumentTemplateAndRelatedItemsDTO FormData { get; set; } = new();
         [Parameter] public DocumentTemplateGetDTO Template { get; set; }
         [Parameter] public EventCallback OnSubmit { get; set; }
@@ -164,7 +162,7 @@ namespace AutoDocFront.Components.Modals
                 {
                     ToastService.ShowSuccess("Template sekcije su uspješno sačuvane!");
                     await OnSubmit.InvokeAsync();
-                    await IsOpenChanged.InvokeAsync(false);
+                    await CloseAsync();
                 }
                 else
                 {
@@ -182,7 +180,7 @@ namespace AutoDocFront.Components.Modals
             }
         }
 
-        private async Task Close() => await IsOpenChanged.InvokeAsync(false);
+        private async Task Close() => await CloseAsync();
 
         protected override async Task OnParametersSetAsync()
         {

@@ -12,19 +12,11 @@ namespace AutoDocFront.Components.Modals
     /// <summary>
     /// Komponenta za prikaz i upravljanje modalom za unos ili izmjenu grupe sekcija.
     /// </summary>
-    public partial class GroupModal
+    public partial class GroupModal : ModalBase
     {
         // --- PARAMETRI ---
 
-        /// <summary>
-        /// Označava da li je modal otvoren.
-        /// </summary>
-        [Parameter] public bool IsOpen { get; set; }
 
-        /// <summary>
-        /// Event za promjenu stanja otvaranja modala.
-        /// </summary>
-        [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
         /// <summary>
         /// DTO objekat grupe za izmjenu (null za unos nove grupe).
@@ -81,11 +73,7 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Zatvara modal i emituje promjenu stanja.
         /// </summary>
-        private async Task CloseModalAsync()
-        {
-            IsOpen = false;
-            await IsOpenChanged.InvokeAsync(false);
-        }
+        // Zatvaranje modala se obavlja kroz baznu klasu.
 
         /// <summary>
         /// Validira i šalje podatke za unos ili izmjenu grupe.
@@ -119,7 +107,7 @@ namespace AutoDocFront.Components.Modals
                 if (success)
                 {
                     ToastService.ShowSuccess(IsEditMode ? "Grupa je uspješno izmijenjena!" : "Grupa je uspješno kreirana!");
-                    await CloseModalAsync();
+                    await CloseAsync();
                     await OnSave.InvokeAsync();
                 }
                 else

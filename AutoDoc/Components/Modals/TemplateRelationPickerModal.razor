@@ -190,7 +190,7 @@
         <div class="modal-footer">
             @if (_step == PickerStepEnum.GROUPS)
             {
-                <button class="btn btn-secondary" @onclick="async () => await CloseAsync()">Otkaži</button>
+                <button class="btn btn-secondary" @onclick="async () => await ClosePickerAsync()">Otkaži</button>
             }
             else
             {

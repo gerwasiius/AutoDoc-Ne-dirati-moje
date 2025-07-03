@@ -14,7 +14,7 @@ namespace AutoDocFront.Components.Modals
     /// Modal komponenta za unos, izmjenu i pregled sekcija (članova) unutar grupe.
     /// Omogućava validaciju, prikaz svih verzija i promjenu statusa sekcije.
     /// </summary>
-    public partial class SectionsModal
+    public partial class SectionsModal : ModalBase
     {
         // --- PARAMETRI ---
 
@@ -125,14 +125,7 @@ namespace AutoDocFront.Components.Modals
 
         // --- METODE ---
 
-        /// <summary>
-        /// Zatvara modal i emituje promjenu stanja.
-        /// </summary>
-        private async Task CloseModalAsync()
-        {
-            IsOpen = false;
-            await IsOpenChanged.InvokeAsync(false);
-        }
+        // Zatvaranje modala implementirano u baznoj klasi.
 
         /// <summary>
         /// Validira formu i izvršava submit (insert ili update sekcije).
@@ -179,7 +172,7 @@ namespace AutoDocFront.Components.Modals
                 else
                 {
                     ToastService.ShowSuccess("Sekcija je uspješno spašena!");
-                    await CloseModalAsync();
+                    await CloseAsync();
                     await OnSave.InvokeAsync();
                 }
             }
@@ -210,7 +203,7 @@ namespace AutoDocFront.Components.Modals
                 else
                 {
                     ToastService.ShowSuccess("Sekcija je uspješno ažurirana!");
-                    await CloseModalAsync();
+                    await CloseAsync();
                     await OnSave.InvokeAsync();
                 }
             }
@@ -271,7 +264,7 @@ namespace AutoDocFront.Components.Modals
                 else
                 {
                     ToastService.ShowSuccess(isActive ? "Sekcija je uspješno aktivirana!" : "Sekcija je uspješno deaktivirana!");
-                    await CloseModalAsync();
+                    await CloseAsync();
                     await OnSave.InvokeAsync();
                 }
             }
