@@ -78,28 +78,28 @@
     </FooterContent>
 </BaseModalLayout>
 
-@if (isSectionPickerOpen)
+@if (_isSectionPickerOpen)
 {
-    <TemplateRelationPickerModal IsOpen="isSectionPickerOpen"
-                                 IsOpenChanged="@(v => isSectionPickerOpen = v)"
+    <TemplateRelationPickerModal IsOpen="_isSectionPickerOpen"
+                                 IsOpenChanged="@(v => _isSectionPickerOpen = v)"
                                  OnSectionsPicked="OnSectionsPicked" />
 }
 
-@if (isPreviewModalOpen)
+@if (_isPreviewModalOpen)
 {
-    <TemplatePreviewModal IsOpen="isPreviewModalOpen"
-                          IsOpenChanged="@(v => isPreviewModalOpen = v)"
-                          TemplateName="@previewTemplateName"
-                          HtmlContent="@previewHtmlContent"
-                          IsLoading="@previewLoading"
-                          ErrorMessage="@previewError" />
+    <TemplatePreviewModal IsOpen="_isPreviewModalOpen"
+                          IsOpenChanged="@(v => _isPreviewModalOpen = v)"
+                          TemplateName="@_previewTemplateName"
+                          HtmlContent="@_previewHtmlContent"
+                          IsLoading="@_previewLoading"
+                          ErrorMessage="@_previewError" />
 }
 
 
-@if (isConditionModalOpen && editingRelationIdx.HasValue)
+@if (_isConditionModalOpen && _editingRelationIdx.HasValue)
 {
-    <TemplateRelationConditionModal IsOpen="isConditionModalOpen"
-                                    IsOpenChanged="@(v => isConditionModalOpen = v)"
-                                    Relation="FormData.Relations[editingRelationIdx.Value]"
+    <TemplateRelationConditionModal IsOpen="_isConditionModalOpen"
+                                    IsOpenChanged="@(v => _isConditionModalOpen = v)"
+                                    Relation="FormData.Relations[_editingRelationIdx.Value]"
                                     OnSaved="CloseConditionModal" />
 }

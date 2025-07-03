@@ -13,7 +13,6 @@ namespace AutoDocFront.Components.Pages
     /// </summary>
     public partial class GroupSelection
     {
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
         [Inject] private NavigationManager Navigation { get; set; }
         [Inject] private IToastService ToastService { get; set; }
         [Inject] private Services.SectionGroupApiService GroupService { get; set; } = default!;

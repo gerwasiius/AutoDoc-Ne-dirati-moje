@@ -2,8 +2,8 @@
 using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using AutoDocFront.Models.Enumerations;
+using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
-using System.Net.Http;
 
 namespace AutoDocFront.Components.Modals
 {
@@ -31,7 +31,8 @@ namespace AutoDocFront.Components.Modals
 
         // --- INJECTION ---
 
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+        [Inject] private SectionGroupApiService GroupService { get; set; } = default!;
+        [Inject] private SectionsApiService SectionsService { get; set; } = default!;
 
         // --- STATE ---
 
@@ -40,7 +41,6 @@ namespace AutoDocFront.Components.Modals
         private List<SectionsGetDTO> _availableSections = new();
         private HashSet<int> _selectedSectionIds = new();
 
-        private HttpClient _httpClient;
         private string _groupSearchTerm = string.Empty;
         private int _currentGroupPage = 1;
         private const int GroupsPerPage = 5;
@@ -74,7 +74,6 @@ namespace AutoDocFront.Components.Modals
         protected override async Task OnInitializedAsync()
         {
             _step = PickerStepEnum.GROUPS;
-            _httpClient = HttpClientFactory.CreateClient("AutoDocService");
             await LoadGroupsAsync();
         }
 
@@ -97,20 +96,9 @@ namespace AutoDocFront.Components.Modals
                 if (!string.IsNullOrWhiteSpace(_groupSearchTerm))
                     query.Add($"name={Uri.EscapeDataString(_groupSearchTerm)}");
 
-                var apiUrl = "/api/contract-generation/section-groups?" + string.Join("&", query);
-                var response = await _httpClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>() ?? new();
-                    _availableGroups = result.Items ?? [];
-                    _totalGroupCount = result.TotalItems;
-                }
-                else
-                {
-                    _availableGroups = [];
-                    _totalGroupCount = 0;
-                }
+                var response = await GroupService.GetGroupsAsync(_groupSearchTerm, "ACTIVE", offset, GroupsPerPage);
+                _availableGroups = response.Items ?? [];
+                _totalGroupCount = response.TotalItems;
             }
             finally
             {
@@ -158,32 +146,9 @@ namespace AutoDocFront.Components.Modals
             {
                 _isLoadingSections = true;
                 int offset = (_currentSectionPage - 1) * SectionsPerPage;
-
-                var query = new List<string>
-                {
-                    $"groupId={groupId}",
-                    $"offset={offset}",
-                    $"pageSize={SectionsPerPage}",
-                    $"isActive=true"
-                };
-
-                if (!string.IsNullOrWhiteSpace(_sectionSearchTerm))
-                    query.Add($"name={Uri.EscapeDataString(_sectionSearchTerm)}");
-
-                var apiUrl = "/api/contract-generation/sections?" + string.Join("&", query);
-                var response = await _httpClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<PagedList<SectionsGetDTO>>() ?? new();
-                    _availableSections = result.Items ?? [];
-                    _totalSectionCount = result.TotalItems;
-                }
-                else
-                {
-                    _availableSections = [];
-                    _totalSectionCount = 0;
-                }
+                var result = await SectionsService.GetSectionsAsync(groupId, _sectionSearchTerm, SectionStatusType.ACTIVE, offset, SectionsPerPage);
+                _availableSections = result.Items ?? [];
+                _totalSectionCount = result.TotalItems;
             }
             finally
             {
