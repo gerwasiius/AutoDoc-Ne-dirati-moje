@@ -158,9 +158,9 @@ namespace AutoDocFront.Components.Modals
             try
             {
                 _isLoading = true;
-                var (success, _, error) = await TemplateService.SaveTemplateSectionsAsync(FormData);
+                var (isSuccess, _, error) = await TemplateService.SaveTemplateSectionsAsync(FormData);
 
-                if (success)
+                if (isSuccess)
                 {
                     ToastService.ShowSuccess("Template sekcije su uspješno sačuvane!");
                     await OnSubmit.InvokeAsync();
@@ -168,7 +168,7 @@ namespace AutoDocFront.Components.Modals
                 }
                 else
                 {
-                    ToastService.ShowError($"Greška prilikom čuvanja: {error}");
+                    ToastService.ShowError(error ?? "Greška prilikom čuvanja");
                 }
             }
             catch (Exception ex)
@@ -189,9 +189,11 @@ namespace AutoDocFront.Components.Modals
             _isLoading = true;
             try
             {
-                var data = await TemplateService.GetTemplateWithSectionsAsync(Template.Id);
-                if (data != null)
-                    FormData = data;
+                var result = await TemplateService.GetTemplateWithSectionsAsync(Template.Id);
+                if (result != null)
+                {
+                    FormData = result;
+                }
             }
             finally
             {

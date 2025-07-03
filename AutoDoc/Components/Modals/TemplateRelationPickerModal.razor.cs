@@ -2,8 +2,9 @@
 using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using AutoDocFront.Models.Enumerations;
-using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
+using AutoDocFront.Services;
+using AutoDocFront.Utilities;
 
 namespace AutoDocFront.Components.Modals
 {
@@ -58,13 +59,13 @@ namespace AutoDocFront.Components.Modals
 
         // --- PAGINATION PROPERTIES ---
 
-        private int TotalGroupPages => (int)Math.Ceiling((double)_totalGroupCount / GroupsPerPage);
-        private int GroupStartIndex => _totalGroupCount == 0 ? 0 : (_currentGroupPage - 1) * GroupsPerPage;
-        private int GroupEndIndex => Math.Min(GroupStartIndex + _availableGroups.Count, _totalGroupCount);
+        private int TotalGroupPages => PaginationHelper.CalculateTotalPages(_totalGroupCount, GroupsPerPage);
+        private int GroupStartIndex => PaginationHelper.CalculateStartIndex(_currentGroupPage, GroupsPerPage, _totalGroupCount);
+        private int GroupEndIndex => PaginationHelper.CalculateEndIndex(GroupStartIndex, _availableGroups.Count, _totalGroupCount);
 
-        private int TotalSectionPages => (int)Math.Ceiling((double)_totalSectionCount / SectionsPerPage);
-        private int SectionStartIndex => _totalSectionCount == 0 ? 0 : (_currentSectionPage - 1) * SectionsPerPage;
-        private int SectionEndIndex => Math.Min(SectionStartIndex + _availableSections.Count, _totalSectionCount);
+        private int TotalSectionPages => PaginationHelper.CalculateTotalPages(_totalSectionCount, SectionsPerPage);
+        private int SectionStartIndex => PaginationHelper.CalculateStartIndex(_currentSectionPage, SectionsPerPage, _totalSectionCount);
+        private int SectionEndIndex => PaginationHelper.CalculateEndIndex(SectionStartIndex, _availableSections.Count, _totalSectionCount);
 
         // --- LIFECYCLE ---
 
@@ -86,19 +87,10 @@ namespace AutoDocFront.Components.Modals
                 _isLoadingGroups = true;
                 int offset = (_currentGroupPage - 1) * GroupsPerPage;
 
-                var query = new List<string>
-                {
-                    $"offset={offset}",
-                    $"pageSize={GroupsPerPage}",
-                    $"status=ACTIVE"
-                };
-
-                if (!string.IsNullOrWhiteSpace(_groupSearchTerm))
-                    query.Add($"name={Uri.EscapeDataString(_groupSearchTerm)}");
-
-                var response = await GroupService.GetGroupsAsync(_groupSearchTerm, "ACTIVE", offset, GroupsPerPage);
-                _availableGroups = response.Items ?? [];
-                _totalGroupCount = response.TotalItems;
+                var status = "ACTIVE";
+                var result = await GroupService.GetGroupsAsync(_groupSearchTerm, status, offset, GroupsPerPage);
+                _availableGroups = result.Items ?? [];
+                _totalGroupCount = result.TotalItems;
             }
             finally
             {
@@ -146,7 +138,14 @@ namespace AutoDocFront.Components.Modals
             {
                 _isLoadingSections = true;
                 int offset = (_currentSectionPage - 1) * SectionsPerPage;
-                var result = await SectionsService.GetSectionsAsync(groupId, _sectionSearchTerm, SectionStatusType.ACTIVE, offset, SectionsPerPage);
+
+                var result = await SectionsService.GetSectionsAsync(
+                    groupId,
+                    _sectionSearchTerm,
+                    SectionStatusType.ACTIVE,
+                    offset,
+                    SectionsPerPage);
+
                 _availableSections = result.Items ?? [];
                 _totalSectionCount = result.TotalItems;
             }
