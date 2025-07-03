@@ -3,32 +3,3 @@
 
 <textarea id="@Id" class="cursor-pointer" hidden="hidden"></textarea>
 
-@code {
-    [Parameter] public string Id { get; set; } = $"tinymce-{Guid.NewGuid()}";
-    [Parameter] public string Value { get; set; }
-    [Parameter] public EventCallback<string> ValueChanged { get; set; }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JSRuntime.InvokeVoidAsync("initializeTinyMCE", $"#{Id}", Value);
-        }
-    }
-
-    public async Task UpdateContentFromEditor()
-    {
-        Value = await JSRuntime.InvokeAsync<string>("getEditorContent", Id);
-        await ValueChanged.InvokeAsync(Value);
-    }
-
-    public async Task DestroyEditor()
-    {
-        await JSRuntime.InvokeVoidAsync("destroyTinyMCE", Id);
-    }
-
-    public void Dispose()
-    {
-        _ = DestroyEditor();
-    }
-}

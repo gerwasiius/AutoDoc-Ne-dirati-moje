@@ -19,22 +19,22 @@ namespace AutoDocFront.Components.Modals
         [Parameter] public EventCallback OnSubmit { get; set; }
         [Parameter] public EventCallback OnClose { get; set; }
 
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
-        [Inject] private IToastService ToastService { get; set; }
+        [Inject] private DocumentTemplateApiService TemplateService { get; set; } = default!;
+        [Inject] private IToastService ToastService { get; set; } = default!;
         //[Inject] private IDialogService DialogService { get; set; }
 
         private DocumentTemplateAndRelatedItemsDTO templateWithSections;
         private bool _isLoading = false;
-        private bool isSectionPickerOpen = false;
+        private bool _isSectionPickerOpen = false;
 
 
-        private bool isPreviewModalOpen = false;
-        private string previewHtmlContent;
-        private bool previewLoading = false;
-        private string previewError;
-        private string previewTemplateName;
-        private bool isConditionModalOpen = false;
-        private int? editingRelationIdx = null;
+        private bool _isPreviewModalOpen = false;
+        private string _previewHtmlContent = string.Empty;
+        private bool _previewLoading = false;
+        private string _previewError = string.Empty;
+        private string _previewTemplateName = string.Empty;
+        private bool _isConditionModalOpen = false;
+        private int? _editingRelationIdx = null;
 
         
 
@@ -47,7 +47,7 @@ namespace AutoDocFront.Components.Modals
         {
             // Implementacija otvaranja pickera sekcija
             // npr. prikazivanje internog dijaloga ili logike
-            isSectionPickerOpen = true;
+            _isSectionPickerOpen = true;
         }
 
         private async Task OnSectionsPicked(List<SectionsGetDTO> pickedSections)
@@ -78,13 +78,13 @@ namespace AutoDocFront.Components.Modals
                     });
                 }
             }
-            isSectionPickerOpen = false;
+            _isSectionPickerOpen = false;
             StateHasChanged();
         }
 
         private void CloseSectionPicker()
         {
-            isSectionPickerOpen = false;
+            _isSectionPickerOpen = false;
         }
 
         private async Task MoveSection(int idx, int direction)
@@ -122,39 +122,32 @@ namespace AutoDocFront.Components.Modals
                 return;
 
             var section = FormData.Relations[idx];
-            previewTemplateName = section.SectionName;
-            previewLoading = true;
-            previewError = null;
-            previewHtmlContent = null;
-            isPreviewModalOpen = true;
+            _previewTemplateName = section.SectionName;
+            _previewLoading = true;
+            _previewError = null;
+            _previewHtmlContent = null;
+            _isPreviewModalOpen = true;
 
             try
             {
-                var client = HttpClientFactory.CreateClient("AutoDocService");
-                // Pripremi payload kao lista sa jednom sekcijom
                 var singleSectionList = new List<TemplateSectionRelationWithSectionDTO> { section };
-                var response = await client.PostAsJsonAsync(
-                    "/api/document-render/preview",
-                    singleSectionList
-                );
-
-                if (response.IsSuccessStatusCode)
+                var html = await TemplateService.GetSectionsPreviewAsync(singleSectionList);
+                if (html != null)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<PreviewResponse>();
-                    previewHtmlContent = result?.htmlContent;
+                    _previewHtmlContent = html;
                 }
                 else
                 {
-                    previewError = "Greška prilikom dohvata pregleda sekcije.";
+                    _previewError = "Greška prilikom dohvata pregleda sekcije.";
                 }
             }
             catch (Exception ex)
             {
-                previewError = $"Greška: {ex.Message}";
+                _previewError = $"Greška: {ex.Message}";
             }
             finally
             {
-                previewLoading = false;
+                _previewLoading = false;
                 StateHasChanged();
             }
         }
@@ -164,21 +157,17 @@ namespace AutoDocFront.Components.Modals
             try
             {
                 _isLoading = true;
-                var client = HttpClientFactory.CreateClient("AutoDocService");
-                var response = await client.PostAsJsonAsync(
-                    "/api/contract-generation/template-sections-relations/manage-relations",
-                    FormData);
+                var (success, _, error) = await TemplateService.SaveTemplateSectionsAsync(FormData);
 
-                if (response.IsSuccessStatusCode)
+                if (success)
                 {
                     ToastService.ShowSuccess("Template sekcije su uspješno sačuvane!");
                     await OnSubmit.InvokeAsync();
-                    await IsOpenChanged.InvokeAsync(false); // zatvori modal
+                    await IsOpenChanged.InvokeAsync(false);
                 }
                 else
                 {
-                    var errorMsg = await response.Content.ReadAsStringAsync();
-                    ToastService.ShowError($"Greška prilikom čuvanja: {errorMsg}");
+                    ToastService.ShowError($"Greška prilikom čuvanja: {error}");
                 }
             }
             catch (Exception ex)
@@ -199,13 +188,9 @@ namespace AutoDocFront.Components.Modals
             _isLoading = true;
             try
             {
-                var client = HttpClientFactory.CreateClient("AutoDocService");
-                var response = await client.GetAsync($"/api/contract-generation/document-templates/template-items?id={Template.Id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var paged = await response.Content.ReadFromJsonAsync<PagedList<DocumentTemplateAndRelatedItemsDTO>>();
-                    FormData = paged?.Items?.FirstOrDefault();
-                }
+                var data = await TemplateService.GetTemplateWithSectionsAsync(Template.Id);
+                if (data != null)
+                    FormData = data;
             }
             finally
             {
@@ -216,51 +201,45 @@ namespace AutoDocFront.Components.Modals
 
         private async Task ShowPreview()
         {
-            previewTemplateName = FormData.Name;
-            previewLoading = true;
-            previewError = null;
-            previewHtmlContent = null;
-            isPreviewModalOpen = true;
+            _previewTemplateName = FormData.Name;
+            _previewLoading = true;
+            _previewError = null;
+            _previewHtmlContent = null;
+            _isPreviewModalOpen = true;
 
             try
             {
-                var client = HttpClientFactory.CreateClient("AutoDocService");
-                var response = await client.PostAsJsonAsync(
-                    "/api/document-render/preview",
-                    FormData.Relations // List<TemplateSectionRelationWithSectionDTO>
-                );
-
-                if (response.IsSuccessStatusCode)
+                var html = await TemplateService.GetSectionsPreviewAsync(FormData.Relations);
+                if (html != null)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<PreviewResponse>();
-                    previewHtmlContent = result?.htmlContent;
+                    _previewHtmlContent = html;
                 }
                 else
                 {
-                    previewError = "Greška prilikom dohvata pregleda.";
+                    _previewError = "Greška prilikom dohvata pregleda.";
                 }
             }
             catch (Exception ex)
             {
-                previewError = $"Greška: {ex.Message}";
+                _previewError = $"Greška: {ex.Message}";
             }
             finally
             {
-                previewLoading = false;
+                _previewLoading = false;
                 StateHasChanged();
             }
         }
 
         private void OpenConditionModal(int idx)
         {
-            editingRelationIdx = idx;
-            isConditionModalOpen = true;
+            _editingRelationIdx = idx;
+            _isConditionModalOpen = true;
         }
 
         private void CloseConditionModal()
         {
-            isConditionModalOpen = false;
-            editingRelationIdx = null;
+            _isConditionModalOpen = false;
+            _editingRelationIdx = null;
         }
 
         private class PreviewResponse

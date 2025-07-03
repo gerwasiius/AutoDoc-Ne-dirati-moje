@@ -52,6 +52,20 @@ namespace AutoDocFront.Services
         }
 
         /// <summary>
+        /// Dohvata jednu grupu po ID-u.
+        /// </summary>
+        public async Task<SectionGroupGetDTO?> GetGroupByIdAsync(int id)
+        {
+            var url = $"/api/contract-generation/section-groups?id={id}&status=ACTIVE";
+            var response = await _client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var paged = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>();
+            return paged?.Items?.FirstOrDefault();
+        }
+
+        /// <summary>
         /// Creates a new section group.
         /// </summary>
         public async Task<bool> CreateGroupAsync(SectionGroupCreateDTO dto)

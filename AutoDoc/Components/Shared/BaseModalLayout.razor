@@ -23,18 +23,3 @@
     </div>
 }
 
-@code {
-    [Parameter] public bool IsOpen { get; set; }
-    [Parameter] public string Title { get; set; } = "";
-    [Parameter] public string ModalSize { get; set; } = "modal-lg";
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
-
-    [Parameter] public RenderFragment? BodyContent { get; set; }
-    [Parameter] public RenderFragment? FooterContent { get; set; }
-
-    private async Task CloseModal()
-    {
-        // IsOpen = false;
-        await IsOpenChanged.InvokeAsync(false);
-    }
-}

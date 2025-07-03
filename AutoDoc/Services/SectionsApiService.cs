@@ -85,3 +85,27 @@ public class SectionsApiService
         return await response.Content.ReadFromJsonAsync<PagedList<SectionsGetDTO>>() ?? new PagedList<SectionsGetDTO>();
     }
 }
+
+    /// <summary>
+    /// Dohvata sve posljednje verzije sekcija za datu grupu i opcione statuse.
+    /// </summary>
+    public async Task<List<SectionsGetDTO>> GetAllLatestSectionsAsync(int groupId, HashSet<SectionStatusType> statuses, int pageSize = 50)
+    {
+        var result = new List<SectionsGetDTO>();
+        int offset = 0;
+        PagedList<SectionsGetDTO>? paged;
+        do
+        {
+            SectionStatusType? status = null;
+            if (statuses != null && statuses.Count == 1)
+                status = statuses.First();
+
+            var page = await GetSectionsAsync(groupId, null, status, offset, pageSize);
+            if (page.Items != null)
+                result.AddRange(page.Items);
+            offset = page.NextPageOffset ?? 0;
+            paged = page;
+        } while (paged?.NextPageOffset != null);
+
+        return result;
+    }
