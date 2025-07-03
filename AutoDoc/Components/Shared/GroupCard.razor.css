@@ -7,3 +7,13 @@
 .corporate-card.pointer:hover .group-select-arrow {
     color: #212529 !important; /* Bootstrap's text-dark */
 }
+
+.description-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    min-height: 2.8em; /* prilagodite po potrebi */
+}

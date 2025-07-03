@@ -31,7 +31,7 @@ namespace AutoDoc.Shared.Model.DTO.DocumentTemplateDTO
         /// <summary>
         /// Opis predloška.
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Status predloška.
@@ -57,7 +57,7 @@ namespace AutoDoc.Shared.Model.DTO.DocumentTemplateDTO
         /// <summary>
         /// Korisnik koji je unio predložak.
         /// </summary>
-        public string UserInserted { get; set; }
+        public string? UserInserted { get; set; }
 
         /// <summary>
         /// Datum posljednje izmjene predloška.
@@ -67,7 +67,7 @@ namespace AutoDoc.Shared.Model.DTO.DocumentTemplateDTO
         /// <summary>
         /// Korisnik koji je posljednji put ažurirao predložak.
         /// </summary>
-        public string UserUpdated { get; set; }
+        public string? UserUpdated { get; set; }
 
         /// <summary>
         /// Datum verifikacije predloška.
@@ -77,6 +77,6 @@ namespace AutoDoc.Shared.Model.DTO.DocumentTemplateDTO
         /// <summary>
         /// Korisnik koji je verifikovao predložak.
         /// </summary>
-        public string UserVerified { get; set; }
+        public string? UserVerified { get; set; }
     }
 }

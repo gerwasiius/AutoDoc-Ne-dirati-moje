@@ -21,7 +21,7 @@ else
                 <h1 class="h2 fw-bold text-dark">Grupe članova</h1>
                 <p class="text-secondary">Upravljanje grupama sekcija i članova dokumenta</p>
             </div>
-            <button class="btn corporate-button-primary" @onclick="OpenNewGroupModal" disabled="@_isLoading">
+            <button class="btn corporate-button-primary" @onclick="@(g => OpenGroupModal(ModalMode.INSERT))" disabled="@_isLoading">
                 <i class="fa fa-plus" aria-hidden="true"></i>
                 Nova Grupa
             </button>
@@ -29,10 +29,10 @@ else
 
         <div class="d-flex align-items-center gap-3 mb-3">
             <FilterBar TStatusEnum="GroupStatusType"
-                       SearchTerm="@_groupSearchTerm"
-                       SearchTermChanged="v => _groupSearchTerm = v"
+                       SearchTerm="@_searchTerm"
+                       SearchTermChanged="v => _searchTerm = v"
                        Placeholder="Pretraga po nazivu grupe"
-                       StatusFilter="@_groupStatusFilter"
+                       StatusFilter="@_statusFilter"
                        StatusValues="_statusValues"
                        AllLabel="Sve grupe"
                        ShowStatus="true"
@@ -43,7 +43,7 @@ else
 
         <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
             <span>
-                Prikazano @(StartIndex + 1)-@EndIndex od @_totalGroupCount grupa
+                Prikazano @(StartIndex + 1)-@EndIndex od @_totalCount grupa
             </span>
             @if (TotalPages > 1)
             {
@@ -56,7 +56,8 @@ else
             {
                 <GroupCard Group="group"
                            Mode="admin"
-                           OnEdit="OpenEditGroupModal"
+                           OnView="@(g => OpenGroupModal(ModalMode.VIEW, g))"
+                           OnEdit="@(g => OpenGroupModal(ModalMode.EDIT, g))"
                            OnViewMembers="NavigateToGroupSections" />
             }
         </div>
@@ -85,5 +86,6 @@ else
     <GroupModal IsOpen="_isGroupModalVisible"
                 IsOpenChanged="@(v => _isGroupModalVisible = v)"
                 Group="_selectedGroup"
+                Mode="_groupModalMode"
                 OnSave="OnGroupModalSavedAsync" />
 }

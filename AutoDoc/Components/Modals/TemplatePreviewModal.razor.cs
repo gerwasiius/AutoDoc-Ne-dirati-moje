@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using AutoDocFront.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.JSInterop;
 
 namespace AutoDocFront.Components.Modals
 {

@@ -27,62 +27,35 @@ namespace AutoDocFront.Components.Pages
 
         // --- POLJA ---
 
-        /// <summary>
-        /// DTO objekat grupe sekcija.
-        /// </summary>
         private SectionGroupGetDTO _group;
-
-        /// <summary>
-        /// Lista sekcija u grupi.
-        /// </summary>
         private List<SectionsGetDTO> _sections = new();
+        private SectionsGetDTO _selectedSection;
 
-        /// <summary>
-        /// Tekući termin za pretragu po nazivu sekcije.
-        /// </summary>
-        private string _searchTerm = string.Empty;
-
-        /// <summary>
-        /// Filter za status sekcije (sve, aktivne, deaktivirane).
-        /// </summary>
-        private SectionStatusType? _statusFilter;
-
-        /// <summary>
-        /// Trenutna stranica u paginaciji.
-        /// </summary>
-        private int _currentPage = 1;
-
-        /// <summary>
-        /// Broj sekcija po stranici.
-        /// </summary>
         private const int ItemsPerPage = 20;
-
-        /// <summary>
-        /// Ukupan broj sekcija (za paginaciju).
-        /// </summary>
+        
+        private string _searchTerm = string.Empty;
+        private SectionStatusType? _statusFilter;
+        private int _currentPage = 1;
         private int _totalCount = 0;
 
-        /// <summary>
-        /// Da li je trenutno učitavanje u toku.
-        /// </summary>
         private bool _isLoading = false;
 
-        // --- MODAL STANJE ---
-
-        /// <summary>
-        /// Da li je modal za unos/izmjenu sekcije otvoren.
-        /// </summary>
+        // --- MODAL STATE ---
         private bool _isSectionModalVisible = false;
-
-        /// <summary>
-        /// Trenutni režim modala (pregled, izmjena, unos).
-        /// </summary>
         private ModalMode _sectionModalMode = ModalMode.VIEW;
 
+        // -------------------
+
         /// <summary>
-        /// Odabrana sekcija za prikaz ili izmjenu.
+        /// Inicijalizuje komponentu, učitava podatke o grupi i sekcijama.
         /// </summary>
-        private SectionsGetDTO _selectedSection;
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadGroupAsync();
+            await LoadSectionsAsync();
+        }
+
+        // --- PAGINATION PROPERTIES ---
 
         /// <summary>
         /// Status vrijednosti dostupne u filter dropdown-u.
@@ -90,7 +63,6 @@ namespace AutoDocFront.Components.Pages
         private static readonly IEnumerable<SectionStatusType> _statusValues =
             Enum.GetValues(typeof(SectionStatusType)).Cast<SectionStatusType>();
 
-        // --- PAGINATION PROPERTIES ---
 
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
@@ -106,18 +78,7 @@ namespace AutoDocFront.Components.Pages
         /// Krajnji indeks prikazanih sekcija na trenutnoj stranici.
         /// </summary>
         private int EndIndex => Math.Min(StartIndex + _sections.Count, _totalCount);
-
-        // --- LIFECYCLE ---
-
-        /// <summary>
-        /// Inicijalizuje komponentu, učitava podatke o grupi i sekcijama.
-        /// </summary>
-        protected override async Task OnInitializedAsync()
-        {
-            await LoadGroupAsync();
-            await LoadSectionsAsync();
-        }
-
+        
         // --- API POZIVI ---
 
         /// <summary>
@@ -250,14 +211,6 @@ namespace AutoDocFront.Components.Pages
             _selectedSection = section;
             _sectionModalMode = ModalMode.VIEW;
             _isSectionModalVisible = true;
-        }
-
-        /// <summary>
-        /// Zatvara modal za sekciju.
-        /// </summary>
-        private void CloseSectionModal()
-        {
-            _isSectionModalVisible = false;
         }
 
         /// <summary>

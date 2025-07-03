@@ -1,40 +1,38 @@
 ﻿@* TemplatePreviewModal.razor *@
-@if (IsOpen)
-{
-    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Pregled dokumenta: @TemplateName</h5>
-                    <button type="button" class="btn-close" @onclick="Close"></button>
-                </div>
-                <div class="modal-body" style="min-height:400px;">
-                    @if (IsLoading)
+@using AutoDocFront.Components.Shared
+
+<BaseModalLayout IsOpen="@IsOpen"
+                 IsOpenChanged="@IsOpenChanged"
+                 Title="@($"Pregled: {TemplateName}")"
+                 ModalSize="modal-xl">
+    <BodyContent>
+        <div style="min-height:400px;">
+            @if (IsLoading)
+            {
+                <div class="spinner"></div>
+            }
+            else if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger">@ErrorMessage</div>
+            }
+            else
+            {
+                <div class="border rounded p-3" style="background:#fff; min-height:300px; max-height:70vh; overflow:auto;">
+                    @if (!string.IsNullOrEmpty(HtmlContent))
                     {
-                        <div class="spinner"></div>
-                    }
-                    else if (!string.IsNullOrEmpty(ErrorMessage))
-                    {
-                        <div class="alert alert-danger">@ErrorMessage</div>
+                        @((MarkupString)HtmlContent)
                     }
                     else
                     {
-                        <div class="border rounded p-3" style="background:#fff; min-height:300px; max-height:70vh; overflow:auto;">
-                            @if (!string.IsNullOrEmpty(HtmlContent))
-                            {
-                                @((MarkupString)HtmlContent)
-                            }
-                            else
-                            {
-                                <span class="text-secondary">Nema sadržaja za prikaz.</span>
-                            }
-                        </div>
+                        <span class="text-secondary">Nema sadržaja za prikaz.</span>
                     }
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="Close">Zatvori</button>
-                </div>
-            </div>
+            }
         </div>
-    </div>
-}
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" @onclick="Close">Zatvori</button>
+        </div>
+    </FooterContent>
+</BaseModalLayout>

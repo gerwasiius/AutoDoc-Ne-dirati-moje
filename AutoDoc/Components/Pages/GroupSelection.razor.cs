@@ -18,16 +18,25 @@ namespace AutoDocFront.Components.Pages
         [Inject] private IToastService ToastService { get; set; }
         [Inject] private Services.SectionGroupApiService GroupService { get; set; } = default!;
 
+        private const int ItemsPerPage = 30;
+
         private List<SectionGroupGetDTO> _groups = new();
         private string _searchTerm = string.Empty;
         private int _currentPage = 1;
-        private const int ItemsPerPage = 30;
         private int _totalCount = 0;
         private bool _isLoading = false;
 
         /// <summary>
-          /// Ukupan broj stranica za paginaciju.
-          /// </summary>
+        /// Inicijalizuje komponentu i učitava aktivne grupe sa servera.
+        /// </summary>
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadGroupsAsync();
+        }
+
+        /// <summary>
+        /// Ukupan broj stranica za paginaciju.
+        /// </summary>
         private int TotalPages => (int)Math.Ceiling((double)_totalCount / ItemsPerPage);
 
         /// <summary>
@@ -39,14 +48,6 @@ namespace AutoDocFront.Components.Pages
         /// Krajnji indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
         private int EndIndex => Math.Min(StartIndex + _groups.Count, _totalCount);
-
-        /// <summary>
-        /// Inicijalizuje komponentu i učitava aktivne grupe sa servera.
-        /// </summary>
-        protected override async Task OnInitializedAsync()
-        {
-            await LoadGroupsAsync();
-        }
 
         /// <summary>
         /// Učitava aktivne grupe sa API-ja uz pretragu i paginaciju.

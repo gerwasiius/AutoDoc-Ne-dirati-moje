@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.FluentUI.AspNetCore.Components;
 using System.Net;
 using System.Net.Http.Json;
-using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons;
 
 namespace AutoDocFront.Components.Modals
 {
@@ -64,17 +63,20 @@ namespace AutoDocFront.Components.Modals
         /// <summary>
         /// Servis za prikaz dijaloga.
         /// </summary>
-        [Inject] private IDialogService DialogService { get; set; }
+        //[Inject] private IDialogService DialogService { get; set; }
 
         // --- PRIVATNA POLJA ---
 
-        private HttpClient _client;
+        private SectionsCreateDTO _createModel;
+        private SectionsUpdateDTO _updateModel;
+        private SectionsGetDTO _viewModel;
         private EditContext _editContext;
         private ValidationMessageStore _validationMessageStore;
-        private SectionsGetDTO _model;
+
         private List<SectionsGetDTO> _listSections;
-        private bool _loading = false;
         private TinyMCE _tinyMceEditor;
+
+        private bool _isLoading;
         private string _modalStyle => IsOpen ? "display: block;" : "display: none;";
 
         // --- LIFECYCLE ---
@@ -83,22 +85,37 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         protected override async Task OnParametersSetAsync()
         {
-            _model = new SectionsGetDTO();
-
             switch (ModalMode)
             {
                 case ModalMode.INSERT:
-                    _model.UserInserted = "zlatan.kahriman"; // TODO: Zamijeniti sa stvarnim korisnikom
-                    _model.IsActive = true;
+                    _createModel = new SectionsCreateDTO
+                    {
+                        UserInserted = "zlatan.kahriman",
+                        IsActive = true,
+                        GroupId = Group.ID
+                    };
+                    _editContext = new EditContext(_createModel);
                     break;
                 case ModalMode.EDIT:
+                    _updateModel = new SectionsUpdateDTO
+                    {
+                        // Mapiraj podatke iz Section u _updateModel
+                        GroupId = Section.GroupId,
+                        Name = Section.Name,
+                        Description = Section.Description,
+                        Content = Section.Content,
+                        IsActive = Section.IsActive,
+                        UserUpdated = "zlatan.kahriman"
+                    };
+                    _editContext = new EditContext(_updateModel);
+                    break;
                 case ModalMode.VIEW:
-                    _model = Section;
+                    _viewModel = Section;
+                    // VIEW mod ne treba EditContext za validaciju
                     break;
             }
-
-            _editContext = new EditContext(_model);
-            _validationMessageStore = new ValidationMessageStore(_editContext);
+            if (ModalMode != ModalMode.VIEW)
+                _validationMessageStore = new ValidationMessageStore(_editContext);
 
             if (ModalMode == ModalMode.VIEW)
             {
@@ -122,25 +139,18 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         private async Task HandleValidSubmitAsync()
         {
-            _validationMessageStore.Clear();
+            _validationMessageStore?.Clear();
 
             // Ažuriraj sadržaj iz TinyMCE editora
             if (_tinyMceEditor != null)
-            {
                 await _tinyMceEditor.UpdateContentFromEditor();
-            }
 
             if (_editContext.Validate())
             {
                 if (ModalMode == ModalMode.EDIT)
-                {
                     await UpdateSectionAsync();
-                }
                 else if (ModalMode == ModalMode.INSERT)
-                {
-                    _model.GroupId = Group.ID;
                     await InsertNewSectionAsync();
-                }
             }
             else
             {
@@ -156,19 +166,8 @@ namespace AutoDocFront.Components.Modals
         {
             try
             {
-                _loading = true;
-
-                var createDTO = new SectionsCreateDTO
-                {
-                    GroupId = _model.GroupId,
-                    Name = _model.Name,
-                    Description = _model.Description,
-                    Content = _model.Content,
-                    IsActive = _model.IsActive,
-                    UserInserted = _model.UserInserted
-                };
-
-                var result = await SectionsService.InsertSectionAsync(createDTO);
+                _isLoading = true;
+                var result = await SectionsService.InsertSectionAsync(_createModel);
 
                 if (!result.IsSuccess)
                 {
@@ -190,7 +189,7 @@ namespace AutoDocFront.Components.Modals
             }
             finally
             {
-                _loading = false;
+                _isLoading = false;
             }
         }
 
@@ -201,19 +200,8 @@ namespace AutoDocFront.Components.Modals
         {
             try
             {
-                _loading = true;
-
-                var updateDTO = new SectionsUpdateDTO
-                {
-                    GroupId = _model.GroupId,
-                    Name = _model.Name,
-                    Description = _model.Description,
-                    Content = _model.Content,
-                    IsActive = _model.IsActive,
-                    UserUpdated = "zlatan.kahriman" // TODO: Zamijeniti sa stvarnim korisnikom
-                };
-
-                var result = await SectionsService.UpdateSectionAsync(_model.ID, updateDTO);
+                _isLoading = true;
+                var result = await SectionsService.UpdateSectionAsync(Section.ID, _updateModel);
 
                 if (!result.IsSuccess)
                 {
@@ -232,7 +220,7 @@ namespace AutoDocFront.Components.Modals
             }
             finally
             {
-                _loading = false;
+                _isLoading = false;
             }
         }
 
@@ -262,8 +250,7 @@ namespace AutoDocFront.Components.Modals
         /// <param name="section">Odabrana verzija sekcije.</param>
         private void SelectVersion(SectionsGetDTO section)
         {
-            _model = section;
-            _editContext = new EditContext(_model);
+            _viewModel = section;
             StateHasChanged();
         }
 
@@ -275,8 +262,8 @@ namespace AutoDocFront.Components.Modals
         {
             try
             {
-                _loading = true;
-                var success = await SectionsService.UpdateSectionStatusAsync(_model.ID, _model.IdSection, isActive);
+                _isLoading = true;
+                var success = await SectionsService.UpdateSectionStatusAsync(Section.ID, Section.IdSection, isActive);
                 if (!success)
                 {
                     ToastService.ShowError(isActive ? "Problem prilikom aktivacije sekcije!" : "Problem prilikom deaktivacije sekcije!");
@@ -294,7 +281,7 @@ namespace AutoDocFront.Components.Modals
             }
             finally
             {
-                _loading = false;
+                _isLoading = false;
             }
         }
 
@@ -304,30 +291,7 @@ namespace AutoDocFront.Components.Modals
         /// <param name="isActive">True za aktivaciju, False za deaktivaciju.</param>
         private async Task ShowConfirmationDialogAsync(bool isActive)
         {
-            var action = isActive ? "aktivirati" : "deaktivirati";
-
-            var dialog = await DialogService.ShowMessageBoxAsync(new DialogParameters<MessageBoxContent>
-            {
-                Content = new()
-                {
-                    Title = "Da li ste sigurni?",
-                    MarkupMessage = new MarkupString($"Da li ste sigurni da želite <b>{action}</b> sekciju?"),
-                    Icon = new Icons.Regular.Size24.QuestionCircle(),
-                    IconColor = isActive ? Color.Success : Color.Error,
-                },
-                Modal = true,
-                TrapFocus = true,
-                PrimaryAction = "DA",
-                SecondaryAction = "NE",
-                Width = "400px",
-            });
-
-            var result = await dialog.Result;
-
-            if (!result.Cancelled)
-            {
                 await ToggleSectionStatusAsync(isActive);
-            }
         }
     }
 }

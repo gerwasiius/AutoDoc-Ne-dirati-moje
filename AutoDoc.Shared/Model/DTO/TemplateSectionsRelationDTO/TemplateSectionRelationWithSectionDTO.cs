@@ -30,12 +30,12 @@ namespace AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO
         /// <summary>
         /// Logički izraz za prikaz sekcije (opciono).
         /// </summary>
-        public string ConditionExpression { get; set; }
+        public string? ConditionExpression { get; set; }
 
         /// <summary>
         /// Tip akcije za sekciju (npr. INCLUDE, EXCLUDE).
         /// </summary>
-        public string ActionType { get; set; }
+        public string? ActionType { get; set; }
 
         /// <summary>
         /// Označava da li se nakon ove sekcije ubacuje page break.
@@ -60,6 +60,6 @@ namespace AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO
         /// <summary>
         /// Opis sekcije.
         /// </summary>
-        public string SectionDescription { get; set; }
+        public string? SectionDescription { get; set; }
     }
 }

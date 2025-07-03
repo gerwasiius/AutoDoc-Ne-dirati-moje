@@ -1,104 +1,88 @@
-﻿@using AutoDocFront.Components.Shared.Inputs
-@if (IsOpen)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.2)">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    @* <h5 class="modal-title">@((EditingTemplate != null) ? "Izmena Template-a" : "Novi Template")</h5> *@
-                    <h5 class="modal-title">Pregled template-a</h5>
-                    <button type="button" class="btn-close" @onclick="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <ReadOnlyInputText Label="Naziv"
-                                           Value="@FormData.Name" />
+﻿@using AutoDocFront.Components.Shared
+@using AutoDocFront.Components.Shared.Inputs
+
+<BaseModalLayout IsOpen="@IsOpen" Title="Pregled template-a" IsOpenChanged="@IsOpenChanged" ModalSize="modal-xl">
+    <BodyContent>
+        <div class="mb-3">
+            <ReadOnlyInputText Label="Naziv"
+                               Value="@FormData.Name" />
+        </div>
+        <div class="mb-3">
+            <ReadOnlyInputText Label="Opis"
+                               Value="@FormData.Description"
+                               IsTextArea="true"
+                               Rows="3" />
+        </div>
+        <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">Sekcije/članovi dokumenta</label>
+                <button class="btn corporate-button-secondary btn-sm" @onclick="OpenSectionPicker">
+                    <i class="fa fa-plus"></i> Dodaj sekcije
+                </button>
+            </div>
+            <div class="bg-light border rounded p-2"
+                 style="min-height:200px; max-height:350px; overflow-y:auto;">
+                @if (FormData?.Relations == null || !FormData.Relations.Any())
+                {
+                    <div class="text-center text-secondary py-3">
+                        Nema dodatih sekcija
                     </div>
-                    <div class="mb-3">
-                        <ReadOnlyInputText Label="Opis"
-                                           Value="@FormData.Description"
-                                           IsTextArea="true"
-                                           Rows="3" />
-                    </div>
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label mb-0">Sekcije dokumenta</label>
-                            <button class="btn corporate-button-secondary btn-sm" @onclick="OpenSectionPicker">
-                                <i class="fa fa-plus"></i> Dodaj sekcije
-                            </button>
-                        </div>
-                        <div class="bg-light border rounded p-2"
-                             style="min-height:200px; max-height:350px; overflow-y:auto;">
-                            @if (FormData?.Relations == null || !FormData.Relations.Any())
-                            {
-                                <div class="text-center text-secondary py-3">
-                                    Nema dodatih sekcija
+                }
+                else
+                {
+                    @foreach (var (sectionItem, idx) in FormData.Relations.Select((s, i) => (s, i)))
+                    {
+                        <div class="d-flex align-items-center justify-content-between bg-white border rounded mb-2 px-3 py-2">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <span class="badge bg-warning text-dark me-2">@(@idx + 1)</span>
+                                <div>
+                                    <span class="fw-medium">@sectionItem.SectionName</span>
                                 </div>
-                            }
-                            else
-                            {
-                                @foreach (var (sectionItem, idx) in FormData.Relations.Select((s, i) => (s, i)))
-                                {
-                                    <div class="d-flex align-items-center justify-content-between bg-white border rounded mb-2 px-3 py-2">
-                                        <div class="d-flex align-items-center flex-grow-1">
-                                            <span class="badge bg-warning text-dark me-2">@(@idx + 1)</span>
-                                            <div>
-                                                <span class="fw-medium">@sectionItem.SectionName</span>
-                                                @* @if (sectionItem.Conditions?.Count > 0)
-                                                {
-                                                    <div class="text-secondary small" title="@string.Join(", ", sectionItem.Conditions.Select(c => c.Description))">
-                                                        @sectionItem.Conditions.Count uslov(a) definisan(o)
-                                                    </div>
-                                                } *@
-                                            </div>
-                                        </div>
-                                        <div class="d-flex gap-1">
-                                            <button class="btn corporate-button-secondary btn-sm" @onclick="() => MoveSection(idx, -1)" disabled="@(idx == 0)">
-                                                <i class="fa fa-arrow-up"></i>
-                                            </button>
-                                            <button class="btn corporate-button-secondary btn-sm" @onclick="() => MoveSection(idx, 1)" disabled="@(idx == FormData.Relations.Count - 1)">
-                                                <i class="fa fa-arrow-down"></i>
-                                            </button>
-                                            <button class="btn corporate-button-secondary btn-sm" title="Podesi uslove" @onclick="() => OpenSectionConditions(idx)">
-                                                <i class="fa fa-gear"></i>
-                                            </button>
-                                            <button class="btn corporate-button-secondary btn-sm" title="Pregled sekcije" @onclick="() => PreviewSection(idx)">
-                                                <i class="fa fa-desktop"></i>
-                                            </button>
-                                            <button class="btn btn-danger btn-sm" @onclick="() => RemoveSection(idx)">
-                                                <i class="fa fa-x"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                }
-                            }
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button class="btn corporate-button-secondary btn-sm" @onclick="() => MoveSection(idx, -1)" disabled="@(idx == 0)">
+                                    <i class="fa fa-arrow-up"></i>
+                                </button>
+                                <button class="btn corporate-button-secondary btn-sm" @onclick="() => MoveSection(idx, 1)" disabled="@(idx == FormData.Relations.Count - 1)">
+                                    <i class="fa fa-arrow-down"></i>
+                                </button>
+                                <button class="btn corporate-button-secondary btn-sm" title="Podesi uslove" @onclick="() => OpenConditionModal(idx)">
+                                    <i class="fa fa-gear"></i>
+                                </button>
+                                <button class="btn corporate-button-secondary btn-sm" title="Pregled sekcije" @onclick="() => PreviewSection(idx)">
+                                    <i class="fa fa-desktop"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" @onclick="() => RemoveSection(idx)">
+                                    <i class="fa fa-x"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="modal-footer d-flex justify-content-between w-100">
-                    <div>
-                        <button class="btn corporate-button-secondary btn-sm" @onclick="ShowPreview" type="button">
-                            <i class="fa fa-eye me-1"></i> Privremeni pregled
-                        </button>
-                    </div>
-                    <div>
-                        <button class="btn modal-corporate-button-primary" @onclick="Submit">
-                            Sačuvaj izmjene
-                        </button>
-                    </div>
-                </div>
+                    }
+                }
             </div>
         </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-}
-
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer d-flex justify-content-between w-100">
+            <div>
+                <button class="btn corporate-button-secondary btn-sm" @onclick="ShowPreview" type="button">
+                    <i class="fa fa-eye me-1"></i> Privremeni pregled
+                </button>
+            </div>
+            <div>
+                <button class="btn modal-corporate-button-primary" @onclick="Submit" disabled="@_isLoading">
+                    Sačuvaj izmjene
+                </button>
+            </div>
+        </div>
+    </FooterContent>
+</BaseModalLayout>
 
 @if (isSectionPickerOpen)
 {
     <TemplateRelationPickerModal IsOpen="isSectionPickerOpen"
-                         IsOpenChanged="@(v => isSectionPickerOpen = v)"
-                         OnSectionsPicked="OnSectionsPicked" />
+                                 IsOpenChanged="@(v => isSectionPickerOpen = v)"
+                                 OnSectionsPicked="OnSectionsPicked" />
 }
 
 @if (isPreviewModalOpen)
@@ -109,5 +93,13 @@
                           HtmlContent="@previewHtmlContent"
                           IsLoading="@previewLoading"
                           ErrorMessage="@previewError" />
+}
 
+
+@if (isConditionModalOpen && editingRelationIdx.HasValue)
+{
+    <TemplateRelationConditionModal IsOpen="isConditionModalOpen"
+                                    IsOpenChanged="@(v => isConditionModalOpen = v)"
+                                    Relation="FormData.Relations[editingRelationIdx.Value]"
+                                    OnSaved="CloseConditionModal" />
 }

@@ -26,7 +26,7 @@ namespace AutoDoc.Shared.Model.DTO.SectionGroupDTO
         /// Opis grupe sekcija.
         /// </summary>
         [StringLength(250, ErrorMessage = "Opis može imati najviše 250 karaktera.")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Status of section's group

@@ -28,9 +28,8 @@ namespace AutoDoc.Shared.Model.DTO.SectionsDTO
         /// <summary>
         /// Opis sekcije.
         /// </summary>
-        [Required(ErrorMessage = "Opis sekcije je obavezan.")]
         [StringLength(250, ErrorMessage = "Opis može imati najviše 250 karaktera.")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Sadržaj sekcije.

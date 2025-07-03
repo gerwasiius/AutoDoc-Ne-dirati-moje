@@ -30,7 +30,7 @@
                     </div>
                 }
             </div>
-            <div class="text-corporate-gray-medium mb-3">@Group.Description</div>
+            <div class="text-corporate-gray-medium mb-3 description-clamp-2">@Group.Description</div>
         </div>
         <div>
             <div class="text-sm text-corporate-gray-medium mb-3">
@@ -43,6 +43,10 @@
                     <button class="btn corporate-button-secondary flex-fill btn-sm" @onclick="() => OnEdit.InvokeAsync(Group)">
                         <i class="fa fa-edit me-1"></i> Izmjena
                     </button>
+                    <button class="btn corporate-button-secondary flex-fill btn-sm" @onclick="OnViewClicked">
+                        <i class="fa fa-eye me-1"></i> Pregled
+                    </button>
+
                     <button class="btn corporate-button-secondary d-flex align-items-center gap-1 btn-sm" @onclick="() => OnViewMembers.InvokeAsync(Group)">
                         <i class="fa fa-puzzle-piece"></i> Članovi
                     </button>

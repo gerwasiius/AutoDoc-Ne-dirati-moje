@@ -326,6 +326,7 @@ namespace AutoDocService.BL.Services
             ConditionExpression = rel.ConditionExpression,
             ActionType = rel.ActionType,
             IsPageBreak = rel.IsPageBreak,
+            IsArticle = rel.IsArticle,
             SectionUniqueId = rel.Section != null ? rel.Section.Id : 0,
             SectionName = rel.Section != null ? rel.Section.Name : null,
             SectionDescription = rel.Section != null ? rel.Section.Description : null

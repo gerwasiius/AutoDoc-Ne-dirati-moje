@@ -22,6 +22,7 @@ namespace AutoDocFront.IoC
             services.AddScoped<SectionGroupApiService>();
             services.AddScoped<DocumentTemplateApiService>();
             services.AddScoped<SectionsApiService>();
+            services.AddScoped<DocumentRenderApiService>();
         }
 
         /// <summary>
@@ -40,6 +41,12 @@ namespace AutoDocFront.IoC
             services.AddHttpClient("AutoDocService", c =>
             {
                 c.BaseAddress = new Uri(Configuration["AutoDocServiceUri"]?.ToString() ?? string.Empty);
+                c.DefaultRequestHeaders.Add("Accept", "application/json");
+            }).AddHttpMessageHandler<RequestMessageHandler>();
+
+            services.AddHttpClient("PdfService", c =>
+            {
+                c.BaseAddress = new Uri(Configuration["PdfUri"]?.ToString() ?? string.Empty);
                 c.DefaultRequestHeaders.Add("Accept", "application/json");
             }).AddHttpMessageHandler<RequestMessageHandler>();
         }

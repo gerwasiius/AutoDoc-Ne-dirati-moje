@@ -21,6 +21,11 @@ namespace AutoDocFront.Components.Shared
         [Parameter] public EventCallback<SectionGroupGetDTO> OnViewMembers { get; set; }
 
         /// <summary>
+        /// Event koji se poziva kada korisnik klikne na dugme pregleda grupe
+        /// </summary>
+        [Parameter] public EventCallback<SectionGroupGetDTO> OnView { get; set; }
+
+        /// <summary>
         /// Režim prikaza kartice ("admin" ili "select").
         /// </summary>
         [Parameter] public string Mode { get; set; } = "admin";
@@ -40,5 +45,8 @@ namespace AutoDocFront.Components.Shared
                 await OnSelect.InvokeAsync(Group);
             }
         }
+
+        private Task OnViewClicked() => OnView.InvokeAsync(Group);
+
     }
 }

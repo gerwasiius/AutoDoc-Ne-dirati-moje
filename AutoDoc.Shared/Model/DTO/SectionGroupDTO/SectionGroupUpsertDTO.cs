@@ -21,9 +21,8 @@ namespace AutoDoc.Shared.Model.DTO.SectionGroupDTO
         /// <summary>
         /// Description of section's group
         /// </summary>
-        [Required(ErrorMessage = "Opis grupe je obavezno polje za popuniti")]
         [StringLength(250, ErrorMessage = "Opis grupe može imati najviše 250 karaktera.")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Status of section's group

@@ -3,222 +3,202 @@
 @using AutoDocFront.Models.Enumerations
 @using Microsoft.AspNetCore.Components
 
-@if (IsOpen)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.2)">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-
-                <!-- HEADER -->
-                <div class="modal-header">
-                    @if (_step == PickerStepEnum.GROUPS)
-                    {
-                        <h5 class="modal-title">Odaberite grupu</h5>
-                    }
-                    else
-                    {
-                        <button class="btn btn-link text-secondary" @onclick="() => _step = PickerStepEnum.GROUPS">
-                            <i class="fa fa-arrow-left"></i> Nazad na grupe
-                        </button>
-                        <h5 class="modal-title">Sekcije: @_selectedGroupName</h5>
-                    }
-                    <button type="button" class="btn-close" @onclick="async () => await CloseAsync()"></button>
-                </div>
-
-                <!-- SUBTITLE -->
-                <div class="px-4 pb-2">
-                    @if (_step == PickerStepEnum.GROUPS)
-                    {
-                        <small class="text-secondary">
-                            Prvo odaberite grupu sekcija koje želite da dodate.
-                        </small>
-                    }
-                    else
-                    {
-                        <small class="text-secondary">
-                            Odaberite sekcije koje želite da dodate u template.
-                        </small>
-                    }
-                </div>
-
-                <div class="modal-body pt-0">
-                    @* === GROUPS STEP === *@
-                    @if (_step == PickerStepEnum.GROUPS)
-                    {
-                        <div class="container pb-2">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <FilterBar TStatusEnum="GroupStatusType"
-                                           SearchTerm="@_groupSearchTerm"
-                                           SearchTermChanged="v => _groupSearchTerm = v"
-                                           Placeholder="Pretraga po nazivu grupe"
-                                           StatusFilter="null"
-                                           StatusValues="Array.Empty<GroupStatusType>()"
-                                           ShowStatus="false"
-                                           OnSearch="SearchGroupsAsync"
-                                           OnClear="ClearGroupFiltersAsync" />
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
-                                <span>
-                                    Prikazano @(GroupStartIndex + 1)-@GroupEndIndex od @_totalGroupCount grupa
-                                </span>
-                                @if (TotalGroupPages > 1)
-                                {
-                                    <span>Stranica @_currentGroupPage od @TotalGroupPages</span>
-                                }
-                            </div>
-
-                            <div class="px-4 mb-2">
-                                <div class="border rounded-bottom shadow-sm bg-white">
-                                    <div class="d-flex align-items-center border-bottom py-2 bg-light rounded-top text-secondary" style="gap: 0.5rem;">
-                                        <i class="fa fa-object-group ms-2"></i>
-                                        @_totalGroupCount grupa pronađeno
-                                    </div>
-                                    <div class="list-group list-group-flush" style="max-height:45vh; overflow-y:auto;">
-                                        @if (_isLoadingGroups)
-                                        {
-                                            <div class="text-center py-4">
-                                                <div class="spinner"></div>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            @foreach (var group in _availableGroups)
-                                            {
-                                                <button type="button"
-                                                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-bottom w-100"
-                                                        @onclick="() => OnGroupPickedAsync(group)">
-                                                    <div class="w-100">
-                                                        <strong>@group.Name</strong><br />
-                                                        <small class="text-secondary text-truncate d-block w-100">
-                                                            @group.Description
-                                                        </small>
-                                                    </div>
-                                                </button>
-                                            }
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if (TotalGroupPages > 1)
-                            {
-                                <Pagination CurrentPage="@_currentGroupPage"
-                                            TotalPages="@TotalGroupPages"
-                                            OnPageChanged="ChangeGroupPageAsync" />
-                            }
-
-                            @if (!_availableGroups.Any() && !_isLoadingGroups)
-                            {
-                                <div class="text-center py-5">
-                                    <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">
-                                        <i class="fa fa-search position text-secondary" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <h3 class="h5 fw-medium text-dark mb-2">Nema rezultata</h3>
-                                    <p class="text-secondary">Pokušajte sa drugim terminom pretrage.</p>
-                                </div>
-                            }
-                        </div>
-                    }
-                    @* === SECTIONS STEP === *@
-                    else
-                    {
-                        <div class="container pb-4">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <FilterBar TStatusEnum="SectionStatusType"
-                                           SearchTerm="@_sectionSearchTerm"
-                                           SearchTermChanged="v => _sectionSearchTerm = v"
-                                           Placeholder="Pretraga po nazivu sekcije"
-                                           StatusFilter="null"
-                                           StatusValues="Array.Empty<SectionStatusType>()"
-                                           ShowStatus="false"
-                                           OnSearch="SearchSectionsAsync"
-                                           OnClear="ClearSectionFiltersAsync" />
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
-                                <span>
-                                    Prikazano @(SectionStartIndex + 1)-@SectionEndIndex od @_totalSectionCount sekcija
-                                </span>
-                                @if (TotalSectionPages > 1)
-                                {
-                                    <span>Stranica @_currentSectionPage od @TotalSectionPages</span>
-                                }
-                            </div>
-
-                            <div class="px-4 mb-2">
-                                <div class="border rounded-bottom shadow-sm bg-white">
-                                    <div class="d-flex align-items-center border-bottom py-2 bg-light rounded-top text-secondary" style="gap: 0.5rem;">
-                                        <i class="fa fa-list ms-2"></i>
-                                        @_totalSectionCount sekcija pronađeno
-                                    </div>
-                                    <div class="list-group list-group-flush" style="max-height:45vh; overflow-y:auto;">
-                                        @if (_isLoadingSections)
-                                        {
-                                            <div class="text-center py-4">
-                                                <div class="spinner"></div>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            @foreach (var sectionItem in _availableSections)
-                                            {
-                                                <label class="list-group-item d-flex align-items-center border-bottom w-100" style="cursor:pointer;">
-                                                    <input type="checkbox"
-                                                           class="form-check-input me-2 corporate-checkbox"
-                                                           checked="@_selectedSectionIds.Contains(sectionItem.ID)"
-                                                           @onchange="e => ToggleSectionSelection(sectionItem.ID, e.Value)" />
-                                                    <div class="flex-grow-1">
-                                                        <strong>@sectionItem.Name</strong><br />
-                                                        <small class="text-secondary text-truncate d-block w-100">
-                                                            @sectionItem.Description
-                                                        </small>
-                                                    </div>
-                                                    <span class="badge corporate-badge ms-2">v@(sectionItem.Version)</span>
-                                                </label>
-                                            }
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if (TotalSectionPages > 1)
-                            {
-                                <Pagination CurrentPage="@_currentSectionPage"
-                                            TotalPages="@TotalSectionPages"
-                                            OnPageChanged="ChangeSectionPageAsync" />
-                            }
-
-                            @if (!_availableSections.Any() && !_isLoadingSections)
-                            {
-                                <div class="text-center py-5">
-                                    <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">
-                                        <i class="fa fa-search text-secondary" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <h3 class="h5 fw-medium text-dark mb-2">Nema rezultata</h3>
-                                    <p class="text-secondary">Pokušajte sa drugim terminom pretrage.</p>
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-
-                <!-- FOOTER -->
-                <div class="modal-footer">
-                    @if (_step == PickerStepEnum.GROUPS)
-                    {
-                        <button class="btn btn-secondary" @onclick="async () => await CloseAsync()">Otkaži</button>
-                    }
-                    else
-                    {
-                        <button class="btn btn-secondary me-2" @onclick="() => _step = PickerStepEnum.GROUPS">Nazad</button>
-                        <button class="btn modal-corporate-button-primary" @onclick="AddSelectedSectionsAsync" disabled="@(_selectedSectionIds.Count == 0)">
-                            Dodaj odabrane sekcije
-                        </button>
-                    }
-                </div>
-            </div>
+<BaseModalLayout IsOpen="@IsOpen"
+                 IsOpenChanged="@IsOpenChanged"
+                 Title="@(_step == PickerStepEnum.GROUPS ? "Odaberite grupu" : $"Sekcije: {_selectedGroupName}")">
+    <BodyContent>
+        <div class="px-4 pb-2">
+            @if (_step == PickerStepEnum.GROUPS)
+            {
+                <small class="text-secondary">
+                    Prvo odaberite grupu sekcija koje želite da dodate.
+                </small>
+            }
+            else
+            {
+                <button class="btn btn-link text-secondary px-0" @onclick="() => _step = PickerStepEnum.GROUPS">
+                    <i class="fa fa-arrow-left"></i> Nazad na grupe
+                </button>
+                <small class="text-secondary ms-3">
+                    Odaberite sekcije koje želite da dodate u template.
+                </small>
+            }
         </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-}
+        <div class="modal-body pt-0">
+            @* === GROUPS STEP === *@
+            @if (_step == PickerStepEnum.GROUPS)
+            {
+                <div class="container pb-2">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <FilterBar TStatusEnum="GroupStatusType"
+                                   SearchTerm="@_groupSearchTerm"
+                                   SearchTermChanged="v => _groupSearchTerm = v"
+                                   Placeholder="Pretraga po nazivu grupe"
+                                   StatusFilter="null"
+                                   StatusValues="Array.Empty<GroupStatusType>()"
+                                   ShowStatus="false"
+                                   OnSearch="SearchGroupsAsync"
+                                   OnClear="ClearGroupFiltersAsync" />
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
+                        <span>
+                            Prikazano @(GroupStartIndex + 1)-@GroupEndIndex od @_totalGroupCount grupa
+                        </span>
+                        @if (TotalGroupPages > 1)
+                        {
+                            <span>Stranica @_currentGroupPage od @TotalGroupPages</span>
+                        }
+                    </div>
+
+                    <div class="px-4 mb-2">
+                        <div class="border rounded-bottom shadow-sm bg-white">
+                            <div class="d-flex align-items-center border-bottom py-2 bg-light rounded-top text-secondary" style="gap: 0.5rem;">
+                                <i class="fa fa-object-group ms-2"></i>
+                                @_totalGroupCount grupa pronađeno
+                            </div>
+                            <div class="list-group list-group-flush" style="max-height:45vh; overflow-y:auto;">
+                                @if (_isLoadingGroups)
+                                {
+                                    <div class="text-center py-4">
+                                        <div class="spinner"></div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @foreach (var group in _availableGroups)
+                                    {
+                                        <button type="button"
+                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-bottom w-100"
+                                                @onclick="() => OnGroupPickedAsync(group)">
+                                            <div class="w-100">
+                                                <strong>@group.Name</strong><br />
+                                                <small class="text-secondary text-truncate d-block w-100">
+                                                    @group.Description
+                                                </small>
+                                            </div>
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (TotalGroupPages > 1)
+                    {
+                        <Pagination CurrentPage="@_currentGroupPage"
+                                    TotalPages="@TotalGroupPages"
+                                    OnPageChanged="ChangeGroupPageAsync" />
+                    }
+
+                    @if (!_availableGroups.Any() && !_isLoadingGroups)
+                    {
+                        <div class="text-center py-5">
+                            <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">
+                                <i class="fa fa-search position text-secondary" style="font-size: 2rem;"></i>
+                            </div>
+                            <h3 class="h5 fw-medium text-dark mb-2">Nema rezultata</h3>
+                            <p class="text-secondary">Pokušajte sa drugim terminom pretrage.</p>
+                        </div>
+                    }
+                </div>
+            }
+            @* === SECTIONS STEP === *@
+            else
+            {
+                <div class="container pb-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <FilterBar TStatusEnum="SectionStatusType"
+                                   SearchTerm="@_sectionSearchTerm"
+                                   SearchTermChanged="v => _sectionSearchTerm = v"
+                                   Placeholder="Pretraga po nazivu sekcije"
+                                   StatusFilter="null"
+                                   StatusValues="Array.Empty<SectionStatusType>()"
+                                   ShowStatus="false"
+                                   OnSearch="SearchSectionsAsync"
+                                   OnClear="ClearSectionFiltersAsync" />
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center text-secondary small mb-2">
+                        <span>
+                            Prikazano @(SectionStartIndex + 1)-@SectionEndIndex od @_totalSectionCount sekcija
+                        </span>
+                        @if (TotalSectionPages > 1)
+                        {
+                            <span>Stranica @_currentSectionPage od @TotalSectionPages</span>
+                        }
+                    </div>
+
+                    <div class="px-4 mb-2">
+                        <div class="border rounded-bottom shadow-sm bg-white">
+                            <div class="d-flex align-items-center border-bottom py-2 bg-light rounded-top text-secondary" style="gap: 0.5rem;">
+                                <i class="fa fa-list ms-2"></i>
+                                @_totalSectionCount sekcija pronađeno
+                            </div>
+                            <div class="list-group list-group-flush" style="max-height:45vh; overflow-y:auto;">
+                                @if (_isLoadingSections)
+                                {
+                                    <div class="text-center py-4">
+                                        <div class="spinner"></div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @foreach (var sectionItem in _availableSections)
+                                    {
+                                        <label class="list-group-item d-flex align-items-center border-bottom w-100" style="cursor:pointer;">
+                                            <input type="checkbox"
+                                                   class="form-check-input me-2 corporate-checkbox"
+                                                   checked="@_selectedSectionIds.Contains(sectionItem.ID)"
+                                                   @onchange="e => ToggleSectionSelection(sectionItem.ID, e.Value)" />
+                                            <div class="flex-grow-1">
+                                                <strong>@sectionItem.Name</strong><br />
+                                                <small class="text-secondary text-truncate d-block w-100">
+                                                    @sectionItem.Description
+                                                </small>
+                                            </div>
+                                            <span class="badge corporate-badge ms-2">v@(sectionItem.Version)</span>
+                                        </label>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (TotalSectionPages > 1)
+                    {
+                        <Pagination CurrentPage="@_currentSectionPage"
+                                    TotalPages="@TotalSectionPages"
+                                    OnPageChanged="ChangeSectionPageAsync" />
+                    }
+
+                    @if (!_availableSections.Any() && !_isLoadingSections)
+                    {
+                        <div class="text-center py-5">
+                            <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 96px; height: 96px;">
+                                <i class="fa fa-search text-secondary" style="font-size: 2rem;"></i>
+                            </div>
+                            <h3 class="h5 fw-medium text-dark mb-2">Nema rezultata</h3>
+                            <p class="text-secondary">Pokušajte sa drugim terminom pretrage.</p>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer">
+            @if (_step == PickerStepEnum.GROUPS)
+            {
+                <button class="btn btn-secondary" @onclick="async () => await CloseAsync()">Otkaži</button>
+            }
+            else
+            {
+                <button class="btn btn-secondary me-2" @onclick="() => _step = PickerStepEnum.GROUPS">Nazad</button>
+                <button class="btn modal-corporate-button-primary" @onclick="AddSelectedSectionsAsync" disabled="@(_selectedSectionIds.Count == 0)">
+                    Dodaj odabrane sekcije
+                </button>
+            }
+        </div>
+    </FooterContent>
+</BaseModalLayout>

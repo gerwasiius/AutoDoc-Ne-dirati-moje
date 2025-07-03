@@ -21,10 +21,10 @@ namespace AutoDocFront.Components.Modals
 
         [Inject] private IHttpClientFactory HttpClientFactory { get; set; }
         [Inject] private IToastService ToastService { get; set; }
-        [Inject] private IDialogService DialogService { get; set; }
+        //[Inject] private IDialogService DialogService { get; set; }
 
         private DocumentTemplateAndRelatedItemsDTO templateWithSections;
-        private bool loading = false;
+        private bool _isLoading = false;
         private bool isSectionPickerOpen = false;
 
 
@@ -33,9 +33,12 @@ namespace AutoDocFront.Components.Modals
         private bool previewLoading = false;
         private string previewError;
         private string previewTemplateName;
+        private bool isConditionModalOpen = false;
+        private int? editingRelationIdx = null;
+
+        
 
 
-        private HashSet<int> movingSectionIndexes = new();
 
 
         // --- Sekcije logika unutar modala ---
@@ -113,12 +116,6 @@ namespace AutoDocFront.Components.Modals
             StateHasChanged();
         }
 
-        private async Task OpenSectionConditions(int idx)
-        {
-            // Implementacija otvaranja uslova za sekciju
-            // npr. prikazivanje internog dijaloga
-        }
-
         private async Task PreviewSection(int idx)
         {
             if (FormData?.Relations == null || idx < 0 || idx >= FormData.Relations.Count)
@@ -166,7 +163,7 @@ namespace AutoDocFront.Components.Modals
         {
             try
             {
-                loading = true;
+                _isLoading = true;
                 var client = HttpClientFactory.CreateClient("AutoDocService");
                 var response = await client.PostAsJsonAsync(
                     "/api/contract-generation/template-sections-relations/manage-relations",
@@ -190,7 +187,7 @@ namespace AutoDocFront.Components.Modals
             }
             finally
             {
-                loading = false;
+                _isLoading = false;
                 await OnSubmit.InvokeAsync();
             }
         }
@@ -199,7 +196,7 @@ namespace AutoDocFront.Components.Modals
 
         protected override async Task OnParametersSetAsync()
         {
-            loading = true;
+            _isLoading = true;
             try
             {
                 var client = HttpClientFactory.CreateClient("AutoDocService");
@@ -212,7 +209,7 @@ namespace AutoDocFront.Components.Modals
             }
             finally
             {
-                loading = false;
+                _isLoading = false;
             }
         }
 
@@ -252,6 +249,18 @@ namespace AutoDocFront.Components.Modals
                 previewLoading = false;
                 StateHasChanged();
             }
+        }
+
+        private void OpenConditionModal(int idx)
+        {
+            editingRelationIdx = idx;
+            isConditionModalOpen = true;
+        }
+
+        private void CloseConditionModal()
+        {
+            isConditionModalOpen = false;
+            editingRelationIdx = null;
         }
 
         private class PreviewResponse

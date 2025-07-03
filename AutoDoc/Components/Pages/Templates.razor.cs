@@ -15,100 +15,34 @@ namespace AutoDocFront.Components.Pages
     {
         // --- INJECTION ---
 
-        /// <summary>
-        /// Servis za rad sa dokument template-ima.
-        /// </summary>
         [Inject] private DocumentTemplateApiService TemplateService { get; set; } = default!;
-
-        /// <summary>
-        /// Servis za prikaz notifikacija.
-        /// </summary>
         [Inject] private IToastService ToastService { get; set; } = default!;
 
         // --- POLJA ---
 
-        /// <summary>
-        /// Lista prikazanih template-a.
-        /// </summary>
-        private List<DocumentTemplateGetDTO> _templates = new();
-
-        /// <summary>
-        /// Tekući termin za pretragu po nazivu template-a.
-        /// </summary>
-        private string _searchTerm = string.Empty;
-
-        /// <summary>
-        /// Filter po statusu template-a.
-        /// </summary>
-        private DocumentTemplateStatusType? _statusFilter;
-
-        /// <summary>
-        /// Tekuća stranica u paginaciji.
-        /// </summary>
-        private int _currentPage = 1;
-
-        /// <summary>
-        /// Broj template-a po stranici.
-        /// </summary>
         private const int ItemsPerPage = 30;
 
-        /// <summary>
-        /// Ukupan broj template-a (za paginaciju).
-        /// </summary>
+        private List<DocumentTemplateGetDTO> _templates = new();
+        private string _searchTerm = string.Empty;
+        private int _currentPage = 1;
         private int _totalCount = 0;
-
-        /// <summary>
-        /// Prikazuje da li je učitavanje u toku.
-        /// </summary>
+        private DocumentTemplateStatusType? _statusFilter;
+        private DocumentTemplateGetDTO? _selectedTemplate;
+        
         private bool _isLoading = false;
 
-        // --- MODAL STANJE ---
+        // --- MODAL STATE ---
 
-        /// <summary>
-        /// Da li je modal za template otvoren.
-        /// </summary>
         private bool _isTemplateModalOpen = false;
-
-        /// <summary>
-        /// Režim rada template modala (unos, izmjena, pregled).
-        /// </summary>
         private ModalMode _templateModalMode = ModalMode.INSERT;
 
-        /// <summary>
-        /// Selektovani template za modal.
-        /// </summary>
-        private DocumentTemplateGetDTO? _selectedTemplate;
-
-        /// <summary>
-        /// Da li je modal za sekcije otvoren.
-        /// </summary>
         private bool _isSectionsModalOpen = false;
-
-        /// <summary>
-        /// Da li je modal za preview otvoren.
-        /// </summary>
         private bool _isPreviewModalOpen = false;
-
-        /// <summary>
-        /// HTML sadržaj za preview template-a.
-        /// </summary>
         private string? _previewHtmlContent;
-
-        /// <summary>
-        /// Prikazuje da li je učitavanje preview-a u toku.
-        /// </summary>
         private bool _previewLoading = false;
-
-        /// <summary>
-        /// Poruka o grešci za preview modal.
-        /// </summary>
         private string? _previewError;
-
-        /// <summary>
-        /// Naziv template-a za preview modal.
-        /// </summary>
         private string? _previewTemplateName;
-
+        // -------------------
         /// <summary>
         /// Svi mogući statusi template-a (za filter bar).
         /// </summary>

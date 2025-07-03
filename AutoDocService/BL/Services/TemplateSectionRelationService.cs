@@ -193,6 +193,7 @@ namespace AutoDocService.BL.Services
                     entity.ActionType = toUpdate.ActionType;
                     entity.ActionType = "NONE";
                     entity.IsPageBreak = toUpdate.IsPageBreak;
+                    entity.IsArticle = toUpdate.IsArticle;
                     // Optionally update other fields if needed
                 }
             }
@@ -248,6 +249,7 @@ namespace AutoDocService.BL.Services
                         ConditionExpression = rel.ConditionExpression,
                         ActionType = rel.ActionType,
                         IsPageBreak = rel.IsPageBreak,
+                        IsArticle = rel.IsArticle,
                         SectionUniqueId = rel.Section != null ? rel.Section.Id : 0,
                         SectionName = rel.Section != null ? rel.Section.Name : null,
                         SectionDescription = rel.Section != null ? rel.Section.Description : null
@@ -303,7 +305,8 @@ namespace AutoDocService.BL.Services
                         Order = rel.Order,
                         ConditionExpression = rel.ConditionExpression,
                         ActionType = rel.ActionType,
-                        IsPageBreak = rel.IsPageBreak
+                        IsPageBreak = rel.IsPageBreak,
+                        IsArticle = rel.IsArticle
                     });
                 }
                 else
@@ -312,7 +315,7 @@ namespace AutoDocService.BL.Services
                     if (dbRel.Order != rel.Order ||
                         dbRel.ConditionExpression != rel.ConditionExpression ||
                         dbRel.ActionType != rel.ActionType ||
-                        dbRel.IsPageBreak != rel.IsPageBreak)
+                        dbRel.IsPageBreak != rel.IsPageBreak || dbRel.IsArticle != rel.IsArticle)
                     {
                         toUpdate.Add(new TemplateSectionsRelationUpdateDTO
                         {
@@ -320,7 +323,9 @@ namespace AutoDocService.BL.Services
                             Order = rel.Order,
                             ConditionExpression = rel.ConditionExpression,
                             ActionType = rel.ActionType,
-                            IsPageBreak = rel.IsPageBreak
+                            IsPageBreak = rel.IsPageBreak,
+                            IsArticle = rel.IsArticle
+                            
                         });
                     }
                 }

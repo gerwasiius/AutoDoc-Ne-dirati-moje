@@ -5,30 +5,41 @@
 
 <BaseModalLayout IsOpen="@IsOpen" Title="@((IsEditMode ? $"Izmjena grupe {_model.Name}" : "Nova grupa"))" IsOpenChanged="@IsOpenChanged">
     <BodyContent>
-        <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmitAsync">
-            <DataAnnotationsValidator />
-
-            <div class="mb-3">
-                <ValidatedInputText Label="Naziv grupe"
-                                    IsRequired="true"
-                                    @bind-Value="_model.Name"
-                                    FieldExpression="@(() => _model.Name)" />
+        @if (Mode == ModalMode.VIEW)
+        {
+            <div>
+                <ReadOnlyInputText Label="Naziv grupe" Value="@_model.Name" />
+                <ReadOnlyInputText Label="Opis grupe" Value="@_model.Description" IsTextArea="true" Rows="3" />
+                <ReadOnlyInputText Label="Status" Value="@_model.Status.ToString()" />
             </div>
+        }
+        else
+        {
 
-            <div class="mb-3">
-                <ValidatedInputTextArea Label="Opis"
+            <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmitAsync">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <ValidatedInputText Label="Naziv grupe"
                                         IsRequired="true"
-                                        Rows="3"
-                                        @bind-Value="_model.Description"
-                                        FieldExpression="@(() => _model.Description)" />
-            </div>
+                                        @bind-Value="_model.Name"
+                                        FieldExpression="@(() => _model.Name)" />
+                </div>
 
-            <div class="mb-3">
-                <ReadOnlyInputText Label="Status"
-                                   Value="@_model.Status.ToString()" />
-            </div>
+                <div class="mb-3">
+                    <ValidatedInputTextArea Label="Opis"
+                                            Rows="3"
+                                            @bind-Value="_model.Description"
+                                            FieldExpression="@(() => _model.Description)" />
+                </div>
 
-        </EditForm>
+                <div class="mb-3">
+                    <ReadOnlyInputText Label="Status"
+                                       Value="@_model.Status.ToString()" />
+                </div>
+
+            </EditForm>
+        }
     </BodyContent>
 
     <FooterContent>
@@ -38,21 +49,21 @@
                 {
                     @if (_model.Status == GroupStatusType.ACTIVE)
                     {
-                        <button type="button" class="btn btn-danger btn-sm" @onclick="() => ChangeGroupStatusAsync(GroupStatusType.DEACTIVATED)" disabled="@_loading">
+                        <button type="button" class="btn btn-danger btn-sm" @onclick="() => ChangeGroupStatusAsync(GroupStatusType.DEACTIVATED)" disabled="@_isLoading">
                             <i class="fas fa-lock me-1"></i> Deaktiviraj grupu
                         </button>
                     }
                     else
                     {
-                        <button type="button" class="btn btn-success btn-sm" @onclick="() => ChangeGroupStatusAsync(GroupStatusType.ACTIVE)" disabled="@_loading">
+                        <button type="button" class="btn btn-success btn-sm" @onclick="() => ChangeGroupStatusAsync(GroupStatusType.ACTIVE)" disabled="@_isLoading">
                             <i class="fas fa-unlock me-1"></i> Aktiviraj grupu
                         </button>
                     }
                 }
             </div>
             <div>
-                <button type="submit" class="btn modal-corporate-button-primary btn-sm" @onclick="HandleValidSubmitAsync" disabled="@_loading">
-                    @(_loading ? "Spremanje..." : (IsEditMode ? "Sačuvaj izmjene" : "Kreiraj grupu"))
+                <button type="submit" class="btn modal-corporate-button-primary btn-sm" @onclick="HandleValidSubmitAsync" disabled="@_isLoading">
+                    @(_isLoading ? "Spremanje..." : (IsEditMode ? "Sačuvaj izmjene" : "Kreiraj grupu"))
                 </button>
             </div>
         </div>

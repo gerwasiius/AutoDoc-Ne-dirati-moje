@@ -54,9 +54,9 @@ namespace AutoDocService.BL.Services
 
             foreach (var rel in relations.OrderBy(r => r.Order))
             {
-                // Opcionalno: evaluacija uslova rel.ConditionExpression
+                // Optionally: evaluate rel.ConditionExpression
 
-                // Dobavi sekciju po SectionId i SectionVersion
+                // Fetch section by SectionId and SectionVersion
                 var sectionPaged = await _sectionsService.Get(
                     id: null,
                     idSection: rel.SectionId,

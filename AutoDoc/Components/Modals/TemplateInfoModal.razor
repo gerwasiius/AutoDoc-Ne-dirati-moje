@@ -2,86 +2,145 @@
 @using AutoDocFront.Components.Shared.Inputs
 @using AutoDocFront.Models.Enumerations
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.FluentUI.AspNetCore.Components
 @inject IHttpClientFactory httpClientFactory
 @inject IToastService toastService
 @using AutoDocFront.Components.Shared
 
 <BaseModalLayout IsOpen="@IsOpen" Title="@ModalTitle" IsOpenChanged="@IsOpenChanged" ModalSize="modal-xl">
-
     <BodyContent>
-        <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmitAsync">
-            <DataAnnotationsValidator />
-
-            <div class="mb-3">
-                <ValidatedInputText Label="Naziv predloška"
-                                    IsRequired="true"
-                                    Disabled="@(ModalMode == ModalMode.VIEW)"
-                                    @bind-Value="_model.Name"
-                                    FieldExpression="@(() => _model.Name)" />
-            </div>
-
-            <div class="mb-3">
-                <ValidatedInputTextArea Label="Opis predloška"
+        @if (ModalMode == ModalMode.INSERT)
+        {
+            <EditForm EditContext="_editContext" id="templateForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <ValidatedInputText Label="Naziv predloška"
                                         IsRequired="true"
-                                        Disabled="@(ModalMode == ModalMode.VIEW)"
-                                        Rows="3"
-                                        @bind-Value="_model.Description"
-                                        FieldExpression="@(() => _model.Description)" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Status <span class="text-danger">*</span></label>
-                @if (ModalMode == ModalMode.EDIT)
-                {
-                    <InputSelect class="form-control" @bind-Value="_model.Status">
+                                        @bind-Value="_createModel.Name"
+                                        FieldExpression="@(() => _createModel.Name)" />
+                </div>
+                <div class="mb-3">
+                    <ValidatedInputTextArea Label="Opis predloška"
+                                            IsRequired="true"
+                                            Rows="3"
+                                            @bind-Value="_createModel.Description"
+                                            FieldExpression="@(() => _createModel.Description)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Status <span class="text-danger">*</span></label>
+                    <input class="form-control" value="@_createModel.Status" disabled />
+                    <ValidationMessage For="@(() => _createModel.Status)" />
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <ValidatedInputDate Label="Važi od"
+                                            IsRequired="true"
+                                            @bind-Value="_createModel.ValidFrom"
+                                            FieldExpression="@(() => _createModel.ValidFrom)" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Važi do</label>
+                        <div class="input-group">
+                            <ValidatedInputDate Label=""
+                                                IsRequired="false"
+                                                Disabled="@(_isUnlimitedValidTo)"
+                                                @bind-Value="_createModel.ValidTo"
+                                                FieldExpression="@(() => _createModel.ValidTo)" />
+                            <span class="input-group-text ms-2" style="background: none; border: none;">
+                                <input type="checkbox"
+                                       class="form-check-input corporate-checkbox"
+                                       id="unlimitedValidTo"
+                                       checked="@_isUnlimitedValidTo"
+                                       @onchange="ToggleUnlimitedValidTo" />
+                                <label class="form-check-label ms-1" for="unlimitedValidTo">
+                                    Bez vremenskog ograničenja
+                                </label>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        }
+        else if (ModalMode == ModalMode.EDIT)
+        {
+            <EditForm EditContext="_editContext" id="templateForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <ValidatedInputText Label="Naziv predloška"
+                                        IsRequired="true"
+                                        @bind-Value="_updateModel.Name"
+                                        FieldExpression="@(() => _updateModel.Name)" />
+                </div>
+                <div class="mb-3">
+                    <ValidatedInputTextArea Label="Opis predloška"
+                                            IsRequired="true"
+                                            Rows="3"
+                                            @bind-Value="_updateModel.Description"
+                                            FieldExpression="@(() => _updateModel.Description)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Status <span class="text-danger">*</span></label>
+                    <InputSelect class="form-control" @bind-Value="_updateModel.Status">
                         <option value="">Odaberite status</option>
                         @foreach (var item in Enum.GetValues(typeof(DocumentTemplateStatusType)))
                         {
                             <option value="@item">@item</option>
                         }
                     </InputSelect>
-                }
-                else
-                {
-                    <input class="form-control" value="@_model.Status" disabled />
-                }
-                <ValidationMessage For="@(() => _model.Status)" />
-            </div>
-
-            <div class="row">
-                <div class="col">
-                    <ValidatedInputDate Label="Važi od"
-                                        IsRequired="true"
-                                        Disabled="@(ModalMode == ModalMode.VIEW)"
-                                        @bind-Value="_model.ValidFrom"
-                                        FieldExpression="@(() => _model.ValidFrom)" />
+                    <ValidationMessage For="@(() => _updateModel.Status)" />
                 </div>
-                <div class="col">
-                    <label class="form-label">Važi do</label>
-                    <div class="input-group">
-                        <ValidatedInputDate Label=""
-                                            IsRequired="false"
-                                            Disabled="@(_isUnlimitedValidTo || ModalMode == ModalMode.VIEW)"
-                                            @bind-Value="_model.ValidTo"
-                                            FieldExpression="@(() => _model.ValidTo)" />
-                        <span class="input-group-text ms-2" style="background: none; border: none;">
-                            <input type="checkbox"
-                                   class="form-check-input corporate-checkbox"
-                                   id="unlimitedValidTo"
-                                   checked="@_isUnlimitedValidTo"
-                                   @onchange="ToggleUnlimitedValidTo"
-                                   disabled="@(ModalMode == ModalMode.VIEW)" />
-                            <label class="form-check-label ms-1" for="unlimitedValidTo">
-                                Bez vremenskog ograničenja
-                            </label>
-                        </span>
+                <div class="row">
+                    <div class="col">
+                        <ValidatedInputDate Label="Važi od"
+                                            IsRequired="true"
+                                            @bind-Value="_updateModel.ValidFrom"
+                                            FieldExpression="@(() => _updateModel.ValidFrom)" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Važi do</label>
+                        <div class="input-group">
+                            <ValidatedInputDate Label=""
+                                                IsRequired="false"
+                                                Disabled="@(_isUnlimitedValidTo)"
+                                                @bind-Value="_updateModel.ValidTo"
+                                                FieldExpression="@(() => _updateModel.ValidTo)" />
+                            <span class="input-group-text ms-2" style="background: none; border: none;">
+                                <input type="checkbox"
+                                       class="form-check-input corporate-checkbox"
+                                       id="unlimitedValidTo"
+                                       checked="@_isUnlimitedValidTo"
+                                       @onchange="ToggleUnlimitedValidTo" />
+                                <label class="form-check-label ms-1" for="unlimitedValidTo">
+                                    Bez vremenskog ograničenja
+                                </label>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        }
+        else if (ModalMode == ModalMode.VIEW)
+        {
+            <div>
+                <div class="mb-3">
+                    <ReadOnlyInputText Label="Naziv predloška" Value="@_viewModel.Name" />
+                </div>
+                <div class="mb-3">
+                    <ReadOnlyInputText Label="Opis predloška" Value="@_viewModel.Description" />
+                </div>
+                <div class="mb-3">
+                    <ReadOnlyInputText Label="Status" Value="@_viewModel.Status.ToString()" />
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <ReadOnlyInputText Label="Važi od" Value="@(_viewModel.ValidFrom?.ToString("dd.MM.yyyy") ?? "")" />
+                    </div>
+                    <div class="col">
+                        <ReadOnlyInputText Label="Važi do" Value="@(_viewModel.ValidTo?.ToString("dd.MM.yyyy") ?? "Bez ograničenja")" />
                     </div>
                 </div>
             </div>
-        </EditForm>
+        }
     </BodyContent>
-
     <FooterContent>
         <div class="modal-footer d-flex justify-content-between w-100">
             @if (ModalMode != ModalMode.VIEW)
@@ -89,14 +148,17 @@
                 <small class="text-muted">
                     <span class="text-danger">*</span> - označava obavezna polja.
                 </small>
-
-                <button type="submit" class="btn modal-corporate-button-primary fs-6" @onclick="HandleValidSubmitAsync">
+                <button type="submit"
+                        class="btn modal-corporate-button-primary fs-6"
+                        form="templateForm"
+                        disabled="@_isLoading"
+                @onclick="HandleValidSubmitAsync">
                     <i class="oi oi-check me-1"></i> Spasi
                 </button>
             }
             else
             {
-                <button class="btn corporate-button-secondary btn-sm" @onclick="@(() => OnEdit.InvokeAsync())">
+                <button class="btn corporate-button-secondary btn-sm mt-3" @onclick="@(() => OnEdit.InvokeAsync())">
                     <i class="fa fa-edit me-1"></i> Izmjena
                 </button>
             }

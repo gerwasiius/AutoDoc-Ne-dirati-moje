@@ -1,5 +1,7 @@
 ﻿using AutoDoc.Shared.Model.DTO.Enumerations;
 using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
+using AutoDocFront.Components.Shared;
+using AutoDocFront.Models.Enumerations;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -33,6 +35,11 @@ namespace AutoDocFront.Components.Modals
         /// Event koji se poziva nakon uspješnog snimanja.
         /// </summary>
         [Parameter] public EventCallback OnSave { get; set; }
+        /// <summary>
+        /// Oznaka kroz koji mod ce se otvoriti forma
+        /// </summary>
+        [Parameter] public ModalMode Mode { get; set; }
+
 
         // --- INJECTION ---
 
@@ -45,13 +52,12 @@ namespace AutoDocFront.Components.Modals
         private SectionGroupUpsertDTO _model = new();
         private EditContext _editContext;
         private ValidationMessageStore _validationMessageStore;
-        private bool _loading = false;
+        private bool _isLoading = false;
 
         /// <summary>
         /// Vraća true ako je modal u režimu izmjene (edit).
         /// </summary>
         private bool IsEditMode => Group != null && Group.ID > 0;
-
 
         /// <summary>
         /// On parameter set model i edit kontekst na osnovu proslijeđenih parametara.
@@ -86,10 +92,10 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         private async Task HandleValidSubmitAsync()
         {
-            if (_loading || !ValidateForm())
+            if (_isLoading || !ValidateForm())
                 return;
 
-            _loading = true;
+            _isLoading = true;
             try
             {
                 _model.User = "zlatan.kahriman";
@@ -127,7 +133,7 @@ namespace AutoDocFront.Components.Modals
             }
             finally
             {
-                _loading = false;
+                _isLoading = false;
             }
         }
 
@@ -153,11 +159,27 @@ namespace AutoDocFront.Components.Modals
         /// <param name="newStatus">Novi status grupe</param>
         private async Task ChangeGroupStatusAsync(GroupStatusType newStatus)
         {
-            if (_loading)
+            if (_isLoading)
+                return;
+
+            string action = newStatus == GroupStatusType.ACTIVE ? "aktivirate" : "deaktivirate";
+            string message = $"Da li ste sigurni da želite da {action} ovu grupu?";
+
+            //Dodajte dodatno dugme "Otkaži"
+            var dialogRef = await DialogService.ShowConfirmationAsync(
+                message,
+                "Da",
+                "Ne",
+                "Otkaži" // Ovo je dodatno dugme
+            );
+
+            var result = await dialogRef.Result;
+            var canceled = result.Cancelled;
+            if (canceled)
                 return;
             try
             {
-                _loading = true;
+                _isLoading = true;
                 if (newStatus == GroupStatusType.DEACTIVATED)
                 {
                     if (_model.ID.HasValue && await GroupService.HasActiveSectionsAsync(_model.ID.Value))
@@ -175,7 +197,7 @@ namespace AutoDocFront.Components.Modals
             }
             finally
             {
-                _loading = false;
+                _isLoading = false;
             }
         }
 

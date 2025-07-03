@@ -1,5 +1,6 @@
 ﻿using AutoDoc.Shared.Model.DTO.Enumerations;
 using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
+using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -20,16 +21,28 @@ namespace AutoDocFront.Components.Pages
 
         // --- POLJA ---
 
-        private const int GroupsPerPage = 30;
+        private const int ItemsPerPage = 30;
 
         private List<SectionGroupGetDTO> _groups = new();
-        private string _groupSearchTerm = string.Empty;
-        private GroupStatusType? _groupStatusFilter;
+        private string _searchTerm = string.Empty;
         private int _currentPage = 1;
-        private int _totalGroupCount;
-        private bool _isGroupModalVisible;
+        private int _totalCount = 0;
         private SectionGroupUpsertDTO _selectedGroup;
+        private GroupStatusType? _statusFilter;
+
         private bool _isLoading;
+
+        // --- MODAL STATE ---
+        private bool _isGroupModalVisible;
+        private ModalMode _groupModalMode = ModalMode.INSERT;
+        // -------------------
+        /// <summary>
+        /// Inicijalizuje komponentu i učitava grupe sa servera.
+        /// </summary>
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadGroupsAsync();
+        }
 
         /// <summary>
         /// Status values available in the filter bar dropdown.
@@ -40,25 +53,19 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
-        private int TotalPages => (int)Math.Ceiling((double)_totalGroupCount / GroupsPerPage);
+        private int TotalPages => (int)Math.Ceiling((double)_totalCount / ItemsPerPage);
 
         /// <summary>
         /// Početni indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int StartIndex => _totalGroupCount == 0 ? 0 : (_currentPage - 1) * GroupsPerPage;
+        private int StartIndex => _totalCount == 0 ? 0 : (_currentPage - 1) * ItemsPerPage;
 
         /// <summary>
         /// Krajnji indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int EndIndex => Math.Min(StartIndex + _groups.Count, _totalGroupCount);
+        private int EndIndex => Math.Min(StartIndex + _groups.Count, _totalCount);
 
-        /// <summary>
-        /// Inicijalizuje komponentu i učitava grupe sa servera.
-        /// </summary>
-        protected override async Task OnInitializedAsync()
-        {
-            await LoadGroupsAsync();
-        }
+        
 
         /// <summary>
         /// Učitava grupe sa API-ja uz primijenjene filtere i paginaciju.
@@ -68,17 +75,17 @@ namespace AutoDocFront.Components.Pages
             try
             {
                 _isLoading = true;
-                int offset = (_currentPage - 1) * GroupsPerPage;
-                var status = _groupStatusFilter?.ToString() ?? "all";
-                var result = await GroupService.GetGroupsAsync(_groupSearchTerm, status, offset, GroupsPerPage);
+                int offset = (_currentPage - 1) * ItemsPerPage;
+                var status = _statusFilter?.ToString() ?? "all";
+                var result = await GroupService.GetGroupsAsync(_searchTerm, status, offset, ItemsPerPage);
                 _groups = result.Items ?? [];
-                _totalGroupCount = result.TotalItems;
+                _totalCount = result.TotalItems;
             }
             catch (Exception ex)
             {
                 ToastService.ShowError($"Greška prilikom učitavanja grupa: {ex.Message}");
                 _groups = [];
-                _totalGroupCount = 0;
+                _totalCount = 0;
             }
             finally
             {
@@ -119,7 +126,7 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task OnGroupStatusFilterChangedAsync(GroupStatusType? value)
         {
-            _groupStatusFilter = value;
+            _statusFilter = value;
             _currentPage = 1;
             await LoadGroupsAsync();
         }
@@ -130,36 +137,37 @@ namespace AutoDocFront.Components.Pages
         private async Task ClearGroupFiltersAsync()
         {
             //Ukoliko nema nista za ocistiti, ne cistiti.
-            if (_groupSearchTerm == string.Empty && _groupStatusFilter == null)
+            if (_searchTerm == string.Empty && _statusFilter == null)
                 return; 
 
-            _groupSearchTerm = string.Empty;
-            _groupStatusFilter = null;
+            _searchTerm = string.Empty;
+            _statusFilter = null;
             _currentPage = 1;
             await LoadGroupsAsync();
         }
 
         /// <summary>
-        /// Otvara modal za unos nove grupe.
+        /// Otvara modal za pregled
         /// </summary>
-        private void OpenNewGroupModal()
+        /// <param name="mode"></param>
+        /// <param name="group"></param>
+        private void OpenGroupModal(ModalMode mode, SectionGroupGetDTO group = null)
         {
-            _selectedGroup = null;
-            _isGroupModalVisible = true;
-        }
-
-        /// <summary>
-        /// Otvara modal za uređivanje postojeće grupe.
-        /// </summary>
-        private void OpenEditGroupModal(SectionGroupGetDTO group)
-        {
-            _selectedGroup = new SectionGroupUpsertDTO
+            if (mode == ModalMode.INSERT)
             {
-                ID = group.ID,
-                Name = group.Name,
-                Description = group.Description,
-                Status = group.Status
-            };
+                _selectedGroup = null;
+            }
+            else if (group != null)
+            {
+                _selectedGroup = new SectionGroupUpsertDTO
+                {
+                    ID = group.ID,
+                    Name = group.Name,
+                    Description = group.Description,
+                    Status = group.Status
+                };
+            }
+            _groupModalMode = mode;
             _isGroupModalVisible = true;
         }
 

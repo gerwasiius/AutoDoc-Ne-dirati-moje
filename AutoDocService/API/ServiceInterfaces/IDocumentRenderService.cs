@@ -6,5 +6,6 @@ namespace AutoDocService.API.ServiceInterfaces
     {
         Task<string> RenderTemplateAsync(int idTemplate, int version);
         Task<string> RenderPreviewAsync(List<TemplateSectionRelationWithSectionDTO> relations);
+
     }
 }
