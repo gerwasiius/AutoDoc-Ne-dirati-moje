@@ -3,6 +3,7 @@
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Models.Enumerations
 @rendermode InteractiveServer
+@inherits ModalBase
 
 @if (IsOpen)
 {
@@ -12,7 +13,6 @@
     }
     else
     {
-
         <div class="modal-backdrop"></div>
         <div class="modal" tabindex="-1" role="dialog" style="@_modalStyle">
             <div class="modal-dialog modal-custom-size modal-dialog-centered" role="document">
@@ -34,7 +34,7 @@
                                 }
                             </h5>
                         </div>
-                        <button type="button" class="btn-close me-2" aria-label="Close" @onclick="CloseModalAsync"></button>
+                        <button type="button" class="btn-close me-2" aria-label="Close" @onclick="CloseAsync"></button>
                     </div>
                     <div class="modal-body pe-5 ps-5 d-flex align-content-center overflow-auto">
                         <div class="row" style="flex: 1; min-height: 60vh;">

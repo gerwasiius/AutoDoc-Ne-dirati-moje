@@ -1,5 +1,6 @@
 ﻿using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
 using AutoDoc.Shared.Model.DTO.Enumerations;
+using AutoDocFront.Components.Shared;
 using AutoDocFront.Models.Enumerations;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
@@ -14,11 +15,6 @@ namespace AutoDocFront.Components.Modals
     public partial class TemplateInfoModal : ModalBase
     {
         // --- PARAMETRI ---
-
-        /// <summary>
-        /// Da li je modal otvoren.
-        /// </summary>
-
 
         /// <summary>
         /// Template za prikaz ili izmjenu.

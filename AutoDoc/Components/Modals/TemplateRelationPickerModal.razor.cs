@@ -5,6 +5,7 @@ using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
 using AutoDocFront.Services;
 using AutoDocFront.Utilities;
+using AutoDocFront.Components.Shared;
 
 namespace AutoDocFront.Components.Modals
 {
@@ -14,8 +15,6 @@ namespace AutoDocFront.Components.Modals
     public partial class TemplateRelationPickerModal : ModalBase
     {
         // --- PARAMETRI ---
-
-
 
         /// <summary>
         /// Event koji se poziva kada su sekcije odabrane.

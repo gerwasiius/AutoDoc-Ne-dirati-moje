@@ -19,16 +19,6 @@ namespace AutoDocFront.Components.Modals
         // --- PARAMETRI ---
 
         /// <summary>
-        /// Označava da li je modal otvoren.
-        /// </summary>
-        [Parameter] public bool IsOpen { get; set; }
-
-        /// <summary>
-        /// Event za promjenu stanja otvaranja modala.
-        /// </summary>
-        [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
-
-        /// <summary>
         /// DTO objekat grupe kojoj sekcija pripada.
         /// </summary>
         [Parameter] public SectionGroupGetDTO Group { get; set; }

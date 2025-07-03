@@ -1,4 +1,5 @@
 ﻿using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
+using AutoDocFront.Components.Shared;
 using Microsoft.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Modals

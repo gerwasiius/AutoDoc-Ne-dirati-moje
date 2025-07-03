@@ -5,6 +5,7 @@
 @inject IHttpClientFactory httpClientFactory
 @inject IToastService toastService
 @using AutoDocFront.Components.Shared
+@inherits ModalBase
 
 <BaseModalLayout IsOpen="@IsOpen" Title="@ModalTitle" IsOpenChanged="@IsOpenChanged" ModalSize="modal-xl">
     <BodyContent>

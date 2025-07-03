@@ -2,12 +2,10 @@
 using AutoDoc.Shared.Model.DTO.DocumentTemplateDTO;
 using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO;
-using AutoDocFront.Components.Pages;
+using AutoDocFront.Components.Shared;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
 
 namespace AutoDocFront.Components.Modals
 {

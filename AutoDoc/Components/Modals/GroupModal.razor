@@ -2,6 +2,7 @@
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Components.Shared.Inputs
 @using AutoDocFront.Models.Enumerations
+@inherits ModalBase
 
 <BaseModalLayout IsOpen="@IsOpen" Title="@((IsEditMode ? $"Izmjena grupe {_model.Name}" : "Nova grupa"))" IsOpenChanged="@IsOpenChanged">
     <BodyContent>
