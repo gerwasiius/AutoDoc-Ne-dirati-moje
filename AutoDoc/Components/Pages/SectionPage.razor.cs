@@ -15,37 +15,41 @@ namespace AutoDocFront.Components.Pages
     {
         [Parameter] public int groupId { get; set; }
 
-        private HttpClient _autoDocServiceClient;
-        private List<SectionsGetDTO> sections = new();
-        private SectionsGetDTO selectedSection;
-        private SectionGroupGetDTO group;
-        private bool isSearchVisible = false;
-        private string searchTerm;
+        [Inject] private SectionsApiService SectionsService { get; set; } = default!;
+        [Inject] private SectionGroupApiService GroupService { get; set; } = default!;
+        [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+        [Inject] private IToastService ToastService { get; set; } = default!;
+        [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+        private List<SectionsGetDTO> _sections = new();
+        private SectionsGetDTO? _selectedSection;
+        private SectionGroupGetDTO? _group;
+        private bool _isSearchVisible = false;
+        private string _searchTerm = string.Empty;
         private bool _loading = false;
         private int _currentOffset = 0;
         private int _pageSize = 50; // Podesiti po potrebi
 
-        private bool isBasicDetailsVisible = true;
-        private bool isContentVisible = true;
+        private bool _isBasicDetailsVisible = true;
+        private bool _isContentVisible = true;
         private SectionsModal _sectionModal = null!;
-        private bool isStatusFilterVisible = false;
+        private bool _isStatusFilterVisible = false;
         private bool _isSectionModalVisible = false; // Modal visibility flag
 
-        private ModalMode sectionModalMode = ModalMode.VIEW;
+        private ModalMode _sectionModalMode = ModalMode.VIEW;
 
-        private HashSet<SectionStatusType> selectedStatuses = new()
+        private HashSet<SectionStatusType> _selectedStatuses = new()
         {
             SectionStatusType.ACTIVE
         };
 
-        private IEnumerable<SectionsGetDTO> filteredSections => sections
-          .Where(g => string.IsNullOrEmpty(searchTerm)
-                      || g.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        private IEnumerable<SectionsGetDTO> FilteredSections => _sections
+          .Where(g => string.IsNullOrEmpty(_searchTerm)
+                      || g.Name.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
           .ToList();
 
         protected override async Task OnInitializedAsync()
         {
-            _autoDocServiceClient = httpClientFactory.CreateClient("AutoDocService");
             await LoadGroupDataAsync();
         }
 
@@ -80,58 +84,36 @@ namespace AutoDocFront.Components.Pages
         {
             try
             {
-                List<SectionsGetDTO> allSections = new List<SectionsGetDTO>();
+                var allSections = new List<SectionsGetDTO>();
                 PagedList<SectionsGetDTO>? pagedList;
-                sections?.Clear();
-                selectedSection = null;
+                _sections.Clear();
+                _selectedSection = null;
+
                 do
                 {
-                    string url = $"/api/contract-generation/sections?groupId={groupId}&isLatestOnly=true";
-
-                    if (selectedStatuses != null && selectedStatuses.Count == 1)
+                    SectionStatusType? status = null;
+                    if (_selectedStatuses.Count == 1)
                     {
-                        bool? isActiveSection = null;
-                        if (selectedStatuses.FirstOrDefault() == SectionStatusType.ACTIVE)
-                        {
-                            isActiveSection = true;
-                        }
-                        else
-                        {
-                            isActiveSection = false;
-                        }
-                        url += $"&isActive={isActiveSection.Value}";
+                        status = _selectedStatuses.First();
                     }
 
-                    url += $"&offset={_currentOffset}&pageSize={_pageSize}";
-
-                    //var statuses = string.Join("&statuses=", selectedStatuses.Select(s => s.ToString()));
-                    var response = await _autoDocServiceClient.GetAsync(url);
-                    if (response.IsSuccessStatusCode)
+                    pagedList = await SectionsService.GetSectionsAsync(groupId, null, status, _currentOffset, _pageSize);
+                    if (pagedList?.Items != null)
                     {
-                        pagedList = await response.Content.ReadFromJsonAsync<PagedList<SectionsGetDTO>>();
-                        if (pagedList?.Items != null)
-                        {
-                            allSections.AddRange(pagedList.Items);
-                            _currentOffset = pagedList.NextPageOffset ?? 0;  // Move to the next offset
-                        }
-                        else
-                        {
-                            break;  // No more items to load
-                        }
+                        allSections.AddRange(pagedList.Items);
+                        _currentOffset = pagedList.NextPageOffset ?? 0;
                     }
                     else
                     {
-                        // Handle failure
-                        toastService.ShowError("Problem prilikom dobavljanja clanova/sekcija!");
                         break;
                     }
                 } while (pagedList?.NextPageOffset != null);
 
-                sections = allSections;
+                _sections = allSections;
             }
-            catch (HttpRequestException ex)
+            catch (Exception)
             {
-                // Handle exception
+                ToastService.ShowError("Problem prilikom dobavljanja clanova/sekcija!");
             }
         }
 
@@ -139,20 +121,15 @@ namespace AutoDocFront.Components.Pages
         {
             try
             {
-                var response = await _autoDocServiceClient.GetAsync($"/api/contract-generation/section-groups?status=ACTIVE&id={groupId}");
-                if (response.IsSuccessStatusCode)
+                _group = await GroupService.GetGroupByIdAsync(groupId);
+                if (_group == null)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<List<SectionGroupGetDTO>>() ?? new List<SectionGroupGetDTO>();
-                    group = result.FirstOrDefault() ?? new SectionGroupGetDTO();
-                }
-                else if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
-                {
-                    toastService.ShowError("Problem prilikom dobavljanja podataka za grupe clanova!");
+                    ToastService.ShowError("Problem prilikom dobavljanja podataka za grupe clanova!");
                 }
             }
-            catch (HttpRequestException ex)
+            catch (Exception)
             {
-                // TODO: Handle exception
+                ToastService.ShowError("Problem prilikom dobavljanja podataka za grupe clanova!");
             }
         }
 
@@ -163,7 +140,7 @@ namespace AutoDocFront.Components.Pages
 
         private void ToggleStatusFilter()
         {
-            isStatusFilterVisible = !isStatusFilterVisible;
+            _isStatusFilterVisible = !_isStatusFilterVisible;
         }
 
         private async Task OnStatusFilterChanged(ChangeEventArgs e, SectionStatusType status)
@@ -171,11 +148,11 @@ namespace AutoDocFront.Components.Pages
             var isChecked = (e.Value as bool?) ?? false;
             if (isChecked)
             {
-                selectedStatuses.Add(status);
+                _selectedStatuses.Add(status);
             }
             else
             {
-                selectedStatuses.Remove(status);
+                _selectedStatuses.Remove(status);
             }
             await LoadSectionsAsync();
         }
@@ -190,7 +167,7 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private void OpenEditSectionModal()
         {
-            sectionModalMode = ModalMode.EDIT;
+            _sectionModalMode = ModalMode.EDIT;
             _isSectionModalVisible = true;
         }
 
@@ -199,7 +176,7 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private void OpenHistoricalSectionModal()
         {
-            sectionModalMode = ModalMode.VIEW;
+            _sectionModalMode = ModalMode.VIEW;
             _isSectionModalVisible = true;
         }
 
@@ -208,9 +185,9 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private void ShowSectionModalForInsert()
         {
-            selectedSection = null;
+            _selectedSection = null;
             _isSectionModalVisible = true;
-            sectionModalMode = ModalMode.INSERT;
+            _sectionModalMode = ModalMode.INSERT;
         }
 
         private void ClosePrompt()
@@ -227,7 +204,7 @@ namespace AutoDocFront.Components.Pages
 
         private void SelectSection(SectionsGetDTO section)
         {
-            selectedSection = section;
+            _selectedSection = section;
         }
 
         private async Task OnSaveAsync()
