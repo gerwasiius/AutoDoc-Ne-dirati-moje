@@ -2,6 +2,7 @@
 using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using AutoDocFront.Models.Enumerations;
 using AutoDocFront.Services;
+using AutoDocFront.Utilities;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 
@@ -67,17 +68,17 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
-        private int TotalPages => (int)Math.Ceiling((double)_totalCount / ItemsPerPage);
+        private int TotalPages => PaginationHelper.CalculateTotalPages(_totalCount, ItemsPerPage);
 
         /// <summary>
         /// Početni indeks prikazanih sekcija na trenutnoj stranici.
         /// </summary>
-        private int StartIndex => _totalCount == 0 ? 0 : (_currentPage - 1) * ItemsPerPage;
+        private int StartIndex => PaginationHelper.CalculateStartIndex(_currentPage, ItemsPerPage, _totalCount);
 
         /// <summary>
         /// Krajnji indeks prikazanih sekcija na trenutnoj stranici.
         /// </summary>
-        private int EndIndex => Math.Min(StartIndex + _sections.Count, _totalCount);
+        private int EndIndex => PaginationHelper.CalculateEndIndex(StartIndex, _sections.Count, _totalCount);
         
         // --- API POZIVI ---
 

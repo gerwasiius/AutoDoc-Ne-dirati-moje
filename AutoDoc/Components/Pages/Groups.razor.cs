@@ -4,6 +4,7 @@ using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FluentUI.AspNetCore.Components;
+using AutoDocFront.Utilities;
 
 namespace AutoDocFront.Components.Pages
 {
@@ -53,17 +54,17 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
-        private int TotalPages => (int)Math.Ceiling((double)_totalCount / ItemsPerPage);
+        private int TotalPages => PaginationHelper.CalculateTotalPages(_totalCount, ItemsPerPage);
 
         /// <summary>
         /// Početni indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int StartIndex => _totalCount == 0 ? 0 : (_currentPage - 1) * ItemsPerPage;
+        private int StartIndex => PaginationHelper.CalculateStartIndex(_currentPage, ItemsPerPage, _totalCount);
 
         /// <summary>
         /// Krajnji indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int EndIndex => Math.Min(StartIndex + _groups.Count, _totalCount);
+        private int EndIndex => PaginationHelper.CalculateEndIndex(StartIndex, _groups.Count, _totalCount);
 
         
 

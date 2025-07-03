@@ -3,7 +3,8 @@ using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using AutoDoc.Shared.Model.DTO.SectionsDTO;
 using AutoDocFront.Models.Enumerations;
 using Microsoft.AspNetCore.Components;
-using System.Net.Http;
+using AutoDocFront.Services;
+using AutoDocFront.Utilities;
 
 namespace AutoDocFront.Components.Modals
 {
@@ -31,7 +32,8 @@ namespace AutoDocFront.Components.Modals
 
         // --- INJECTION ---
 
-        [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+        [Inject] private SectionGroupApiService GroupService { get; set; } = default!;
+        [Inject] private SectionsApiService SectionsService { get; set; } = default!;
 
         // --- STATE ---
 
@@ -40,7 +42,6 @@ namespace AutoDocFront.Components.Modals
         private List<SectionsGetDTO> _availableSections = new();
         private HashSet<int> _selectedSectionIds = new();
 
-        private HttpClient _httpClient;
         private string _groupSearchTerm = string.Empty;
         private int _currentGroupPage = 1;
         private const int GroupsPerPage = 5;
@@ -58,13 +59,13 @@ namespace AutoDocFront.Components.Modals
 
         // --- PAGINATION PROPERTIES ---
 
-        private int TotalGroupPages => (int)Math.Ceiling((double)_totalGroupCount / GroupsPerPage);
-        private int GroupStartIndex => _totalGroupCount == 0 ? 0 : (_currentGroupPage - 1) * GroupsPerPage;
-        private int GroupEndIndex => Math.Min(GroupStartIndex + _availableGroups.Count, _totalGroupCount);
+        private int TotalGroupPages => PaginationHelper.CalculateTotalPages(_totalGroupCount, GroupsPerPage);
+        private int GroupStartIndex => PaginationHelper.CalculateStartIndex(_currentGroupPage, GroupsPerPage, _totalGroupCount);
+        private int GroupEndIndex => PaginationHelper.CalculateEndIndex(GroupStartIndex, _availableGroups.Count, _totalGroupCount);
 
-        private int TotalSectionPages => (int)Math.Ceiling((double)_totalSectionCount / SectionsPerPage);
-        private int SectionStartIndex => _totalSectionCount == 0 ? 0 : (_currentSectionPage - 1) * SectionsPerPage;
-        private int SectionEndIndex => Math.Min(SectionStartIndex + _availableSections.Count, _totalSectionCount);
+        private int TotalSectionPages => PaginationHelper.CalculateTotalPages(_totalSectionCount, SectionsPerPage);
+        private int SectionStartIndex => PaginationHelper.CalculateStartIndex(_currentSectionPage, SectionsPerPage, _totalSectionCount);
+        private int SectionEndIndex => PaginationHelper.CalculateEndIndex(SectionStartIndex, _availableSections.Count, _totalSectionCount);
 
         // --- LIFECYCLE ---
 
@@ -74,7 +75,6 @@ namespace AutoDocFront.Components.Modals
         protected override async Task OnInitializedAsync()
         {
             _step = PickerStepEnum.GROUPS;
-            _httpClient = HttpClientFactory.CreateClient("AutoDocService");
             await LoadGroupsAsync();
         }
 
@@ -87,30 +87,10 @@ namespace AutoDocFront.Components.Modals
                 _isLoadingGroups = true;
                 int offset = (_currentGroupPage - 1) * GroupsPerPage;
 
-                var query = new List<string>
-                {
-                    $"offset={offset}",
-                    $"pageSize={GroupsPerPage}",
-                    $"status=ACTIVE"
-                };
-
-                if (!string.IsNullOrWhiteSpace(_groupSearchTerm))
-                    query.Add($"name={Uri.EscapeDataString(_groupSearchTerm)}");
-
-                var apiUrl = "/api/contract-generation/section-groups?" + string.Join("&", query);
-                var response = await _httpClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<PagedList<SectionGroupGetDTO>>() ?? new();
-                    _availableGroups = result.Items ?? [];
-                    _totalGroupCount = result.TotalItems;
-                }
-                else
-                {
-                    _availableGroups = [];
-                    _totalGroupCount = 0;
-                }
+                var status = "ACTIVE";
+                var result = await GroupService.GetGroupsAsync(_groupSearchTerm, status, offset, GroupsPerPage);
+                _availableGroups = result.Items ?? [];
+                _totalGroupCount = result.TotalItems;
             }
             finally
             {
@@ -159,31 +139,15 @@ namespace AutoDocFront.Components.Modals
                 _isLoadingSections = true;
                 int offset = (_currentSectionPage - 1) * SectionsPerPage;
 
-                var query = new List<string>
-                {
-                    $"groupId={groupId}",
-                    $"offset={offset}",
-                    $"pageSize={SectionsPerPage}",
-                    $"isActive=true"
-                };
+                var result = await SectionsService.GetSectionsAsync(
+                    groupId,
+                    _sectionSearchTerm,
+                    SectionStatusType.ACTIVE,
+                    offset,
+                    SectionsPerPage);
 
-                if (!string.IsNullOrWhiteSpace(_sectionSearchTerm))
-                    query.Add($"name={Uri.EscapeDataString(_sectionSearchTerm)}");
-
-                var apiUrl = "/api/contract-generation/sections?" + string.Join("&", query);
-                var response = await _httpClient.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<PagedList<SectionsGetDTO>>() ?? new();
-                    _availableSections = result.Items ?? [];
-                    _totalSectionCount = result.TotalItems;
-                }
-                else
-                {
-                    _availableSections = [];
-                    _totalSectionCount = 0;
-                }
+                _availableSections = result.Items ?? [];
+                _totalSectionCount = result.TotalItems;
             }
             finally
             {

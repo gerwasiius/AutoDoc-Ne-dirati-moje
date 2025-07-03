@@ -4,25 +4,23 @@
 @using AutoDocFront.Models.DTO.Sections
 @using AutoDocFront.Models.Enumerations
 @using Microsoft.FluentUI.AspNetCore.Components
-@inject IHttpClientFactory httpClientFactory
-@inject NavigationManager NavigationManager
-@inject IToastService toastService
-@inject IJSRuntime JSRuntime
+@inject SectionsApiService SectionsService
+@inject SectionGroupApiService GroupService
 
 <PageTitle>Članovi</PageTitle>
 
 <div class="row align-items-center my-3">
     <div class="col">
-        <h3>Članovi za grupu: "@group?.Name"</h3>
+<h3>Članovi za grupu: "@_group?.Name"</h3>
     </div>
     <div class="col-auto">
-        @if (group != null)
+@if (_group != null)
         {
             <!-- Button to toggle search input visibility -->
             @*             <button class="btn btn-icon ml-2" @onclick="ToggleSearch" title="Pretrazi">
         <span class="fa fa-search fs-5"></span>
         </button> *@
-            @if (selectedSection != null)
+            @if (_selectedSection != null)
             {
                 <button class="btn btn-icon ml-2" @onclick="OpenHistoricalSectionModal" title="Ostale verzije ovog člana">
                     <span class="fas fa-history fs-5"></span>
@@ -53,12 +51,12 @@
 {
     <div class="spinner mt-5"></div>
 }
-else if (group != null)
+else if (_group != null)
 {
     <div class="row">
         <div class="col-3">
             <div class="input-group mt-1 mb-2 position-relative">
-                <input @bind="searchTerm" @bind:event="oninput" placeholder="Pretraga po nazivu člana" class="form-control pl-4" />
+                <input @bind="_searchTerm" @bind:event="oninput" placeholder="Pretraga po nazivu člana" class="form-control pl-4" />
                 <span class="position-absolute search-icon">
                     <i class="fa fa-search"></i>
                 </span>
@@ -69,7 +67,7 @@ else if (group != null)
                 </div>
             </div>
 
-            @if (isStatusFilterVisible)
+            @if (_isStatusFilterVisible)
             {
                 <div class="status-filters mt-2 mb-2">
                     @foreach (var status in Enum.GetValues<SectionStatusType>())
@@ -92,7 +90,7 @@ else if (group != null)
                             <ul class="list-group navigation-list section-list-container">
                                 @foreach (var sectionItem in filteredSections)
                                 {
-                                    <li class="list-group-item cursor-pointer @((selectedSection?.ID == sectionItem.ID ? "active" : ""))" style="display:flex"
+                                    <li class="list-group-item cursor-pointer @((_selectedSection?.ID == sectionItem.ID ? "active" : ""))" style="display:flex"
                                         @onclick="() => SelectSection(sectionItem)">
                                         @* @($"v{sectionItem.Version} | {sectionItem.Name}") *@
                                         <div class="flex-column me-2  align-content-center">
@@ -112,14 +110,14 @@ else if (group != null)
         </div>
         <div class="col-9">
             <!-- Right-side content/preview -->
-            @if (selectedSection != null)
+            @if (_selectedSection != null)
             {
                 <div class="card mb-2">
-                    <h5 class="card-header cursor-pointer yellow-background" @onclick="() => ToggleVisibility(ref isBasicDetailsVisible)">
+                    <h5 class="card-header cursor-pointer yellow-background" @onclick="() => ToggleVisibility(ref _isBasicDetailsVisible)">
                         Osnovni podaci
                         <span class="fas @(isBasicDetailsVisible ? "fa-angle-down" : "fa-angle-right") ml-2" style="color:#FEE600"></span>
                     </h5>
-                    @if (isBasicDetailsVisible)
+                    @if (_isBasicDetailsVisible)
                     {
                         <div class="card-body">
                             <div class="card-title border-bottom">
@@ -128,7 +126,7 @@ else if (group != null)
                                         <h5>Naziv</h5>
                                     </div>
                                     <div class="col-10">
-                                        <h6>@selectedSection.Name</h6>
+                                        <h6>@_selectedSection.Name</h6>
                                     </div>
                                 </div>
                             </div>
@@ -138,24 +136,24 @@ else if (group != null)
                                         <h5>Opis</h5>
                                     </div>
                                     <div class="col-10 mb-0">
-                                        <span class="mb-0">@selectedSection.Description</span>
+                                        <span class="mb-0">@_selectedSection.Description</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     }
                 </div>
-                <div class="card flex-grow-1 mb-2 content-container @(isBasicDetailsVisible ? "reduced-height" : "")">
+                <div class="card flex-grow-1 mb-2 content-container @(_isBasicDetailsVisible ? "reduced-height" : "")">
                     <h5 class="card-header cursor-pointer justify-content-between align-items-center yellow-background sticky-header"
-                        @onclick="() => ToggleVisibility(ref isContentVisible)">
+                        @onclick="() => ToggleVisibility(ref _isContentVisible)">
                         Sadržaj
                         <span class="fas @(isContentVisible ? "fa-angle-down" : "fa-angle-right") ml-2" style="color:#FEE600"></span>
                     </h5>
-                    @if (isContentVisible)
+                    @if (_isContentVisible)
                     {
                         <div class="card-body base-content-height content-full-height">
                             <div class="card-text">
-                                <p>@(new MarkupString(selectedSection.Content))</p>
+                                <p>@(new MarkupString(_selectedSection.Content))</p>
                             </div>
                         </div>
                     }
@@ -173,5 +171,5 @@ else
 
 @if (_isSectionModalVisible)
 {
-    <AutoDocFront.Components.Modals.SectionsModal @ref="_sectionModal" IsOpen="@_isSectionModalVisible" IsOpenChanged="@((value) => _isSectionModalVisible = value)" Group="group" Section="selectedSection" ModalMode="sectionModalMode" OnSave="OnSaveAsync" />
+    <AutoDocFront.Components.Modals.SectionsModal @ref="_sectionModal" IsOpen="@_isSectionModalVisible" IsOpenChanged="@((value) => _isSectionModalVisible = value)" Group="_group" Section="_selectedSection" ModalMode="@_sectionModalMode" OnSave="OnSaveAsync" />
 }
