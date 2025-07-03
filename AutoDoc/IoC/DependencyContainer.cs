@@ -23,6 +23,8 @@ namespace AutoDocFront.IoC
             services.AddScoped<DocumentTemplateApiService>();
             services.AddScoped<SectionsApiService>();
             services.AddScoped<DocumentRenderApiService>();
+            services.AddScoped<PlaceholdersApiService>();
+
         }
 
         /// <summary>

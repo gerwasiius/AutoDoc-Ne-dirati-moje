@@ -1,0 +1,123 @@
+﻿@page "/placeholders"
+@using AutoDocFront.Components.Shared
+@using AutoDocFront.Services
+@inject PlaceholdersApiService PlaceholdersService
+
+<h2>Placeholders</h2>
+
+<div class="mb-3 d-flex">
+    <input class="form-control me-2" style="max-width:300px" @bind="_searchTerm" @bind:event="oninput" placeholder="Search by name or description..." />
+    <button class="btn btn-primary" @onclick="LoadPlaceholders">Search</button>
+</div>
+
+<table class="table table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Possible Values</th>
+            <th>Nullable</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (_loading)
+        {
+            <tr>
+                <td colspan="6" class="text-center"><span class="spinner-border"></span> Loading...</td>
+            </tr>
+        }
+        else if (_placeholders?.Count == 0)
+        {
+            <tr>
+                <td colspan="6" class="text-center">No data.</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var p in _placeholders)
+            {
+                <tr>
+                    <td>@p.Name</td>
+                    <td>@p.Description</td>
+                    <td>@p.Type</td>
+                    <td>@p.PossibleValues</td>
+                    <td>@(p.IsNullable ? "Yes" : "No")</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="() => ShowDetails(p)">Details</button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@* Modal za detalje *@
+@if (_showDetails && _selectedPlaceholder != null)
+{
+    <BaseModalLayout OnClose="@HideDetails">
+        <div class="p-3">
+            <h4>@_selectedPlaceholder.Name</h4>
+            <dl class="row">
+                <dt class="col-sm-4">Description:</dt>
+                <dd class="col-sm-8">@_selectedPlaceholder.Description</dd>
+
+                <dt class="col-sm-4">Type:</dt>
+                <dd class="col-sm-8">@_selectedPlaceholder.Type</dd>
+
+                <dt class="col-sm-4">Possible Values:</dt>
+                <dd class="col-sm-8">@_selectedPlaceholder.PossibleValues</dd>
+
+                <dt class="col-sm-4">Nullable:</dt>
+                <dd class="col-sm-8">@(_selectedPlaceholder.IsNullable ? "Yes" : "No")</dd>
+            </dl>
+            <button class="btn btn-secondary" @onclick="HideDetails">Close</button>
+        </div>
+    </BaseModalLayout>
+}
+
+@code {
+    public class PlaceholderDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Type { get; set; }
+        public string PossibleValues { get; set; }
+        public bool IsNullable { get; set; }
+    }
+
+    private List<PlaceholderDTO> _placeholders = new();
+    private string _searchTerm = "";
+    private bool _loading = false;
+
+    private bool _showDetails = false;
+    private PlaceholderDTO? _selectedPlaceholder;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlaceholders();
+    }
+
+    private async Task LoadPlaceholders()
+    {
+        _loading = true;
+        StateHasChanged();
+
+        _placeholders = await PlaceholdersService.GetPlaceholdersAsync(_searchTerm);
+
+        _loading = false;
+    }
+
+    private void ShowDetails(PlaceholderDTO p)
+    {
+        _selectedPlaceholder = p;
+        _showDetails = true;
+    }
+    private void HideDetails()
+    {
+        _showDetails = false;
+        _selectedPlaceholder = null;
+    }
+}
