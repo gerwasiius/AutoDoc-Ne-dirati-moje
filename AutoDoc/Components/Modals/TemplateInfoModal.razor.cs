@@ -11,19 +11,14 @@ namespace AutoDocFront.Components.Modals
     /// <summary>
     /// Modal za unos, izmjenu i pregled dokument template-a.
     /// </summary>
-    public partial class TemplateInfoModal
+    public partial class TemplateInfoModal : ModalBase
     {
         // --- PARAMETRI ---
 
         /// <summary>
         /// Da li je modal otvoren.
         /// </summary>
-        [Parameter] public bool IsOpen { get; set; }
 
-        /// <summary>
-        /// Event za promjenu stanja otvaranja modala.
-        /// </summary>
-        [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
         /// <summary>
         /// Template za prikaz ili izmjenu.
@@ -115,14 +110,7 @@ namespace AutoDocFront.Components.Modals
             }
         }
 
-        /// <summary>
-        /// Zatvara modal i emituje promjenu stanja.
-        /// </summary>
-        private async Task CloseModalAsync()
-        {
-            IsOpen = false;
-            await IsOpenChanged.InvokeAsync(false);
-        }
+        // Zatvaranje modala implementirano je u baznoj klasi.
 
         /// <summary>
         /// Validira formu i izvršava submit (insert ili update template-a).
@@ -146,7 +134,7 @@ namespace AutoDocFront.Components.Modals
                     if (isSuccess)
                     {
                         ToastService.ShowSuccess("Predložak uspješno kreiran!");
-                        await CloseModalAsync();
+                        await CloseAsync();
                         await OnSave.InvokeAsync();
                     }
                     else
@@ -163,7 +151,7 @@ namespace AutoDocFront.Components.Modals
                     if (isSuccess)
                     {
                         ToastService.ShowSuccess("Predložak uspješno ažuriran!");
-                        await CloseModalAsync();
+                        await CloseAsync();
                         await OnSave.InvokeAsync();
                     }
                     else
@@ -202,7 +190,7 @@ namespace AutoDocFront.Components.Modals
         //        if (isSuccess)
         //        {
         //            ToastService.ShowSuccess("Predložak uspješno kreiran!");
-        //            await CloseModalAsync();
+        //            await CloseAsync();
         //            await OnSave.InvokeAsync();
         //        }
         //        else
@@ -238,7 +226,7 @@ namespace AutoDocFront.Components.Modals
         //        if (isSuccess)
         //        {
         //            ToastService.ShowSuccess("Predložak uspješno ažuriran!");
-        //            await CloseModalAsync();
+        //            await CloseAsync();
         //            await OnSave.InvokeAsync();
         //        }
         //        else

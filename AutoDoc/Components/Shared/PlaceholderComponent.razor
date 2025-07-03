@@ -41,29 +41,6 @@
     </nav>
 </div>
 
-@code {
-    [Parameter] public List<PropertyInfo> ParameterProperties { get; set; }
-
-    private void ToggleSubProperties(string propertyName) =>
-        JS.InvokeVoidAsync("toggleCollapse", $"#{propertyName}");
-
-    private bool IsComplexProperty(PropertyInfo property) =>
-        property.PropertyType.IsClass && property.PropertyType != typeof(string);
-
-    private IEnumerable<PropertyInfo> GetSubProperties(PropertyInfo property) =>
-        property.PropertyType.GetProperties().Where(p => p.CanRead && p.GetMethod.IsPublic);
-
-    private string GetDisplayName(PropertyInfo property)
-    {
-        var displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
-        return displayAttribute != null ? displayAttribute.Name : property.Name;
-    }
-
-    private async Task InsertPlaceholder(string placeholder)
-    {
-        await JS.InvokeVoidAsync("insertPlaceholder", placeholder);
-    }
-}
 
 <script>
     function toggleCollapse(elementId) {

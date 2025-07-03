@@ -11,19 +11,11 @@ namespace AutoDocFront.Components.Modals
     /// <summary>
     /// Modal za biranje sekcija iz grupa za template.
     /// </summary>
-    public partial class TemplateRelationPickerModal
+    public partial class TemplateRelationPickerModal : ModalBase
     {
         // --- PARAMETRI ---
 
-        /// <summary>
-        /// Da li je modal otvoren.
-        /// </summary>
-        [Parameter] public bool IsOpen { get; set; }
 
-        /// <summary>
-        /// Event za promjenu stanja otvaranja modala.
-        /// </summary>
-        [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
         /// <summary>
         /// Event koji se poziva kada su sekcije odabrane.
@@ -189,13 +181,13 @@ namespace AutoDocFront.Components.Modals
             var picked = _availableSections.Where(s => _selectedSectionIds.Contains(s.ID)).ToList();
             await OnSectionsPicked.InvokeAsync(picked);
             _selectedSectionIds.Clear();
-            await IsOpenChanged.InvokeAsync(false);
+            await CloseAsync();
         }
 
-        private async Task CloseAsync()
+        private async Task ClosePickerAsync()
         {
             _selectedSectionIds.Clear();
-            await IsOpenChanged.InvokeAsync(false);
+            await CloseAsync();
         }
     }
 }
