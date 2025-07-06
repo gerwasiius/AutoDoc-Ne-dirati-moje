@@ -14,10 +14,18 @@ namespace AutoDocFront.Components.Modals
     /// Modal komponenta za unos, izmjenu i pregled sekcija (članova) unutar grupe.
     /// Omogućava validaciju, prikaz svih verzija i promjenu statusa sekcije.
     /// </summary>
-    public partial class SectionsModal : ModalBase
+    public partial class SectionsModal
     {
         // --- PARAMETRI ---
+              /// <summary>
+        /// Označava da li je modal otvoren.
+        /// </summary>
+        [Parameter] public bool IsOpen { get; set; }
 
+        /// <summary>
+        /// Event za promjenu stanja otvaranja modala.
+        /// </summary>
+        [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
         /// <summary>
         /// DTO objekat grupe kojoj sekcija pripada.
         /// </summary>
@@ -275,6 +283,14 @@ namespace AutoDocFront.Components.Modals
         private async Task ShowConfirmationDialogAsync(bool isActive)
         {
                 await ToggleSectionStatusAsync(isActive);
+        }
+        /// <summary>
+        /// Zatvara modal i emituje promjenu stanja.
+        /// </summary>
+        private async Task CloseAsync()
+        {
+            IsOpen = false;
+            await IsOpenChanged.InvokeAsync(false);
         }
     }
 }

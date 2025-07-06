@@ -1,0 +1,60 @@
+﻿.placeholders-card {
+    background: #fff;
+    border-radius: 1.1rem;
+    box-shadow: 0 2px 16px 0 rgba(0,0,0,.08), 0 1.5px 4px 0 rgba(0,0,0,.08);
+    padding: 2rem;
+    margin: 0 auto;
+    max-width: 1100px;
+}
+
+.placeholders-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.placeholders-title {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.placeholders-searchbar {
+    width: 340px;
+}
+
+.placeholders-table thead {
+    background: #f9fafb;
+}
+
+.placeholders-table th, .placeholders-table td {
+    vertical-align: middle;
+    padding: 0.75rem 1rem;
+}
+
+.placeholders-table tr {
+    transition: background .15s;
+}
+
+.placeholders-table tbody tr:hover {
+    background: #f4f6fb;
+}
+
+.placeholders-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-top: 1rem;
+}
+
+.placeholders-modal .modal-content {
+    border-radius: 1rem;
+    box-shadow: 0 6px 32px rgba(0,0,0,.16);
+    padding: 2rem;
+}
+
+.table-responsive {
+    background-color: #fff;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+}

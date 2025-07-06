@@ -1,0 +1,80 @@
+﻿@using AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata
+@using AutoDocFront.Components.Shared
+@inherits ModalBase
+
+<BaseModalLayout IsOpen="@IsOpen"
+                 Title="Detalji placeholdera"
+                 IsOpenChanged="@IsOpenChanged">
+    <BodyContent>
+        @if (Placeholder == null)
+        {
+            <div class="text-center text-secondary py-4">Nema podataka za prikaz.</div>
+        }
+        else
+        {
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Vrijednost</dt>
+                <dd class="col-sm-8 text-monospace">@($"{Placeholder.Group}.{Placeholder.Name}")</dd>
+
+                <dt class="col-sm-4">Grupa</dt>
+                <dd class="col-sm-8">@Placeholder.Group</dd>
+
+                <dt class="col-sm-4">Naziv</dt>
+                <dd class="col-sm-8">@Placeholder.Name</dd>
+
+                <dt class="col-sm-4">Opis</dt>
+                <dd class="col-sm-8">
+                    @if (!string.IsNullOrWhiteSpace(Placeholder.Description))
+                    {
+                        @Placeholder.Description
+                    }
+                    else
+                    {
+                        <span class="text-muted fst-italic">Nema opisa</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-4">Tip podatka</dt>
+                <dd class="col-sm-8">
+                    <span class="badge bg-secondary">@Placeholder.Type</span>
+                </dd>
+
+                <dt class="col-sm-4">Nullable</dt>
+                <dd class="col-sm-8">
+                    @if (Placeholder.IsNullable)
+                    {
+                        <span class="badge bg-success">Da</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Ne</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-4">Moguće vrijednosti</dt>
+                <dd class="col-sm-8">
+                    @if (Placeholder.EnumValues != null && Placeholder.EnumValues.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach (var value in Placeholder.EnumValues)
+                            {
+                                <span class="badge bg-secondary d-flex align-items-center gap-1">
+                                    @value
+                                </span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="text-muted fst-italic">-</span>
+                    }
+                </dd>
+            </dl>
+        }
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer d-flex justify-content-end">
+            <button class="btn btn-secondary" @onclick="Close">Zatvori</button>
+        </div>
+    </FooterContent>
+</BaseModalLayout>

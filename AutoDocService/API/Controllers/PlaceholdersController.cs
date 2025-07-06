@@ -1,19 +1,57 @@
-﻿using AutoDocService.BL.Services;
+﻿using AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata;
+using AutoDocService.API.ServiceInterfaces;
+using AutoDocService.BL.Services;
 using AutoDocService.DL.FolderParamZaObrisati;
-using AutoDocService.Helpers.Utils;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection;
 
 namespace AutoDocService.API.Controllers
 {
+    /// <summary>
+    /// API kontroler za rad sa meta podacima placeholdera.
+    /// Omogućava dohvat svih placeholder meta podataka ili pojedinačnog placeholdera po ID-u.
+    /// </summary>
     [ApiController]
-    [Route("api/placeholders")]
+    [Route("api/contract-generation/placeholders")]
+    [Produces("application/json")]
     public class PlaceholdersController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult GetAll()
+        private readonly IPlaceholderMetadataService _placeholderService;
+
+        /// <summary>
+        /// Konstruktor sa injekcijom servisa za placeholder meta podatke.
+        /// </summary>
+        /// <param name="placeholderService">Servis za meta podatke placeholdera.</param>
+        public PlaceholdersController(IPlaceholderMetadataService placeholderService)
         {
-            return Ok(PlaceholderMetaCache.All); // Keširana lista!
+            _placeholderService = placeholderService;
+        }
+
+        /// <summary>
+        /// Vraća sve meta podatke za placeholdere.
+        /// </summary>
+        /// <returns>Lista svih placeholder meta podataka.</returns>
+        [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<PlaceholderMeta>), 200)]
+        public ActionResult<IReadOnlyList<PlaceholderMeta>> GetAll()
+        {
+            var result = _placeholderService.GetAllPlaceholders();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Vraća meta podatke za jedan placeholder prema ID-u.
+        /// </summary>
+        /// <param name="id">Jedinstveni identifikator placeholdera (npr. "Grupa1.Placeholder1").</param>
+        /// <returns>Meta podaci za traženi placeholder ili 404 ako ne postoji.</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(PlaceholderMeta), 200)]
+        [ProducesResponseType(404)]
+        public ActionResult<PlaceholderMeta> GetById(string id)
+        {
+            var placeholder = _placeholderService.GetPlaceholderById(id);
+            if (placeholder == null)
+                return NotFound($"Placeholder sa ID '{id}' nije pronađen.");
+            return Ok(placeholder);
         }
     }
 }

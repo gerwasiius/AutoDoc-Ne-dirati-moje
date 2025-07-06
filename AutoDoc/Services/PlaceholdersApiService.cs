@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using static AutoDocFront.Components.Pages.Placeholders;
+using AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata;
+using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 
 namespace AutoDocFront.Services
 {
@@ -18,21 +20,19 @@ namespace AutoDocFront.Services
         /// <summary>
         /// Gets all placeholders, optionally filtered by search term.
         /// </summary>
-        public async Task<List<PlaceholderDTO>> GetPlaceholdersAsync(string searchTerm)
+        public async Task<List<PlaceholderMeta>> GetPlaceholdersAsync(string searchTerm)
         {
-            var url = "/api/placeholders";
-            var result = await _client.GetFromJsonAsync<List<PlaceholderDTO>>(url) ?? new List<PlaceholderDTO>();
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            var url = "/api/contract-generation/placeholders";
+            var response = await _client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
             {
-                var lower = searchTerm.ToLowerInvariant();
-                result = result
-                    .Where(p => (!string.IsNullOrEmpty(p.Name) && p.Name.ToLowerInvariant().Contains(lower))
-                             || (!string.IsNullOrEmpty(p.Description) && p.Description.ToLowerInvariant().Contains(lower)))
-                    .ToList();
+                return await response.Content.ReadFromJsonAsync<List<PlaceholderMeta>>()
+                       ?? new List<PlaceholderMeta>();
             }
-
-            return result;
+            else
+            {
+                return null;
+            }
         }
     }
 }

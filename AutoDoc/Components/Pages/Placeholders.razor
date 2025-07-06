@@ -1,123 +1,109 @@
 ﻿@page "/placeholders"
+@using AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata
+@using AutoDocFront.Components.Modals
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Services
 @inject PlaceholdersApiService PlaceholdersService
 
-<h2>Placeholders</h2>
+@if (_loading)
+{
+    <div class="spinner mt-5"></div>
+}
+else
+{
+    <div class="container pb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <h1 class="h2 fw-bold text-dark">Placeholderi</h1>
+                <p class="text-secondary">Pregled i pretraga placeholdera za šablone dokumenata</p>
+            </div>
+        </div>
 
-<div class="mb-3 d-flex">
-    <input class="form-control me-2" style="max-width:300px" @bind="_searchTerm" @bind:event="oninput" placeholder="Search by name or description..." />
-    <button class="btn btn-primary" @onclick="LoadPlaceholders">Search</button>
-</div>
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <select class="form-select w-auto" @bind="SelectedGroup">
+                <option value="">Sve grupe</option>
+                @foreach (var group in _allGroups)
+                {
+                    <option value="@group">@group</option>
+                }
+            </select>
 
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Type</th>
-            <th>Possible Values</th>
-            <th>Nullable</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (_loading)
+
+            <div class="input-group mt-2 mb-2">
+                <input class="form-control" @bind="_searchTerm" placeholder="Pretraga po nazivu..." />
+                <button class="btn corporate-button-secondary" @onclick="OnSearch">
+                    <i class="fa fa-search"></i> Traži
+                </button>
+                <button class="btn corporate-button-secondary btn-sm ms-1" @onclick="OnClear" title="Očisti filtere">
+                    <i class="fa fa-eraser" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table placeholders-table">
+                <thead>
+                    <tr>
+                        <th>Vrijednost</th>
+                        <th>Grupa</th>
+                        <th>Naziv</th>
+                        <th>Opis</th>
+                        <th>type</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_filteredPlaceholders.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center">Nema podataka.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var p in _pagedPlaceholders)
+                        {
+                            <tr>
+                                <td class="text-monospace">@($"{p.Group}.{p.Name}")</td>
+                                <td>@p.Group</td>
+                                <td>@p.Name</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(p.Description))
+                                    {
+                                        @p.Description
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic">Nema opisa</span>
+                                    }
+                                </td>
+                                <td>
+                                    @p.Type
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="() => ShowDetails(p)">
+                                        <i class="bi bi-eye"></i> Detalji
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (TotalPages > 1)
         {
-            <tr>
-                <td colspan="6" class="text-center"><span class="spinner-border"></span> Loading...</td>
-            </tr>
+            <Pagination CurrentPage="@_currentPage"
+                        TotalPages="@TotalPages"
+                        OnPageChanged="OnPageChanged" />
         }
-        else if (_placeholders?.Count == 0)
-        {
-            <tr>
-                <td colspan="6" class="text-center">No data.</td>
-            </tr>
-        }
-        else
-        {
-            @foreach (var p in _placeholders)
-            {
-                <tr>
-                    <td>@p.Name</td>
-                    <td>@p.Description</td>
-                    <td>@p.Type</td>
-                    <td>@p.PossibleValues</td>
-                    <td>@(p.IsNullable ? "Yes" : "No")</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" @onclick="() => ShowDetails(p)">Details</button>
-                    </td>
-                </tr>
-            }
-        }
-    </tbody>
-</table>
+    </div>
+}
 
 @* Modal za detalje *@
 @if (_showDetails && _selectedPlaceholder != null)
 {
-    <BaseModalLayout OnClose="@HideDetails">
-        <div class="p-3">
-            <h4>@_selectedPlaceholder.Name</h4>
-            <dl class="row">
-                <dt class="col-sm-4">Description:</dt>
-                <dd class="col-sm-8">@_selectedPlaceholder.Description</dd>
-
-                <dt class="col-sm-4">Type:</dt>
-                <dd class="col-sm-8">@_selectedPlaceholder.Type</dd>
-
-                <dt class="col-sm-4">Possible Values:</dt>
-                <dd class="col-sm-8">@_selectedPlaceholder.PossibleValues</dd>
-
-                <dt class="col-sm-4">Nullable:</dt>
-                <dd class="col-sm-8">@(_selectedPlaceholder.IsNullable ? "Yes" : "No")</dd>
-            </dl>
-            <button class="btn btn-secondary" @onclick="HideDetails">Close</button>
-        </div>
-    </BaseModalLayout>
-}
-
-@code {
-    public class PlaceholderDTO
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Type { get; set; }
-        public string PossibleValues { get; set; }
-        public bool IsNullable { get; set; }
-    }
-
-    private List<PlaceholderDTO> _placeholders = new();
-    private string _searchTerm = "";
-    private bool _loading = false;
-
-    private bool _showDetails = false;
-    private PlaceholderDTO? _selectedPlaceholder;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadPlaceholders();
-    }
-
-    private async Task LoadPlaceholders()
-    {
-        _loading = true;
-        StateHasChanged();
-
-        _placeholders = await PlaceholdersService.GetPlaceholdersAsync(_searchTerm);
-
-        _loading = false;
-    }
-
-    private void ShowDetails(PlaceholderDTO p)
-    {
-        _selectedPlaceholder = p;
-        _showDetails = true;
-    }
-    private void HideDetails()
-    {
-        _showDetails = false;
-        _selectedPlaceholder = null;
-    }
+    <PlaceholderDetailsModal IsOpen="@_showDetails"
+                        IsOpenChanged="@(v => _showDetails = v)"
+                        Placeholder="_selectedPlaceholder" />
 }
