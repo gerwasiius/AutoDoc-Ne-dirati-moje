@@ -13,5 +13,16 @@ namespace AutoDocFront.Components.Modals
             IsOpen = false;
             await IsOpenChanged.InvokeAsync(false);
         }
+
+        private string GetTypeClass(string type) => type switch
+        {
+            "string" => "bg-primary",
+            "int" => "bg-info text-dark",
+            "decimal" => "bg-success",
+            "DateTime" => "bg-secondary",
+            "enum" => "bg-warning text-dark",
+            "char" => "bg-danger",
+            _ => "bg-light text-dark"
+        };
     }
 }

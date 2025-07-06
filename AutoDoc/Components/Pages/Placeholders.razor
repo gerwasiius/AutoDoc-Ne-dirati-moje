@@ -4,33 +4,30 @@
 @using AutoDocFront.Components.Shared
 @using AutoDocFront.Services
 @inject PlaceholdersApiService PlaceholdersService
+@inject IJSRuntime JS
 
-@if (_loading)
-{
-    <div class="spinner mt-5"></div>
-}
-else
-{
-    <div class="container pb-4">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-                <h1 class="h2 fw-bold text-dark">Placeholderi</h1>
-                <p class="text-secondary">Pregled i pretraga placeholdera za šablone dokumenata</p>
-            </div>
-        </div>
+<div class="container pb-4">
 
+    <div>
+        <h1 class="ph-title">Placeholders</h1>
+        <p>Placeholderi po grupama.</p>
+    </div>
+
+    <div class="ph-actions-row">
         <div class="d-flex align-items-center gap-3 mb-3">
-            <select class="form-select w-auto" @bind="SelectedGroup">
-                <option value="">Sve grupe</option>
-                @foreach (var group in _allGroups)
+            <select class="form-select corporate-select w-auto"
+                    @bind="CurrentGroupName"
+                    @bind:event="onchange">
+                @foreach (var group in AllGroups)
                 {
                     <option value="@group">@group</option>
                 }
             </select>
-
-
-            <div class="input-group mt-2 mb-2">
-                <input class="form-control" @bind="_searchTerm" placeholder="Pretraga po nazivu..." />
+            <div class="input-group">
+                <input class="form-control"
+                       style="min-width: 400px;"
+                       @bind="SearchInput"
+                       placeholder="Pretraga po nazivu..." />
                 <button class="btn corporate-button-secondary" @onclick="OnSearch">
                     <i class="fa fa-search"></i> Traži
                 </button>
@@ -39,71 +36,157 @@ else
                 </button>
             </div>
         </div>
-        <div class="table-responsive">
-            <table class="table placeholders-table">
-                <thead>
-                    <tr>
-                        <th>Vrijednost</th>
-                        <th>Grupa</th>
-                        <th>Naziv</th>
-                        <th>Opis</th>
-                        <th>type</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (_filteredPlaceholders.Count == 0)
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center">Nema podataka.</td>
-                        </tr>
-                    }
-                    else
-                    {
-                        @foreach (var p in _pagedPlaceholders)
-                        {
-                            <tr>
-                                <td class="text-monospace">@($"{p.Group}.{p.Name}")</td>
-                                <td>@p.Group</td>
-                                <td>@p.Name</td>
-                                <td>
-                                    @if (!string.IsNullOrWhiteSpace(p.Description))
-                                    {
-                                        @p.Description
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted fst-italic">Nema opisa</span>
-                                    }
-                                </td>
-                                <td>
-                                    @p.Type
-                                </td>
-                                <td>
-                                    <button class="btn btn-outline-primary btn-sm" @onclick="() => ShowDetails(p)">
-                                        <i class="bi bi-eye"></i> Detalji
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
+        <div class="ph-pagination">
+            @if (TotalPages > 1)
+            {
+                <Pagination CurrentPage="CurrentPage"
+                            TotalPages="TotalPages"
+                            OnPageChanged="OnGroupPageChanged" />
+            }
         </div>
-
-        @if (TotalPages > 1)
-        {
-            <Pagination CurrentPage="@_currentPage"
-                        TotalPages="@TotalPages"
-                        OnPageChanged="OnPageChanged" />
-        }
     </div>
+
+    @if (CurrentGroupName != null)
+    {
+        <div class="ph-group-card">
+            <h2 class="ph-group-title">@CurrentGroupName</h2>
+            <span class="ph-group-count">@FilteredPlaceholders.Count placeholder(s) in this group</span>
+            <div class="row g-4">
+                @foreach (var ph in FilteredPlaceholders)
+                {
+                    <div class="col-12 col-md-6 col-lg-4 d-flex">
+                        <div class="corporate-card shadow-sm p-0 w-100" style="min-height: 120px;">
+                            <div class="card-body d-flex flex-column justify-content-between h-100">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="fw-bold text-dark text-truncate" style="font-size: 1.1rem;">@ph.Name</span>
+                                        <span class="badge @GetTypeClass(ph.Type)" style="font-size: 0.85em;">
+                                            @ph.Type
+                                        </span>
+                                    </div>
+                                    <div class="text-secondary small mb-1">@ph.Id</div>
+                                    <div class="text-secondary small" style="max-width: 600px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        @ph.Description
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button class="btn corporate-button-secondary btn-sm"
+                                            title="Detalji"
+                                            @onclick="() => OpenDetails(ph)">
+                                        <i class="fa fa-eye me-1"></i> Pregled
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+@if (ShowDetails && SelectedPlaceholder != null)
+{
+    <PlaceholderDetailsModal IsOpen="ShowDetails"
+                             IsOpenChanged="@(v => ShowDetails = v)"
+                             Placeholder="SelectedPlaceholder" />
 }
 
-@* Modal za detalje *@
-@if (_showDetails && _selectedPlaceholder != null)
-{
-    <PlaceholderDetailsModal IsOpen="@_showDetails"
-                        IsOpenChanged="@(v => _showDetails = v)"
-                        Placeholder="_selectedPlaceholder" />
+@code {
+    private List<PlaceholderMeta> AllPlaceholders = new();
+    private List<string> AllGroups = new();
+
+    private int CurrentPage { get; set; } = 1;
+    private int TotalPages => AllGroups.Count == 0 ? 1 : AllGroups.Count;
+
+    private string? CurrentGroupName
+    {
+        get => AllGroups.Count >= CurrentPage ? AllGroups[CurrentPage - 1] : null;
+        set
+        {
+            var idx = AllGroups.IndexOf(value ?? "");
+            if (idx >= 0)
+                CurrentPage = idx + 1;
+            else
+                CurrentPage = 1;
+            // Optionally reset search when group changes:
+            // SearchInput = SearchTerm = string.Empty;
+        }
+    }
+
+    // For search input (does not filter automatically)
+    private string SearchInput { get; set; } = string.Empty;
+    // Active search filter (filters the list)
+    private string SearchTerm { get; set; } = string.Empty;
+
+    // Shows only on "Traži" or "Očisti filtere" click
+    private List<PlaceholderMeta> FilteredPlaceholders =>
+        AllPlaceholders
+            .Where(p => p.Group == CurrentGroupName &&
+                (string.IsNullOrWhiteSpace(SearchTerm)
+                 || (p.Name?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+                 || (p.Id?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+                 || (p.Description?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+                )
+            )
+            .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllPlaceholders = (await PlaceholdersService.GetPlaceholdersAsync("")).ToList();
+        AllGroups = AllPlaceholders.Select(p => p.Group).Distinct().ToList();
+        CurrentPage = 1;
+    }
+
+    private void OnGroupPageChanged(int page)
+    {
+        if (page < 1 || page > TotalPages || page == CurrentPage)
+            return;
+        CurrentPage = page;
+    }
+
+    private void OnSearch()
+    {
+        SearchTerm = SearchInput;
+    }
+
+    private void OnClear()
+    {
+        SearchInput = string.Empty;
+        SearchTerm = string.Empty;
+    }
+
+    // Modal logic
+    private bool ShowDetails { get; set; }
+    private PlaceholderMeta? SelectedPlaceholder { get; set; }
+
+    private void OpenDetails(PlaceholderMeta ph)
+    {
+        SelectedPlaceholder = ph;
+        ShowDetails = true;
+    }
+
+    private void CloseDetails()
+    {
+        ShowDetails = false;
+        SelectedPlaceholder = null;
+    }
+
+    private async Task CopyPlaceholderValue()
+    {
+        if (SelectedPlaceholder?.Id is not null)
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", SelectedPlaceholder.Id);
+        }
+    }
+
+    private string GetTypeClass(string type) => type switch
+    {
+        "string" => "bg-primary",
+        "int" => "bg-info text-dark",
+        "decimal" => "bg-success",
+        "DateTime" => "bg-secondary",
+        "enum" => "bg-warning text-dark",
+        "char" => "bg-danger",
+        _ => "bg-light text-dark"
+    };
 }

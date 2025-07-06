@@ -36,20 +36,20 @@
 
                 <dt class="col-sm-4">Tip podatka</dt>
                 <dd class="col-sm-8">
-                    <span class="badge bg-secondary">@Placeholder.Type</span>
+                    <span class="badge @GetTypeClass(Placeholder.Type)">@Placeholder.Type</span>
                 </dd>
 
-                <dt class="col-sm-4">Nullable</dt>
+                @* <dt class="col-sm-4">Moguća NULL vrijednost?</dt>
                 <dd class="col-sm-8">
                     @if (Placeholder.IsNullable)
                     {
-                        <span class="badge bg-success">Da</span>
+                        <span class="badge bg-green-100 text-green-800 border border-success d-flex align-items-center gap-1">DA</span>
                     }
                     else
                     {
-                        <span class="badge bg-secondary">Ne</span>
+                        <span class="badge bg-green-100 text-green-800 border border-success d-flex align-items-center gap-1">NE</span>
                     }
-                </dd>
+                </dd> *@
 
                 <dt class="col-sm-4">Moguće vrijednosti</dt>
                 <dd class="col-sm-8">
@@ -58,9 +58,10 @@
                         <div class="d-flex flex-wrap gap-1">
                             @foreach (var value in Placeholder.EnumValues)
                             {
-                                <span class="badge bg-secondary d-flex align-items-center gap-1">
+                                <span class="badge bg-green-100 text-green-800 border border-success d-flex align-items-center gap-1">
                                     @value
                                 </span>
+
                             }
                         </div>
                     }
