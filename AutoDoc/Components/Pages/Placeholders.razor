@@ -18,7 +18,7 @@
             <select class="form-select corporate-select w-auto"
                     @bind="CurrentGroupName"
                     @bind:event="onchange">
-                @foreach (var group in AllGroups)
+                @foreach (var group in _allGroups)
                 {
                     <option value="@group">@group</option>
                 }
@@ -89,104 +89,4 @@
     <PlaceholderDetailsModal IsOpen="ShowDetails"
                              IsOpenChanged="@(v => ShowDetails = v)"
                              Placeholder="SelectedPlaceholder" />
-}
-
-@code {
-    private List<PlaceholderMeta> AllPlaceholders = new();
-    private List<string> AllGroups = new();
-
-    private int CurrentPage { get; set; } = 1;
-    private int TotalPages => AllGroups.Count == 0 ? 1 : AllGroups.Count;
-
-    private string? CurrentGroupName
-    {
-        get => AllGroups.Count >= CurrentPage ? AllGroups[CurrentPage - 1] : null;
-        set
-        {
-            var idx = AllGroups.IndexOf(value ?? "");
-            if (idx >= 0)
-                CurrentPage = idx + 1;
-            else
-                CurrentPage = 1;
-            // Optionally reset search when group changes:
-            // SearchInput = SearchTerm = string.Empty;
-        }
-    }
-
-    // For search input (does not filter automatically)
-    private string SearchInput { get; set; } = string.Empty;
-    // Active search filter (filters the list)
-    private string SearchTerm { get; set; } = string.Empty;
-
-    // Shows only on "Traži" or "Očisti filtere" click
-    private List<PlaceholderMeta> FilteredPlaceholders =>
-        AllPlaceholders
-            .Where(p => p.Group == CurrentGroupName &&
-                (string.IsNullOrWhiteSpace(SearchTerm)
-                 || (p.Name?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-                 || (p.Id?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-                 || (p.Description?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-                )
-            )
-            .ToList();
-
-    protected override async Task OnInitializedAsync()
-    {
-        AllPlaceholders = (await PlaceholdersService.GetPlaceholdersAsync("")).ToList();
-        AllGroups = AllPlaceholders.Select(p => p.Group).Distinct().ToList();
-        CurrentPage = 1;
-    }
-
-    private void OnGroupPageChanged(int page)
-    {
-        if (page < 1 || page > TotalPages || page == CurrentPage)
-            return;
-        CurrentPage = page;
-    }
-
-    private void OnSearch()
-    {
-        SearchTerm = SearchInput;
-    }
-
-    private void OnClear()
-    {
-        SearchInput = string.Empty;
-        SearchTerm = string.Empty;
-    }
-
-    // Modal logic
-    private bool ShowDetails { get; set; }
-    private PlaceholderMeta? SelectedPlaceholder { get; set; }
-
-    private void OpenDetails(PlaceholderMeta ph)
-    {
-        SelectedPlaceholder = ph;
-        ShowDetails = true;
-    }
-
-    private void CloseDetails()
-    {
-        ShowDetails = false;
-        SelectedPlaceholder = null;
-    }
-
-    private async Task CopyPlaceholderValue()
-    {
-        if (SelectedPlaceholder?.Id is not null)
-        {
-            await JS.InvokeVoidAsync("navigator.clipboard.writeText", SelectedPlaceholder.Id);
-        }
-    }
-
-    private string GetTypeClass(string type) => type switch
-    {
-        "string" => "bg-primary",
-        "int" => "bg-info text-dark",
-        "decimal" => "bg-success",
-        "DateTime" => "bg-secondary",
-        "enum" => "bg-warning text-dark",
-        "char" => "bg-danger",
-        _ => "bg-light text-dark"
-    };
 }
