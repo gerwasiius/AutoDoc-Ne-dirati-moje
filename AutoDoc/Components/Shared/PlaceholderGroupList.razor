@@ -1,0 +1,42 @@
+﻿@using AutoDoc.Shared.Model.Placeholders
+
+@if (_isLoading)
+{
+    <div class="text-center py-3">
+        <span class="spinner-border spinner-border-sm"></span> Učitavanje parametara...
+    </div>
+}
+else if (_placeholderGroups == null || _placeholderGroups.Count == 0)
+{
+    <div class="text-muted small">Nema dostupnih parametara.</div>
+}
+else
+{
+    <nav>
+        <ul class="list-group navigation-list">
+            @foreach (var group in _placeholderGroups)
+            {
+                <li class="list-group-item pointer group-header text-blue"
+                    @onclick="@(() => ToggleGroup(group.Group))">
+                    <i class="fas @(IsGroupExpanded(group.Group) ? "fa-caret-down" : "fa-caret-right")" id="icon-@group.Group"></i>
+                    @group.Group
+                </li>
+                <ul id="@group.Group"
+                    class="list-group placeholder-items"
+                    style="@(IsGroupExpanded(group.Group) ? "display:block; padding-left: 20px;" : "display:none; padding-left: 20px;")">
+                    @foreach (var ph in group.Placeholders)
+                    {
+                        <li class="list-group-item cursor-grab placeholder-item text-gray"
+                            draggable="true"
+                            ondragstart="drag(event)"
+                            data-placeholder="@ph.Id"
+                            @ondblclick="@(() => ShowPlaceholderDetails(ph))">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                            @ph.Name
+                        </li>
+                    }
+                </ul>
+            }
+        </ul>
+    </nav>
+}

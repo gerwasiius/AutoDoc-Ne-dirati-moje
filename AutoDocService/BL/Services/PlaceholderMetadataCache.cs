@@ -1,4 +1,4 @@
-﻿using AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata;
+﻿using AutoDoc.Shared.Model.Placeholders;
 using AutoDocService.DL.FolderParamZaObrisati;
 using AutoDocService.Helpers.Utils;
 using System.Reflection;
@@ -14,21 +14,21 @@ namespace AutoDocService.BL.Services
         /// <summary>
         /// Interni thread-safe keš svih placeholder meta podataka.
         /// </summary>
-        private static readonly Lazy<IReadOnlyList<PlaceholderMeta>> _allPlaceholders =
+        private static readonly Lazy<IReadOnlyList<PlaceholderMetadata>> _allPlaceholders =
             new(LoadAllPlaceholderMetadata, isThreadSafe: true);
 
         /// <summary>
         /// Vraća sve placeholder meta podatke iz keša.
         /// </summary>
-        public static IReadOnlyList<PlaceholderMeta> All => _allPlaceholders.Value;
+        public static IReadOnlyList<PlaceholderMetadata> All => _allPlaceholders.Value;
 
         /// <summary>
         /// Inicijalizuje i generiše listu svih placeholder meta podataka koristeći refleksiju.
         /// </summary>
         /// <returns>Neizmjenjiva lista meta podataka za sve placeholdere.</returns>
-        private static IReadOnlyList<PlaceholderMeta> LoadAllPlaceholderMetadata()
+        private static IReadOnlyList<PlaceholderMetadata> LoadAllPlaceholderMetadata()
         {
-            var result = new List<PlaceholderMeta>(64);
+            var result = new List<PlaceholderMetadata>(64);
             var nullabilityContext = new NullabilityInfoContext();
 
             // Dohvati sve javne instance property-je iz Placeholders klase (grupe)
@@ -45,7 +45,7 @@ namespace AutoDocService.BL.Services
                     var attribute = placeholderProperty.GetCustomAttribute<PlaceholderAttribute>();
                     var nullability = nullabilityContext.Create(placeholderProperty);
 
-                    result.Add(new PlaceholderMeta
+                    result.Add(new PlaceholderMetadata
                     {
                         Id = $"{groupName}.{placeholderProperty.Name}",
                         Group = groupName,

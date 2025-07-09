@@ -1,6 +1,6 @@
 ﻿<div class="d-flex justify-content-center mt-4" aria-label="pagination">
     <ul class="pagination corporate-pagination mb-0">
-        <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+        <li class="page-item @(CurrentPage == 1 ? "disabled" : "pagination-action")">
             <button type="button" class="page-link" @onclick="() => ChangePage(CurrentPage - 1)">
                 <i class="fa fa-chevron-left"></i><span> Prethodna</span>
             </button>
@@ -8,7 +8,7 @@
         @foreach (var i in PageNumbers)
         {
             <li class="page-item @(CurrentPage == i ? "active" : "")">
-                <button type="button" class="page-link" @onclick="() => ChangePage(i)">
+                <button type="button" class="page-link pagination-action" @onclick="() => ChangePage(i)">
                     @i
                 </button>
             </li>
@@ -19,7 +19,7 @@
                 <span class="page-link">...</span>
             </li>
         }
-        <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+        <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "pagination-action")">
             <button type="button" class="page-link" @onclick="() => ChangePage(CurrentPage + 1)">
                 <span>Sljedeća </span><i class="fa fa-chevron-right"></i>
             </button>

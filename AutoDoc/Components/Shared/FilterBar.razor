@@ -13,7 +13,7 @@
     </select>
 }
 <div class="input-group mt-2 mb-2">
-    <input class="form-control" placeholder="@Placeholder" @bind="SearchTerm" @bind:event="oninput" />
+    <input class="form-control" placeholder="@Placeholder" value="@SearchTerm" @oninput="OnSearchTermChanged"/>
     <button class="btn corporate-button-secondary" type="button" @onclick="OnSearch">
         <i class="fa fa-search"></i> Traži
     </button>

@@ -1,5 +1,5 @@
-﻿@using AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata
-@using AutoDocFront.Components.Shared
+﻿@using AutoDocFront.Components.Shared
+@using AutoDocFront.Utilities
 @inherits ModalBase
 
 <BaseModalLayout IsOpen="@IsOpen"
@@ -36,7 +36,7 @@
 
                 <dt class="col-sm-4">Tip podatka</dt>
                 <dd class="col-sm-8">
-                    <span class="badge @GetTypeClass(Placeholder.Type)">@Placeholder.Type</span>
+                    <span class="badge @PlaceholderHelpers.GetTypeBadgeClass(Placeholder.Type)">@Placeholder.Type</span>
                 </dd>
 
                 @* <dt class="col-sm-4">Moguća NULL vrijednost?</dt>

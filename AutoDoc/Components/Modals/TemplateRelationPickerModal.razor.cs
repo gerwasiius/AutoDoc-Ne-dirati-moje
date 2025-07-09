@@ -1,11 +1,12 @@
 ﻿using AutoDoc.Shared.Model.DTO.Common;
 using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using AutoDoc.Shared.Model.DTO.SectionsDTO;
+using AutoDocFront.Components.Shared;
 using AutoDocFront.Models.Enumerations;
-using Microsoft.AspNetCore.Components;
 using AutoDocFront.Services;
 using AutoDocFront.Utilities;
-using AutoDocFront.Components.Shared;
+using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Modals
 {
@@ -25,6 +26,8 @@ namespace AutoDocFront.Components.Modals
 
         [Inject] private SectionGroupApiService GroupService { get; set; } = default!;
         [Inject] private SectionsApiService SectionsService { get; set; } = default!;
+        [Inject] private IToastService ToastService { get; set; } = default!;
+
 
         // --- STATE ---
 
@@ -83,6 +86,12 @@ namespace AutoDocFront.Components.Modals
                 _availableGroups = result.Items ?? [];
                 _totalGroupCount = result.TotalItems;
             }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom učitavanja grupa: {ex.Message}");
+                _availableGroups = [];
+                _totalGroupCount = 0;
+            }
             finally
             {
                 _isLoadingGroups = false;
@@ -92,33 +101,61 @@ namespace AutoDocFront.Components.Modals
 
         private async Task SearchGroupsAsync()
         {
-            _currentGroupPage = 1;
-            await LoadGroupsAsync();
+            try
+            {
+                _currentGroupPage = 1;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom pretrage grupa: {ex.Message}");
+            }
         }
 
         private async Task ClearGroupFiltersAsync()
         {
-            _groupSearchTerm = string.Empty;
-            _currentGroupPage = 1;
-            await LoadGroupsAsync();
+            try
+            {
+                _groupSearchTerm = string.Empty;
+                _currentGroupPage = 1;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom čišćenja filtera grupa: {ex.Message}");
+            }
         }
 
         private async Task ChangeGroupPageAsync(int page)
         {
             if (page < 1 || page > TotalGroupPages || page == _currentGroupPage) return;
-            _currentGroupPage = page;
-            await LoadGroupsAsync();
+            try
+            {
+                _currentGroupPage = page;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom promjene stranice grupa: {ex.Message}");
+            }
         }
 
         private async Task OnGroupPickedAsync(SectionGroupGetDTO group)
         {
-            _selectedGroupName = group.Name;
-            _selectedGroupId = group.ID;
-            _step = PickerStepEnum.SECTIONS;
-            _currentSectionPage = 1;
-            _sectionSearchTerm = string.Empty;
-            _selectedSectionIds.Clear();
-            await LoadSectionsAsync(group.ID);
+            try
+            {
+                _selectedGroupName = group.Name;
+                _selectedGroupId = group.ID;
+                _step = PickerStepEnum.SECTIONS;
+                _currentSectionPage = 1;
+                _sectionSearchTerm = string.Empty;
+                _selectedSectionIds.Clear();
+                await LoadSectionsAsync(group.ID);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom odabira grupe: {ex.Message}");
+            }
         }
 
         // --- SECTIONS LOGIKA ---
@@ -140,6 +177,12 @@ namespace AutoDocFront.Components.Modals
                 _availableSections = result.Items ?? [];
                 _totalSectionCount = result.TotalItems;
             }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom učitavanja sekcija: {ex.Message}");
+                _availableSections = [];
+                _totalSectionCount = 0;
+            }
             finally
             {
                 _isLoadingSections = false;
@@ -149,44 +192,88 @@ namespace AutoDocFront.Components.Modals
 
         private async Task SearchSectionsAsync()
         {
-            _currentSectionPage = 1;
-            await LoadSectionsAsync(_selectedGroupId);
+            try
+            {
+                _currentSectionPage = 1;
+                await LoadSectionsAsync(_selectedGroupId);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom pretrage sekcija: {ex.Message}");
+            }
         }
+
 
         private async Task ClearSectionFiltersAsync()
         {
-            _sectionSearchTerm = string.Empty;
-            _currentSectionPage = 1;
-            await LoadSectionsAsync(_selectedGroupId);
+            try
+            {
+                _sectionSearchTerm = string.Empty;
+                _currentSectionPage = 1;
+                await LoadSectionsAsync(_selectedGroupId);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom čišćenja filtera sekcija: {ex.Message}");
+            }
         }
+
 
         private async Task ChangeSectionPageAsync(int page)
         {
             if (page < 1 || page > TotalSectionPages || page == _currentSectionPage) return;
-            _currentSectionPage = page;
-            await LoadSectionsAsync(_selectedGroupId);
+            try
+            {
+                _currentSectionPage = page;
+                await LoadSectionsAsync(_selectedGroupId);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom promjene stranice sekcija: {ex.Message}");
+            }
         }
 
         private void ToggleSectionSelection(int id, object? checkedValue)
         {
-            if ((bool?)checkedValue == true)
-                _selectedSectionIds.Add(id);
-            else
-                _selectedSectionIds.Remove(id);
+            try
+            {
+                if ((bool?)checkedValue == true)
+                    _selectedSectionIds.Add(id);
+                else
+                    _selectedSectionIds.Remove(id);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom selektovanja sekcije: {ex.Message}");
+            }
         }
 
         private async Task AddSelectedSectionsAsync()
         {
-            var picked = _availableSections.Where(s => _selectedSectionIds.Contains(s.ID)).ToList();
-            await OnSectionsPicked.InvokeAsync(picked);
-            _selectedSectionIds.Clear();
-            await CloseAsync();
+            try
+            {
+                var picked = _availableSections.Where(s => _selectedSectionIds.Contains(s.ID)).ToList();
+                await OnSectionsPicked.InvokeAsync(picked);
+                _selectedSectionIds.Clear();
+                await CloseAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom dodavanja sekcija: {ex.Message}");
+            }
         }
 
         private async Task ClosePickerAsync()
         {
-            _selectedSectionIds.Clear();
-            await CloseAsync();
+            try
+            {
+                _selectedSectionIds.Clear();
+                await CloseAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom zatvaranja modala: {ex.Message}");
+            }
         }
     }
 }

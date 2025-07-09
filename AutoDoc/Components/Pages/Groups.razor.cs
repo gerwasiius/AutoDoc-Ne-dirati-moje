@@ -19,6 +19,7 @@ namespace AutoDocFront.Components.Pages
         [Inject] private Services.SectionGroupApiService GroupService { get; set; } = default!;
         [Inject] private NavigationManager Navigation { get; set; } = default!;
         [Inject] private IToastService ToastService { get; set; } = default!;
+        [Inject] private IDialogService DialogService { get; set; } = default!;
 
         // --- POLJA ---
 
@@ -42,7 +43,14 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            await LoadGroupsAsync();
+            try
+            {
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                await DialogService.ShowErrorAsync("Došlo je do greške prilikom inicijalizacije stranice.\n\nDetalji: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -54,18 +62,59 @@ namespace AutoDocFront.Components.Pages
         /// <summary>
         /// Ukupan broj stranica za paginaciju.
         /// </summary>
-        private int TotalPages => PaginationHelper.CalculateTotalPages(_totalCount, ItemsPerPage);
+        private int TotalPages
+        {
+            get
+            {
+                try
+                {
+                    return PaginationHelper.CalculateTotalPages(_totalCount, ItemsPerPage);
+                }
+                catch (Exception ex)
+                {
+                    ToastService.ShowError("Greška u izračunu broja stranica: " + ex.Message);
+                    return 1;
+                }
+            }
+        }
 
         /// <summary>
         /// Početni indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int StartIndex => PaginationHelper.CalculateStartIndex(_currentPage, ItemsPerPage, _totalCount);
+        private int StartIndex
+        {
+            get
+            {
+                try
+                {
+                    return PaginationHelper.CalculateStartIndex(_currentPage, ItemsPerPage, _totalCount);
+                }
+                catch (Exception ex)
+                {
+                    ToastService.ShowError("Greška u izračunu početnog indeksa: " + ex.Message);
+                    return 0;
+                }
+            }
+        }
 
         /// <summary>
         /// Krajnji indeks prikazanih grupa na trenutnoj stranici.
         /// </summary>
-        private int EndIndex => PaginationHelper.CalculateEndIndex(StartIndex, _groups.Count, _totalCount);
-
+        private int EndIndex
+        {
+            get
+            {
+                try
+                {
+                    return PaginationHelper.CalculateEndIndex(StartIndex, _groups.Count, _totalCount);
+                }
+                catch (Exception ex)
+                {
+                    ToastService.ShowError("Greška u izračunu krajnjeg indeksa paginacije: " + ex.Message);
+                    return 0;
+                }
+            }
+        }
 
 
         /// <summary>
@@ -84,7 +133,8 @@ namespace AutoDocFront.Components.Pages
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Greška prilikom učitavanja grupa: {ex.Message}");
+                // Kritična greška: server error ili nepoznata greška
+                await DialogService.ShowErrorAsync("Došlo je do greške prilikom učitavanja grupa. Pokušajte ponovo kasnije.\n\nDetalji: " + ex.Message);
                 _groups = [];
                 _totalCount = 0;
             }
@@ -99,9 +149,16 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task ChangePageAsync(int page)
         {
-            if (page < 1 || page > TotalPages || page == _currentPage) return;
-            _currentPage = page;
-            await LoadGroupsAsync();
+            try
+            {
+                if (page < 1 || page > TotalPages || page == _currentPage) return;
+                _currentPage = page;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom promjene stranice: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -109,8 +166,20 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private void NavigateToGroupSections(SectionGroupGetDTO group)
         {
-            var uri = QueryHelpers.AddQueryString($"/sections/{group.ID}", "groupName", group.Name);
-            Navigation.NavigateTo(uri);
+            try
+            {
+                if (group == null)
+                {
+                    ToastService.ShowError("Nije moguće otvoriti grupu jer nije odabrana.");
+                    return;
+                }
+                var uri = QueryHelpers.AddQueryString($"/sections/{group.ID}", "groupName", group.Name ?? string.Empty);
+                Navigation.NavigateTo(uri);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom otvaranja grupe: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -118,8 +187,15 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task SearchGroupsAsync()
         {
-            _currentPage = 1;
-            await LoadGroupsAsync();
+            try
+            {
+                _currentPage = 1;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom pretrage grupa: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -127,9 +203,16 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task OnGroupStatusFilterChangedAsync(GroupStatusType? value)
         {
-            _statusFilter = value;
-            _currentPage = 1;
-            await LoadGroupsAsync();
+            try
+            {
+                _statusFilter = value;
+                _currentPage = 1;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom filtriranja grupa: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -137,14 +220,21 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task ClearGroupFiltersAsync()
         {
-            //Ukoliko nema nista za ocistiti, ne cistiti.
-            if (_searchTerm == string.Empty && _statusFilter == null)
-                return; 
+            try
+            {
+                //Ukoliko nema nista za ocistiti, ne cistiti.
+                if (_searchTerm == string.Empty && _statusFilter == null)
+                    return;
 
-            _searchTerm = string.Empty;
-            _statusFilter = null;
-            _currentPage = 1;
-            await LoadGroupsAsync();
+                _searchTerm = string.Empty;
+                _statusFilter = null;
+                _currentPage = 1;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom čišćenja filtera: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -154,22 +244,29 @@ namespace AutoDocFront.Components.Pages
         /// <param name="group"></param>
         private void OpenGroupModal(ModalMode mode, SectionGroupGetDTO group = null)
         {
-            if (mode == ModalMode.INSERT)
+            try
             {
-                _selectedGroup = null;
-            }
-            else if (group != null)
-            {
-                _selectedGroup = new SectionGroupUpsertDTO
+                if (mode == ModalMode.INSERT)
                 {
-                    ID = group.ID,
-                    Name = group.Name,
-                    Description = group.Description,
-                    Status = group.Status
-                };
+                    _selectedGroup = null;
+                }
+                else if (group != null)
+                {
+                    _selectedGroup = new SectionGroupUpsertDTO
+                    {
+                        ID = group.ID,
+                        Name = group.Name ?? string.Empty,
+                        Description = group.Description ?? string.Empty,
+                        Status = group.Status
+                    };
+                }
+                _groupModalMode = mode;
+                _isGroupModalVisible = true;
             }
-            _groupModalMode = mode;
-            _isGroupModalVisible = true;
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom otvaranja modala: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -177,8 +274,15 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task OnGroupModalSavedAsync()
         {
-            _isGroupModalVisible = false;
-            await LoadGroupsAsync();
+            try
+            {
+                _isGroupModalVisible = false;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom osvježavanja grupa nakon izmjene: " + ex.Message);
+            }
         }
     }
 }

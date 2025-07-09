@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata
+namespace AutoDoc.Shared.Model.Placeholders
 {
     /// <summary>
     /// Predstavlja meta podatke jednog placeholdera koji se koristi u šablonima dokumenata.
     /// </summary>
     [Serializable]
-    public class PlaceholderMeta
+    public class PlaceholderMetadata
     {
         /// <summary>
         /// Jedinstveni identifikator placeholdera (npr. "Group1.Placeholder1").
@@ -60,12 +60,12 @@ namespace AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata
         /// <summary>
         /// Prazan konstruktor za serializaciju.
         /// </summary>
-        public PlaceholderMeta() { }
+        public PlaceholderMetadata() { }
 
         /// <summary>
         /// Konstruktor za inicijalizaciju svih svojstava.
         /// </summary>
-        public PlaceholderMeta(
+        public PlaceholderMetadata(
             string id,
             string group,
             string name,

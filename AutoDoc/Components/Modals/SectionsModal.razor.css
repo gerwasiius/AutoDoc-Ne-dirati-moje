@@ -58,10 +58,13 @@
         border-color: #c0c0c0;
     }
 
-.cursor-grab {
-    cursor: move !important;
-}
 
-    .cursor-grab:active {
-        cursor: grabbing !important;
-    }
+/* wwwroot/css/site.css ili odgovarajući CSS fajl */
+.placeholder-scroll-panel {
+    max-height: 78vh; /* ili koliko želite */
+    overflow-y: auto;
+    min-height: 200px; /* opcionalno, za bolji izgled */
+    /*background: #fafbfc;*/ /* opcionalno */
+    border-radius: 6px; /* opcionalno */
+    /*border: 1px solid #eee;*/ /* opcionalno */
+}

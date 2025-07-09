@@ -42,75 +42,106 @@ namespace AutoDocFront.Components.Modals
 
         private async Task OpenSectionPicker()
         {
-            // Implementacija otvaranja pickera sekcija
-            // npr. prikazivanje internog dijaloga ili logike
-            _isSectionPickerOpen = true;
+            try
+            {
+                // Implementacija otvaranja pickera sekcija
+                // npr. prikazivanje internog dijaloga ili logike
+                _isSectionPickerOpen = true;
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom otvaranja pickera sekcija: {ex.Message}");
+            }
         }
 
         private async Task OnSectionsPicked(List<SectionsGetDTO> pickedSections)
         {
-            // Dodaj odabrane sekcije u FormData.Relations
-            if (FormData?.Relations == null)
-                FormData.Relations = new List<TemplateSectionRelationWithSectionDTO>();
-
-            // Pronađi trenutni maksimalni Order (ili 0 ako nema sekcija)
-            int currentMaxOrder = FormData.Relations.Any()
-                ? FormData.Relations.Max(r => r.Order)
-                : 0;
-
-            foreach (var section in pickedSections)
+            try
             {
-                if (!FormData.Relations.Any(r => r.SectionUniqueId == section.ID))
-                {
-                    currentMaxOrder++; // Dodajemo na kraj
+                if (FormData?.Relations == null)
+                    FormData.Relations = new List<TemplateSectionRelationWithSectionDTO>();
 
-                    FormData.Relations.Add(new TemplateSectionRelationWithSectionDTO
+                int currentMaxOrder = FormData.Relations.Any()
+                    ? FormData.Relations.Max(r => r.Order)
+                    : 0;
+
+                foreach (var section in pickedSections)
+                {
+                    if (!FormData.Relations.Any(r => r.SectionUniqueId == section.ID))
                     {
-                        SectionUniqueId = section.ID,
-                        SectionId = section.IdSection ?? 0,
-                        SectionVersion = section.Version,
-                        SectionName = section.Name,
-                        SectionDescription = section.Description,
-                        Order = currentMaxOrder
-                    });
+                        currentMaxOrder++;
+                        FormData.Relations.Add(new TemplateSectionRelationWithSectionDTO
+                        {
+                            SectionUniqueId = section.ID,
+                            SectionId = section.IdSection ?? 0,
+                            SectionVersion = section.Version,
+                            SectionName = section.Name,
+                            SectionDescription = section.Description,
+                            Order = currentMaxOrder
+                        });
+                    }
                 }
+                _isSectionPickerOpen = false;
+                StateHasChanged();
             }
-            _isSectionPickerOpen = false;
-            StateHasChanged();
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom dodavanja sekcija: {ex.Message}");
+            }
         }
 
         private void CloseSectionPicker()
         {
-            _isSectionPickerOpen = false;
+            try
+            {
+                _isSectionPickerOpen = false;
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom zatvaranja pickera sekcija: {ex.Message}");
+            }
         }
+
 
         private async Task MoveSection(int idx, int direction)
         {
-            if (FormData?.Relations == null) return;
-            int newIndex = idx + direction;
-            if (newIndex < 0 || newIndex >= FormData.Relations.Count) return;
-
-            // Swap the items
-            var item = FormData.Relations[idx];
-            FormData.Relations.RemoveAt(idx);
-            FormData.Relations.Insert(newIndex, item);
-
-            // Update Order for all items to match their new position
-            for (int i = 0; i < FormData.Relations.Count; i++)
+            try
             {
-                FormData.Relations[i].Order = i + 1; // Order is usually 1-based
-            }
+                if (FormData?.Relations == null) return;
+                int newIndex = idx + direction;
+                if (newIndex < 0 || newIndex >= FormData.Relations.Count) return;
 
-            StateHasChanged();
+                var item = FormData.Relations[idx];
+                FormData.Relations.RemoveAt(idx);
+                FormData.Relations.Insert(newIndex, item);
+
+                for (int i = 0; i < FormData.Relations.Count; i++)
+                {
+                    FormData.Relations[i].Order = i + 1;
+                }
+
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom promjene redosleda sekcija: {ex.Message}");
+            }
         }
 
         private void RemoveSection(int idx)
         {
-            if (FormData?.Relations == null || idx < 0 || idx >= FormData.Relations.Count)
-                return;
+            try
+            {
+                if (FormData?.Relations == null || idx < 0 || idx >= FormData.Relations.Count)
+                    return;
 
-            FormData.Relations.RemoveAt(idx);
-            StateHasChanged();
+                FormData.Relations.RemoveAt(idx);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom uklanjanja sekcije: {ex.Message}");
+            }
         }
 
         private async Task PreviewSection(int idx)
@@ -118,8 +149,7 @@ namespace AutoDocFront.Components.Modals
             if (FormData?.Relations == null || idx < 0 || idx >= FormData.Relations.Count)
                 return;
 
-            var section = FormData.Relations[idx];
-            _previewTemplateName = section.SectionName;
+            _previewTemplateName = FormData.Relations[idx].SectionName;
             _previewLoading = true;
             _previewError = null;
             _previewHtmlContent = null;
@@ -127,7 +157,7 @@ namespace AutoDocFront.Components.Modals
 
             try
             {
-                var singleSectionList = new List<TemplateSectionRelationWithSectionDTO> { section };
+                var singleSectionList = new List<TemplateSectionRelationWithSectionDTO> { FormData.Relations[idx] };
                 var html = await TemplateService.GetSectionsPreviewAsync(singleSectionList);
                 if (html != null)
                 {
@@ -174,22 +204,41 @@ namespace AutoDocFront.Components.Modals
             finally
             {
                 _isLoading = false;
-                await OnSubmit.InvokeAsync();
+                // OnSubmit se ne bi trebao pozivati u finally, samo na uspeh!
             }
         }
 
-        private async Task Close() => await CloseAsync();
+        private async Task Close()
+        {
+            try
+            {
+                await CloseAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom zatvaranja modala: {ex.Message}");
+            }
+        }
 
         protected override async Task OnParametersSetAsync()
         {
             _isLoading = true;
             try
             {
+                if (Template == null)
+                {
+                    ToastService.ShowError("Nije moguće učitati sekcije: Template nije definisan.");
+                    return;
+                }
                 var result = await TemplateService.GetTemplateWithSectionsAsync(Template.Id);
                 if (result != null)
                 {
                     FormData = result;
                 }
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom učitavanja template-a i sekcija: {ex.Message}");
             }
             finally
             {
@@ -231,14 +280,28 @@ namespace AutoDocFront.Components.Modals
 
         private void OpenConditionModal(int idx)
         {
-            _editingRelationIdx = idx;
-            _isConditionModalOpen = true;
+            try
+            {
+                _editingRelationIdx = idx;
+                _isConditionModalOpen = true;
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom otvaranja modala za uslove: {ex.Message}");
+            }
         }
 
         private void CloseConditionModal()
         {
-            _isConditionModalOpen = false;
-            _editingRelationIdx = null;
+            try
+            {
+                _isConditionModalOpen = false;
+                _editingRelationIdx = null;
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom zatvaranja modala za uslove: {ex.Message}");
+            }
         }
 
         private class PreviewResponse

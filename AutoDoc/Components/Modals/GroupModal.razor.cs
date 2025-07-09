@@ -15,9 +15,6 @@ namespace AutoDocFront.Components.Modals
     public partial class GroupModal : ModalBase
     {
         // --- PARAMETRI ---
-
-
-
         /// <summary>
         /// DTO objekat grupe za izmjenu (null za unos nove grupe).
         /// </summary>
@@ -34,7 +31,6 @@ namespace AutoDocFront.Components.Modals
 
 
         // --- INJECTION ---
-
         [Inject] private SectionGroupApiService GroupService { get; set; }
         [Inject] private IToastService ToastService { get; set; }
         [Inject] private IDialogService DialogService { get; set; }
@@ -56,24 +52,26 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         protected override void OnParametersSet()
         {
-            _model = Group != null
-                ? new SectionGroupUpsertDTO
-                {
-                    ID = Group.ID,
-                    Name = Group.Name,
-                    Description = Group.Description,
-                    Status = Group.Status
-                }
-                : new SectionGroupUpsertDTO { Status = GroupStatusType.ACTIVE };
+            try
+            {
+                _model = Group != null
+                    ? new SectionGroupUpsertDTO
+                    {
+                        ID = Group.ID,
+                        Name = Group.Name ?? string.Empty,
+                        Description = Group.Description ?? string.Empty,
+                        Status = Group.Status
+                    }
+                    : new SectionGroupUpsertDTO { Status = GroupStatusType.ACTIVE };
 
-            _editContext = new EditContext(_model);
-            _validationMessageStore = new ValidationMessageStore(_editContext);
+                _editContext = new EditContext(_model);
+                _validationMessageStore = new ValidationMessageStore(_editContext);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom inicijalizacije forme: " + ex.Message);
+            }
         }
-
-        /// <summary>
-        /// Zatvara modal i emituje promjenu stanja.
-        /// </summary>
-        // Zatvaranje modala se obavlja kroz baznu klasu.
 
         /// <summary>
         /// Validira i šalje podatke za unos ili izmjenu grupe.
@@ -88,21 +86,21 @@ namespace AutoDocFront.Components.Modals
             {
                 _model.User = "zlatan.kahriman";
                 bool success = IsEditMode
-    ? await GroupService.UpdateGroupAsync(new SectionGroupUpdateDTO
-    {
-        ID = _model.ID ?? 0,
-        Name = _model.Name,
-        Description = _model.Description,
-        Status = _model.Status,
-        UserUpdated = _model.User
-    })
-    : await GroupService.CreateGroupAsync(new SectionGroupCreateDTO
-    {
-        Name = _model.Name,
-        Description = _model.Description,
-        Status = _model.Status ?? GroupStatusType.ACTIVE,
-        UserInserted = _model.User
-    });
+                    ? await GroupService.UpdateGroupAsync(new SectionGroupUpdateDTO
+                    {
+                        ID = _model.ID ?? 0,
+                        Name = _model.Name,
+                        Description = _model.Description,
+                        Status = _model.Status,
+                        UserUpdated = _model.User
+                    })
+                    : await GroupService.CreateGroupAsync(new SectionGroupCreateDTO
+                    {
+                        Name = _model.Name,
+                        Description = _model.Description,
+                        Status = _model.Status ?? GroupStatusType.ACTIVE,
+                        UserInserted = _model.User
+                    });
 
                 if (success)
                 {
@@ -112,12 +110,12 @@ namespace AutoDocFront.Components.Modals
                 }
                 else
                 {
-                    ToastService.ShowError("Greška prilikom snimanja grupe.");
+                    await DialogService.ShowErrorAsync("Greška prilikom snimanja grupe.");
                 }
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Neočekivana greška: {ex.Message}");
+                await DialogService.ShowErrorAsync("Greška prilikom snimanja grupe. Detalji: " + ex.Message);
             }
             finally
             {
@@ -131,14 +129,22 @@ namespace AutoDocFront.Components.Modals
         /// <returns></returns>
         private bool ValidateForm()
         {
-            _validationMessageStore.Clear();
-            if (!_editContext.Validate())
+            try
             {
-                _editContext.NotifyValidationStateChanged();
-                ToastService.ShowError("Provjerite da li su sva polja ispravno popunjena.");
+                _validationMessageStore.Clear();
+                if (!_editContext.Validate())
+                {
+                    _editContext.NotifyValidationStateChanged();
+                    ToastService.ShowError("Provjerite da li su sva polja ispravno popunjena.");
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom validacije forme: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         /// <summary>
@@ -153,20 +159,19 @@ namespace AutoDocFront.Components.Modals
             string action = newStatus == GroupStatusType.ACTIVE ? "aktivirate" : "deaktivirate";
             string message = $"Da li ste sigurni da želite da {action} ovu grupu?";
 
-            //Dodajte dodatno dugme "Otkaži"
-            var dialogRef = await DialogService.ShowConfirmationAsync(
-                message,
-                "Da",
-                "Ne",
-                "Otkaži" // Ovo je dodatno dugme
-            );
-
-            var result = await dialogRef.Result;
-            var canceled = result.Cancelled;
-            if (canceled)
-                return;
             try
             {
+                var dialogRef = await DialogService.ShowConfirmationAsync(
+                    message,
+                    "Da",
+                    "Ne",
+                    "Otkaži"
+                );
+
+                var result = await dialogRef.Result;
+                if (result.Cancelled)
+                    return;
+
                 _isLoading = true;
                 if (newStatus == GroupStatusType.DEACTIVATED)
                 {

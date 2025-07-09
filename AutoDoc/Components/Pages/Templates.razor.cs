@@ -74,7 +74,14 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            await LoadTemplatesAsync();
+            try
+            {
+                await LoadTemplatesAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Došlo je do greške prilikom inicijalizacije stranice.\n\nDetalji: " + ex.Message);
+            }
         }
 
         // --- API POZIVI ---
@@ -112,8 +119,15 @@ namespace AutoDocFront.Components.Pages
         private async Task ChangePageAsync(int page)
         {
             if (page < 1 || page > TotalPages || page == _currentPage) return;
-            _currentPage = page;
-            await LoadTemplatesAsync();
+            try
+            {
+                _currentPage = page;
+                await LoadTemplatesAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom promjene stranice: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -121,8 +135,15 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task SearchTemplatesAsync()
         {
-            _currentPage = 1;
-            await LoadTemplatesAsync();
+            try
+            {
+                _currentPage = 1;
+                await LoadTemplatesAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom pretrage template-a: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -131,9 +152,16 @@ namespace AutoDocFront.Components.Pages
         /// <param name="value">Novi status filtera.</param>
         private async Task OnStatusFilterChangedAsync(DocumentTemplateStatusType? value)
         {
-            _statusFilter = value;
-            _currentPage = 1;
-            await LoadTemplatesAsync();
+            try
+            {
+                _statusFilter = value;
+                _currentPage = 1;
+                await LoadTemplatesAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom filtriranja template-a: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -141,13 +169,20 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task ClearTemplateFiltersAsync()
         {
-            if (string.IsNullOrWhiteSpace(_searchTerm) && _statusFilter == null)
-                return;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_searchTerm) && _statusFilter == null)
+                    return;
 
-            _searchTerm = string.Empty;
-            _statusFilter = null;
-            _currentPage = 1;
-            await LoadTemplatesAsync();
+                _searchTerm = string.Empty;
+                _statusFilter = null;
+                _currentPage = 1;
+                await LoadTemplatesAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom čišćenja filtera: " + ex.Message);
+            }
         }
 
         // --- MODAL LOGIKA ---
@@ -189,8 +224,15 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task OnTemplateModalSavedAsync()
         {
-            _isTemplateModalOpen = false;
-            await LoadTemplatesAsync();
+            try
+            {
+                _isTemplateModalOpen = false;
+                await LoadTemplatesAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom osvježavanja template-a nakon izmjene: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -199,8 +241,15 @@ namespace AutoDocFront.Components.Pages
         /// <param name="template">Template za uređivanje sekcija.</param>
         private void OpenSectionsModal(DocumentTemplateGetDTO template)
         {
-            _selectedTemplate = template;
-            _isSectionsModalOpen = true;
+            try
+            {
+                _selectedTemplate = template;
+                _isSectionsModalOpen = true;
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom otvaranja modala za sekcije: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -208,7 +257,14 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private void CloseSectionsModal()
         {
-            _isSectionsModalOpen = false;
+            try
+            {
+                _isSectionsModalOpen = false;
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom zatvaranja modala za sekcije: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -217,22 +273,30 @@ namespace AutoDocFront.Components.Pages
         /// <param name="template">Template za preview.</param>
         private async Task ShowPreviewModalAsync(DocumentTemplateGetDTO template)
         {
-            ResetPreviewModal();
-            _previewTemplateName = template.Name;
-            _isPreviewModalOpen = true;
-            _previewLoading = true;
-
             try
             {
-                var html = await TemplateService.GetTemplatePreviewAsync(template.IdTemplate, template.Version);
-                _previewHtmlContent = html;
+                ResetPreviewModal();
+                _previewTemplateName = template.Name;
+                _isPreviewModalOpen = true;
+                _previewLoading = true;
+
+                try
+                {
+                    var html = await TemplateService.GetTemplatePreviewAsync(template.IdTemplate, template.Version);
+                    _previewHtmlContent = html;
+                }
+                catch (Exception ex)
+                {
+                    _previewError = $"Greška: {ex.Message}";
+                }
+                finally
+                {
+                    _previewLoading = false;
+                }
             }
             catch (Exception ex)
             {
-                _previewError = $"Greška: {ex.Message}";
-            }
-            finally
-            {
+                ToastService.ShowError("Greška prilikom otvaranja preview modala: " + ex.Message);
                 _previewLoading = false;
             }
         }
@@ -242,10 +306,17 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private void ResetPreviewModal()
         {
-            _previewHtmlContent = null;
-            _previewError = null;
-            _previewTemplateName = null;
-            _previewLoading = false;
+            try
+            {
+                _previewHtmlContent = null;
+                _previewError = null;
+                _previewTemplateName = null;
+                _previewLoading = false;
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom resetovanja preview modala: " + ex.Message);
+            }
         }
 
         // --- HELPERI ---

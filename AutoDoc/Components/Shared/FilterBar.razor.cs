@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
-using AutoDocFront.Utilities;
+﻿using AutoDocFront.Utilities;
+using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Shared;
 
@@ -13,19 +14,9 @@ public partial class FilterBar<TStatusEnum> where TStatusEnum : struct, Enum
     /// <summary>
     /// Text entered in the search input.
     /// </summary>
-    [Parameter]
-    public string SearchTerm
-    {
-        get => _searchTerm;
-        set
-        {
-            if (_searchTerm != value)
-            {
-                _searchTerm = value;
-                SearchTermChanged.InvokeAsync(value);
-            }
-        }
-    }
+    [Parameter] 
+    public string? SearchTerm { get; set; }
+
 
     /// <summary>
     /// Event triggered when <see cref="SearchTerm"/> changes.
@@ -80,6 +71,7 @@ public partial class FilterBar<TStatusEnum> where TStatusEnum : struct, Enum
     /// </summary>
     [Parameter]
     public EventCallback OnClear { get; set; }
+    [Inject] private IToastService ToastService { get; set; } = default!;
 
     /// <summary>
     /// Gets the value used for two-way binding of the status dropdown.
@@ -87,24 +79,40 @@ public partial class FilterBar<TStatusEnum> where TStatusEnum : struct, Enum
     private string SelectedStatusValue => StatusFilter?.ToString() ?? "all";
 
     /// <summary>
+    /// Handles On Search term changed
+    /// </summary>
+    /// <param name="e"></param>
+    /// <returns></returns>
+    private async Task OnSearchTermChanged(ChangeEventArgs e)
+    {
+        try
+        {
+            var value = e.Value?.ToString() ?? string.Empty;
+            if (SearchTermChanged.HasDelegate)
+                await SearchTermChanged.InvokeAsync(value);
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Greška u pretrazi: {ex.Message}");
+        }
+    }
+    /// <summary>
     /// Handles change events from the status dropdown.
     /// </summary>
     private async Task OnStatusChanged(ChangeEventArgs e)
     {
-        var value = e.Value?.ToString();
-        if (string.IsNullOrEmpty(value) || value == "all")
+        try
         {
-            StatusFilter = null;
-        }
-        else if (Enum.TryParse<TStatusEnum>(value, out var parsed))
-        {
-            StatusFilter = parsed;
-        }
-        else
-        {
-            StatusFilter = null;
-        }
+            TStatusEnum? value = default;
+            if (e.Value is not null && Enum.TryParse(typeof(TStatusEnum), e.Value.ToString(), out var parsed))
+                value = (TStatusEnum?)parsed;
 
-        await StatusFilterChanged.InvokeAsync(StatusFilter);
+            if (StatusFilterChanged.HasDelegate)
+                await StatusFilterChanged.InvokeAsync(value);
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Greška pri promjeni statusa: {ex.Message}");
+        }
     }
 }

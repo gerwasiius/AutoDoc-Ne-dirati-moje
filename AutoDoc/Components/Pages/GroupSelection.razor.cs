@@ -15,6 +15,7 @@ namespace AutoDocFront.Components.Pages
     {
         [Inject] private NavigationManager Navigation { get; set; }
         [Inject] private IToastService ToastService { get; set; }
+        [Inject] private IDialogService DialogService { get; set; }
         [Inject] private Services.SectionGroupApiService GroupService { get; set; } = default!;
 
         private const int ItemsPerPage = 30;
@@ -30,7 +31,19 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            await LoadGroupsAsync();
+            try
+            {
+                _isLoading = true;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom učitavanja grupa: " + ex.Message);
+            }
+            finally
+            {
+                _isLoading = false;
+            }
         }
 
         /// <summary>
@@ -64,7 +77,10 @@ namespace AutoDocFront.Components.Pages
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Greška prilikom učitavanja grupa: {ex.Message}");
+                // Kritična greška: korisnik mora videti i potvrditi
+                await DialogService.ShowErrorAsync(
+                    "Došlo je do greške prilikom učitavanja grupa. Pokušajte ponovo kasnije.\n\nDetalji: " + ex.Message
+                );
                 _groups = [];
                 _totalCount = 0;
             }
@@ -79,9 +95,16 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task ChangePageAsync(int page)
         {
-            if (page < 1 || page > TotalPages || page == _currentPage) return;
-            _currentPage = page;
-            await LoadGroupsAsync();
+            try
+            {
+                if (page < 1 || page > TotalPages || page == _currentPage) return;
+                _currentPage = page;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom promjene stranice: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -89,8 +112,15 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task SearchGroupsAsync()
         {
-            _currentPage = 1;
-            await LoadGroupsAsync();
+            try
+            {
+                _currentPage = 1;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom pretrage grupa: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -98,21 +128,40 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task ClearGroupFiltersAsync()
         {
-            if (string.IsNullOrWhiteSpace(_searchTerm))
-                return;
-
-            _searchTerm = string.Empty;
-            _currentPage = 1;
-            await LoadGroupsAsync();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_searchTerm))
+                    return;
+                _searchTerm = string.Empty;
+                await LoadGroupsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom čišćenja filtera: " + ex.Message);
+            }
         }
+
 
         /// <summary>
         /// Preusmjerava korisnika na sekcije odabrane grupe.
         /// </summary>
         private void HandleGroupSelect(int groupId, string groupName)
         {
-            var uri = QueryHelpers.AddQueryString($"/sections/{groupId}", "groupName", groupName);
-            Navigation.NavigateTo(uri);
+            try
+            {
+                if (groupId <= 0 || string.IsNullOrWhiteSpace(groupName))
+                {
+                    ToastService.ShowError("Neispravan odabir grupe. Pokušajte ponovo.");
+                    return;
+                }
+
+                var uri = QueryHelpers.AddQueryString($"/sections/{groupId}", "groupName", groupName);
+                Navigation.NavigateTo(uri);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom preusmjeravanja na sekcije grupe: {ex.Message}");
+            }
         }
     }
 }

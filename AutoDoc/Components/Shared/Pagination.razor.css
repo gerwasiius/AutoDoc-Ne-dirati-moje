@@ -34,5 +34,12 @@
 }
 
 .page-link:hover {
-    background-color: hsl(51, 100%, 50%) !important;
+    background-color: #f8f9fa !important;
+}
+
+.pagination-action {
+    background-color: #fff !important;
+    border: 1px solid #dee2e6;
+    color: #212529;
+    transition: background 0.2s;
 }

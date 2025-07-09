@@ -1,4 +1,4 @@
-﻿using AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata;
+﻿using AutoDoc.Shared.Model.Placeholders;
 using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.BL.Services;
 using AutoDocService.DL.FolderParamZaObrisati;
@@ -31,8 +31,8 @@ namespace AutoDocService.API.Controllers
         /// </summary>
         /// <returns>Lista svih placeholder meta podataka.</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(IReadOnlyList<PlaceholderMeta>), 200)]
-        public ActionResult<IReadOnlyList<PlaceholderMeta>> GetAll()
+        [ProducesResponseType(typeof(IReadOnlyList<PlaceholderGroup>), 200)]
+        public ActionResult<IReadOnlyList<PlaceholderGroup>> GetAll()
         {
             var result = _placeholderService.GetAllPlaceholders();
             return Ok(result);
@@ -44,9 +44,9 @@ namespace AutoDocService.API.Controllers
         /// <param name="id">Jedinstveni identifikator placeholdera (npr. "Grupa1.Placeholder1").</param>
         /// <returns>Meta podaci za traženi placeholder ili 404 ako ne postoji.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(PlaceholderMeta), 200)]
+        [ProducesResponseType(typeof(PlaceholderMetadata), 200)]
         [ProducesResponseType(404)]
-        public ActionResult<PlaceholderMeta> GetById(string id)
+        public ActionResult<PlaceholderMetadata> GetById(string id)
         {
             var placeholder = _placeholderService.GetPlaceholderById(id);
             if (placeholder == null)

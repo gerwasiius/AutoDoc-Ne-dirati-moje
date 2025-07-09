@@ -42,38 +42,11 @@
                                 {
                                     <div class="position-sticky sticky-top" style="top: 10px; z-index: 2;">
 
-                                        <div class="form-group" style="height: 100%;">
+                                        <div class="form-group placeholder-scroll-panel" style="height: 100%;">
                                             <label class="form-label mb-1 mt-2">Dostupni parametri:</label>
-                                            <nav>
-                                                <ul class="list-group navigation-list">
-                                                    <li class="list-group-item pointer" onclick="toggleGroup('Group1')">
-                                                        <i class="fas fa-caret-right" id="icon-Group1"></i> Group 1
-                                                    </li>
-                                                    <ul id="Group1" class="list-group placeholder-items" style="display:none; padding-left: 20px;">
-                                                        <li class="list-group-item cursor-grab placeholder-item text-gray" draggable="true" ondragstart="drag(event)" data-placeholder="Placeholder1">
-                                                            <i class="fa-solid fa-grip-vertical"></i>
-                                                            Placeholder 1
-                                                        </li>
-                                                    </ul>
-                                                    <li class="list-group-item pointer group-header text-blue" onclick="toggleGroup('Group2')">
-                                                        <i class="fas fa-caret-right" id="icon-Group2"></i> Group 2
-                                                    </li>
-                                                    <ul id="Group2" class="list-group placeholder-items" style="display:none; padding-left: 20px;">
-                                                        <li class="list-group-item cursor-grab placeholder-item text-gray" draggable="true" ondragstart="drag(event)" data-placeholder="Ime_klijenta">
-                                                            <i class="fa-solid fa-grip-vertical"></i>
-                                                            Ime klijenta
-                                                        </li>
-                                                        <li class="list-group-item cursor-grab placeholder-item text-gray" draggable="true" ondragstart="drag(event)" data-placeholder="Prezime_klijenta">
-                                                            <i class="fa-solid fa-grip-vertical"></i>
-                                                            Prezime klijenta
-                                                        </li>
-                                                        <li class="list-group-item cursor-grab placeholder-item text-gray" draggable="true" ondragstart="drag(event)" data-placeholder="Prezime_klijenta">
-                                                            <i class="fa-solid fa-grip-vertical"></i>
-                                                            Prezime klijenta
-                                                        </li>
-                                                    </ul>
-                                                </ul>
-                                            </nav>
+                                            <PlaceholderGroupList />
+
+
                                         </div>
                                     </div>
                                 }
@@ -137,17 +110,17 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-12">
-                                                <div class="mb-2">
+                                                <div class="mb-5">
                                                     <label for="Content" class="form-label mb-1 small">Sadržaj</label>
                                                     <ValidationMessage For="@(() => _createModel.Content)" />
                                                     <TinyMCE @bind-Value="_createModel.Content" @ref="_tinyMceEditor" />
                                                 </div>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn modal-corporate-button-primary fs-6">
+                                        @*  <button type="submit" class="btn modal-corporate-button-primary fs-6">
                                             <i class="oi oi-check me-1" style="top: 1.5px"></i>
                                             Spasi
-                                        </button>
+                                        </button> *@
                                     </EditForm>
                                 }
                                 else if (ModalMode == ModalMode.EDIT)
@@ -189,10 +162,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn modal-corporate-button-primary fs-6">
-                                            <i class="oi oi-check me-1" style="top: 1.5px"></i>
-                                            Spasi
-                                        </button>
                                     </EditForm>
                                 }
                                 else if (ModalMode == ModalMode.VIEW)

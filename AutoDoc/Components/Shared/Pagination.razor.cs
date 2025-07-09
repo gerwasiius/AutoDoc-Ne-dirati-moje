@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Shared;
 
@@ -7,6 +8,7 @@ public partial class Pagination
     [Parameter] public int CurrentPage { get; set; }
     [Parameter] public int TotalPages { get; set; }
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+    [Inject] private IToastService ToastService { get; set; } = default!;
 
     private IEnumerable<int> PageNumbers
     {
@@ -52,7 +54,17 @@ public partial class Pagination
 
     private async Task ChangePage(int page)
     {
-        if (page < 1 || page > TotalPages || page == CurrentPage) return;
-        await OnPageChanged.InvokeAsync(page);
+        try
+        {
+            if (page < 1 || page > TotalPages || page == CurrentPage)
+                return;
+
+            if (OnPageChanged.HasDelegate)
+                await OnPageChanged.InvokeAsync(page);
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Greška prilikom promjene stranice: {ex.Message}");
+        }
     }
 }

@@ -2,8 +2,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using AutoDoc.Shared.Model.Placeholders.PlaceholderMetadata;
 using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
+using AutoDoc.Shared.Model.Placeholders;
 
 namespace AutoDocFront.Services
 {
@@ -17,21 +17,31 @@ namespace AutoDocFront.Services
         }
 
         /// <summary>
-        /// Gets all placeholders, optionally filtered by search term.
+        /// Gets all placeholders grouped by group (identical to backend response).
         /// </summary>
-        public async Task<List<PlaceholderMeta>> GetPlaceholdersAsync(string searchTerm)
+        public async Task<List<PlaceholderGroup>> GetAllPlaceholderGroupsAsync()
         {
             var url = "/api/contract-generation/placeholders";
             var response = await _client.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<List<PlaceholderMeta>>()
-                       ?? new List<PlaceholderMeta>();
+                return await response.Content.ReadFromJsonAsync<List<PlaceholderGroup>>() ?? new();
             }
-            else
+            return new();
+        }
+
+        /// <summary>
+        /// Gets a single placeholder by its ID.
+        /// </summary>
+        public async Task<PlaceholderMetadata?> GetPlaceholderByIdAsync(string id)
+        {
+            var url = $"/api/contract-generation/placeholders/{Uri.EscapeDataString(id)}";
+            var response = await _client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
             {
-                return null;
+                return await response.Content.ReadFromJsonAsync<PlaceholderMetadata>();
             }
+            return null;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace AutoDocFront.Components.Pages
     {
         // --- PARAMETRI ---
 
-        [Parameter] public string GroupId { get; set; }
+        [Parameter] public int GroupId { get; set; }
         [Parameter, SupplyParameterFromQuery] public string? GroupName { get; set; }
 
         // --- INJECTION ---
@@ -25,6 +25,7 @@ namespace AutoDocFront.Components.Pages
         [Inject] private SectionGroupApiService GroupService { get; set; } = default!;
 
         [Inject] private IToastService ToastService { get; set; } = default!;
+        [Inject] private IDialogService DialogService { get; set; } = default!;
 
         // --- POLJA ---
 
@@ -52,8 +53,16 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            await LoadGroupAsync();
-            await LoadSectionsAsync();
+            try
+            {
+                await LoadGroupAsync();
+                await LoadSectionsAsync();
+            }
+            catch (Exception ex)
+            {
+                // Kritična greška: korisnik mora pročitati
+                await DialogService.ShowErrorAsync("Došlo je do greške prilikom inicijalizacije stranice.\n\nDetalji: " + ex.Message);
+            }
         }
 
         // --- PAGINATION PROPERTIES ---
@@ -90,12 +99,18 @@ namespace AutoDocFront.Components.Pages
             try
             {
                 _isLoading = true;
-                var result = await GroupService.GetGroupsAsync(null, "all", 0, 1);
-                _group = result.Items?.FirstOrDefault(g => g.ID.ToString() == GroupId) ?? new SectionGroupGetDTO();
+                var result = await GroupService.GetGroupByIdAsync(GroupId);
+                _group = result ?? new SectionGroupGetDTO();
+                if (_group.ID == 0)
+                {
+                    // Kritična greška: grupa nije pronađena
+                    await DialogService.ShowErrorAsync("Grupa nije pronađena ili ne postoji. Provjerite URL ili pokušajte ponovo.");
+                }
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Greška prilikom učitavanja grupe: {ex.Message}");
+                // Kritična greška: korisnik mora pročitati
+                await DialogService.ShowErrorAsync("Došlo je do greške prilikom učitavanja grupe.\n\nDetalji: " + ex.Message);
             }
             finally
             {
@@ -112,7 +127,7 @@ namespace AutoDocFront.Components.Pages
             {
                 _isLoading = true;
                 var result = await SectionsService.GetSectionsAsync(
-                    int.Parse(GroupId),
+                    GroupId,
                     _searchTerm,
                     _statusFilter,
                     (_currentPage - 1) * ItemsPerPage,
@@ -123,7 +138,8 @@ namespace AutoDocFront.Components.Pages
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Greška prilikom učitavanja sekcija: {ex.Message}");
+                // Kritična greška: korisnik mora pročitati
+                await DialogService.ShowErrorAsync("Došlo je do greške prilikom učitavanja sekcija.\n\nDetalji: " + ex.Message);
                 _sections = [];
                 _totalCount = 0;
             }
@@ -142,8 +158,16 @@ namespace AutoDocFront.Components.Pages
         private async Task ChangePageAsync(int page)
         {
             if (page < 1 || page > TotalPages || page == _currentPage) return;
-            _currentPage = page;
-            await LoadSectionsAsync();
+            try
+            {
+                _currentPage = page;
+                await LoadSectionsAsync();
+            }
+            catch (Exception ex)
+            {
+                // Ne-kritična greška: može na toast
+                ToastService.ShowError("Greška prilikom promjene stranice: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -151,8 +175,15 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task SearchSectionsAsync()
         {
-            _currentPage = 1;
-            await LoadSectionsAsync();
+            try
+            {
+                _currentPage = 1;
+                await LoadSectionsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom pretrage sekcija: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -161,9 +192,16 @@ namespace AutoDocFront.Components.Pages
         /// <param name="value">Nova vrijednost filtera.</param>
         private async Task OnStatusFilterChangedAsync(SectionStatusType? value)
         {
-            _statusFilter = value;
-            _currentPage = 1;
-            await LoadSectionsAsync();
+            try
+            {
+                _statusFilter = value;
+                _currentPage = 1;
+                await LoadSectionsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom filtriranja sekcija: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -171,13 +209,20 @@ namespace AutoDocFront.Components.Pages
         /// </summary>
         private async Task ClearSectionFiltersAsync()
         {
-            if (string.IsNullOrWhiteSpace(_searchTerm) && _statusFilter == null)
-                return;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_searchTerm) && _statusFilter == null)
+                    return;
 
-            _searchTerm = string.Empty;
-            _statusFilter = null;
-            _currentPage = 1;
-            await LoadSectionsAsync();
+                _searchTerm = string.Empty;
+                _statusFilter = null;
+                _currentPage = 1;
+                await LoadSectionsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError("Greška prilikom čišćenja filtera: " + ex.Message);
+            }
         }
 
         // --- MODAL LOGIKA ---

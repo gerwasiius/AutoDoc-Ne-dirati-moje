@@ -76,33 +76,40 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         protected override void OnParametersSet()
         {
-            if (ModalMode == ModalMode.INSERT)
+            try
             {
-                _createModel = new DocumentTemplateCreateDTO
+                if (ModalMode == ModalMode.INSERT)
                 {
-                    Status = DocumentTemplateStatusType.IN_PROGRESS,
-                    ValidFrom = DateTime.Today
-                };
-                _isUnlimitedValidTo = true;
-                _editContext = new EditContext(_createModel);
-            }
-            else if (ModalMode == ModalMode.EDIT && Template != null)
-            {
-                _updateModel = new DocumentTemplateUpdateDTO
+                    _createModel = new DocumentTemplateCreateDTO
+                    {
+                        Status = DocumentTemplateStatusType.IN_PROGRESS,
+                        ValidFrom = DateTime.Today
+                    };
+                    _isUnlimitedValidTo = true;
+                    _editContext = new EditContext(_createModel);
+                }
+                else if (ModalMode == ModalMode.EDIT && Template != null)
                 {
-                    Name = Template.Name,
-                    Description = Template.Description,
-                    Status = Template.Status,
-                    ValidFrom = Template.ValidFrom,
-                    ValidTo = Template.ValidTo
-                };
-                _isUnlimitedValidTo = !_updateModel.ValidTo.HasValue;
-                _editContext = new EditContext(_updateModel);
+                    _updateModel = new DocumentTemplateUpdateDTO
+                    {
+                        Name = Template.Name,
+                        Description = Template.Description,
+                        Status = Template.Status,
+                        ValidFrom = Template.ValidFrom,
+                        ValidTo = Template.ValidTo
+                    };
+                    _isUnlimitedValidTo = !_updateModel.ValidTo.HasValue;
+                    _editContext = new EditContext(_updateModel);
+                }
+                else if (ModalMode == ModalMode.VIEW && Template != null)
+                {
+                    _viewModel = Template;
+                    _isUnlimitedValidTo = !_viewModel.ValidTo.HasValue;
+                }
             }
-            else if (ModalMode == ModalMode.VIEW && Template != null)
+            catch (Exception ex)
             {
-                _viewModel = Template;
-                _isUnlimitedValidTo = !_viewModel.ValidTo.HasValue;
+                ToastService.ShowError($"Greška prilikom inicijalizacije modala: {ex.Message}");
             }
         }
 
@@ -121,41 +128,51 @@ namespace AutoDocFront.Components.Modals
             if (_editContext.Validate())
             {
                 _isLoading = true;
-                if (ModalMode == ModalMode.INSERT)
+                try
                 {
-                    _createModel.ValidTo = _isUnlimitedValidTo ? null : _createModel.ValidTo;
-                    _createModel.UserInserted = "zlatan.kahriman"; // TODO: zamijeniti stvarnim korisnikom
-                    var (isSuccess, _, errorMessage) = await TemplateService.CreateTemplateAsync(_createModel);
+                    if (ModalMode == ModalMode.INSERT)
+                    {
+                        _createModel.ValidTo = _isUnlimitedValidTo ? null : _createModel.ValidTo;
+                        _createModel.UserInserted = "zlatan.kahriman"; // TODO: zamijeniti stvarnim korisnikom
+                        var (isSuccess, _, errorMessage) = await TemplateService.CreateTemplateAsync(_createModel);
 
-                    if (isSuccess)
-                    {
-                        ToastService.ShowSuccess("Predložak uspješno kreiran!");
-                        await CloseAsync();
-                        await OnSave.InvokeAsync();
+                        if (isSuccess)
+                        {
+                            ToastService.ShowSuccess("Predložak uspješno kreiran!");
+                            await CloseAsync();
+                            await OnSave.InvokeAsync();
+                        }
+                        else
+                        {
+                            ToastService.ShowError(errorMessage ?? "Greška prilikom kreiranja predloška!");
+                        }
                     }
-                    else
+                    else if (ModalMode == ModalMode.EDIT && Template != null)
                     {
-                        ToastService.ShowError(errorMessage ?? "Greška prilikom kreiranja predloška!");
+                        _updateModel.ValidTo = _isUnlimitedValidTo ? null : _updateModel.ValidTo;
+                        _updateModel.UserUpdated = "zlatan.kahriman"; // TODO: zamijeniti stvarnim korisnikom
+                        var (isSuccess, _, errorMessage) = await TemplateService.UpdateTemplateAsync(Template.Id, _updateModel);
+
+                        if (isSuccess)
+                        {
+                            ToastService.ShowSuccess("Predložak uspješno ažuriran!");
+                            await CloseAsync();
+                            await OnSave.InvokeAsync();
+                        }
+                        else
+                        {
+                            ToastService.ShowError(errorMessage ?? "Greška prilikom ažuriranja predloška!");
+                        }
                     }
                 }
-                else if (ModalMode == ModalMode.EDIT && Template != null)
+                catch (Exception ex)
                 {
-                    _updateModel.ValidTo = _isUnlimitedValidTo ? null : _updateModel.ValidTo;
-                    _updateModel.UserUpdated = "zlatan.kahriman"; // TODO: zamijeniti stvarnim korisnikom
-                    var (isSuccess, _, errorMessage) = await TemplateService.UpdateTemplateAsync(Template.Id, _updateModel);
-
-                    if (isSuccess)
-                    {
-                        ToastService.ShowSuccess("Predložak uspješno ažuriran!");
-                        await CloseAsync();
-                        await OnSave.InvokeAsync();
-                    }
-                    else
-                    {
-                        ToastService.ShowError(errorMessage ?? "Greška prilikom ažuriranja predloška!");
-                    }
+                    ToastService.ShowError($"Neočekivana greška: {ex.Message}");
                 }
-                _isLoading = false;
+                finally
+                {
+                    _isLoading = false;
+                }
             }
             else
             {
@@ -242,12 +259,19 @@ namespace AutoDocFront.Components.Modals
         /// <param name="e">Event sa novom vrijednošću.</param>
         private void ToggleUnlimitedValidTo(ChangeEventArgs e)
         {
-            _isUnlimitedValidTo = (bool)e.Value;
-            if (ModalMode == ModalMode.INSERT)
-                _createModel.ValidTo = _isUnlimitedValidTo ? null : _createModel.ValidTo;
-            else if (ModalMode == ModalMode.EDIT)
-                _updateModel.ValidTo = _isUnlimitedValidTo ? null : _updateModel.ValidTo;
-            StateHasChanged();
+            try
+            {
+                _isUnlimitedValidTo = (bool)e.Value;
+                if (ModalMode == ModalMode.INSERT)
+                    _createModel.ValidTo = _isUnlimitedValidTo ? null : _createModel.ValidTo;
+                else if (ModalMode == ModalMode.EDIT)
+                    _updateModel.ValidTo = _isUnlimitedValidTo ? null : _updateModel.ValidTo;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška prilikom promjene ograničenja datuma: {ex.Message}");
+            }
         }
     }
 }

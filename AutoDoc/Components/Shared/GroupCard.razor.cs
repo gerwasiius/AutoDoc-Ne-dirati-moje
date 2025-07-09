@@ -1,5 +1,6 @@
 ﻿using AutoDoc.Shared.Model.DTO.SectionGroupDTO;
 using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Shared
 {
@@ -34,19 +35,41 @@ namespace AutoDocFront.Components.Shared
         /// Event koji se poziva kada korisnik selektuje grupu (samo u "select" režimu).
         /// </summary>
         [Parameter] public EventCallback<SectionGroupGetDTO> OnSelect { get; set; }
+        [Inject] private IToastService ToastService { get; set; } = default!;
+
 
         /// <summary>
         /// Obrada klika na karticu u "select" režimu.
         /// </summary>
         private async Task HandleClick()
         {
-            if (Mode == "select" && OnSelect.HasDelegate)
+            try
             {
-                await OnSelect.InvokeAsync(Group);
+                if (Mode == "select" && OnSelect.HasDelegate && Group != null)
+                    await OnSelect.InvokeAsync(Group);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška pri selektovanju grupe: {ex.Message}");
             }
         }
 
-        private Task OnViewClicked() => OnView.InvokeAsync(Group);
+        /// <summary>
+        /// Obrada klika metoda na view
+        /// </summary>
+        /// <returns></returns>
+        private async Task OnViewClicked()
+        {
+            try
+            {
+                if (OnView.HasDelegate && Group != null)
+                    await OnView.InvokeAsync(Group);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Greška pri pregledu grupe: {ex.Message}");
+            }
+        }
 
     }
 }

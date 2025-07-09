@@ -57,6 +57,7 @@ namespace AutoDocFront.Components.Modals
         /// Servis za prikaz notifikacija (toast poruka).
         /// </summary>
         [Inject] private IToastService ToastService { get; set; }
+        [Inject] private IDialogService DialogService{ get; set; }
 
         /// <summary>
         /// Servis za prikaz dijaloga.
@@ -83,41 +84,46 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         protected override async Task OnParametersSetAsync()
         {
-            switch (ModalMode)
+            try
             {
-                case ModalMode.INSERT:
-                    _createModel = new SectionsCreateDTO
-                    {
-                        UserInserted = "zlatan.kahriman",
-                        IsActive = true,
-                        GroupId = Group.ID
-                    };
-                    _editContext = new EditContext(_createModel);
-                    break;
-                case ModalMode.EDIT:
-                    _updateModel = new SectionsUpdateDTO
-                    {
-                        // Mapiraj podatke iz Section u _updateModel
-                        GroupId = Section.GroupId,
-                        Name = Section.Name,
-                        Description = Section.Description,
-                        Content = Section.Content,
-                        IsActive = Section.IsActive,
-                        UserUpdated = "zlatan.kahriman"
-                    };
-                    _editContext = new EditContext(_updateModel);
-                    break;
-                case ModalMode.VIEW:
-                    _viewModel = Section;
-                    // VIEW mod ne treba EditContext za validaciju
-                    break;
-            }
-            if (ModalMode != ModalMode.VIEW)
-                _validationMessageStore = new ValidationMessageStore(_editContext);
+                switch (ModalMode)
+                {
+                    case ModalMode.INSERT:
+                        _createModel = new SectionsCreateDTO
+                        {
+                            UserInserted = "zlatan.kahriman",
+                            IsActive = true,
+                            GroupId = Group.ID
+                        };
+                        _editContext = new EditContext(_createModel);
+                        break;
+                    case ModalMode.EDIT:
+                        _updateModel = new SectionsUpdateDTO
+                        {
+                            GroupId = Section.GroupId,
+                            Name = Section.Name,
+                            Description = Section.Description,
+                            Content = Section.Content,
+                            IsActive = Section.IsActive,
+                            UserUpdated = "zlatan.kahriman"
+                        };
+                        _editContext = new EditContext(_updateModel);
+                        break;
+                    case ModalMode.VIEW:
+                        _viewModel = Section;
+                        break;
+                }
+                if (ModalMode != ModalMode.VIEW)
+                    _validationMessageStore = new ValidationMessageStore(_editContext);
 
-            if (ModalMode == ModalMode.VIEW)
+                if (ModalMode == ModalMode.VIEW)
+                {
+                    await LoadAllVersionsForSectionAsync();
+                }
+            }
+            catch (Exception ex)
             {
-                await LoadAllVersionsForSectionAsync();
+                await DialogService.ShowErrorAsync("Došlo je do greške prilikom inicijalizacije modala.\n\nDetalji: " + ex.Message);
             }
         }
 
@@ -130,23 +136,30 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         private async Task HandleValidSubmitAsync()
         {
-            _validationMessageStore?.Clear();
-
-            // Ažuriraj sadržaj iz TinyMCE editora
-            if (_tinyMceEditor != null)
-                await _tinyMceEditor.UpdateContentFromEditor();
-
-            if (_editContext.Validate())
+            try
             {
-                if (ModalMode == ModalMode.EDIT)
-                    await UpdateSectionAsync();
-                else if (ModalMode == ModalMode.INSERT)
-                    await InsertNewSectionAsync();
+                _validationMessageStore?.Clear();
+
+                // Ažuriraj sadržaj iz TinyMCE editora
+                if (_tinyMceEditor != null)
+                    await _tinyMceEditor.UpdateContentFromEditor();
+
+                if (_editContext.Validate())
+                {
+                    if (ModalMode == ModalMode.EDIT)
+                        await UpdateSectionAsync();
+                    else if (ModalMode == ModalMode.INSERT)
+                        await InsertNewSectionAsync();
+                }
+                else
+                {
+                    _editContext.NotifyValidationStateChanged();
+                    ToastService.ShowError("Potrebno je provjeriti da li su sva polja uredno unesena!");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _editContext.NotifyValidationStateChanged();
-                ToastService.ShowError("Potrebno je provjeriti da li su sva polja uredno unesena!");
+                await DialogService.ShowErrorAsync("Neočekivana greška prilikom validacije ili slanja forme.\n\nDetalji: " + ex.Message);
             }
         }
 
@@ -165,7 +178,7 @@ namespace AutoDocFront.Components.Modals
                     if (result.StatusCode == HttpStatusCode.Conflict)
                         ToastService.ShowError(result.ErrorMessage ?? "Sekcija sa istim nazivom već postoji.");
                     else
-                        ToastService.ShowError("Problem prilikom upisa sekcije!");
+                        await DialogService.ShowErrorAsync(result.ErrorMessage ?? "Problem prilikom upisa sekcije!");
                 }
                 else
                 {
@@ -176,7 +189,7 @@ namespace AutoDocFront.Components.Modals
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Neočekivana greška: {ex.Message}");
+                await DialogService.ShowErrorAsync("Neočekivana greška prilikom kreiranja sekcije.\n\nDetalji: " + ex.Message);
             }
             finally
             {
@@ -196,7 +209,7 @@ namespace AutoDocFront.Components.Modals
 
                 if (!result.IsSuccess)
                 {
-                    ToastService.ShowError(result.ErrorMessage ?? "Problem prilikom ažuriranja sekcije!");
+                    await DialogService.ShowErrorAsync(result.ErrorMessage ?? "Problem prilikom ažuriranja sekcije!");
                 }
                 else
                 {
@@ -207,7 +220,7 @@ namespace AutoDocFront.Components.Modals
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Neočekivana greška: {ex.Message}");
+                await DialogService.ShowErrorAsync("Neočekivana greška prilikom ažuriranja sekcije.\n\nDetalji: " + ex.Message);
             }
             finally
             {
@@ -231,7 +244,7 @@ namespace AutoDocFront.Components.Modals
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Problem prilikom dobavljanja ostalih verzija sekcije: {ex.Message}");
+                await DialogService.ShowErrorAsync("Problem prilikom dobavljanja ostalih verzija sekcije.\n\nDetalji: " + ex.Message);
             }
         }
 
@@ -268,7 +281,7 @@ namespace AutoDocFront.Components.Modals
             }
             catch (Exception ex)
             {
-                ToastService.ShowError($"Neočekivana greška: {ex.Message}");
+                await DialogService.ShowErrorAsync("Neočekivana greška prilikom promjene statusa sekcije.\n\nDetalji: " + ex.Message);
             }
             finally
             {
