@@ -12,6 +12,18 @@ namespace AutoDocFront.Components.Modals
         [Inject] private IToastService ToastService { get; set; } = default!;
 
         private bool _isSaving = false;
+        private bool _isExpressionPickerModalOpen = false;
+
+        private void OpenConditionExpressionModal()
+        {
+            _isExpressionPickerModalOpen = true;
+        }
+
+        private void InsertConditionExpression(string expr)
+        {
+            Relation.ConditionExpression = expr;
+            StateHasChanged();
+        }
 
         private async Task HandleValidSubmit()
         {

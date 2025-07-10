@@ -1,0 +1,80 @@
+﻿@using AutoDoc.Shared.Model.Placeholders
+@using AutoDocFront.Components.Shared
+@inherits ModalBase
+
+<BaseModalLayout IsOpen="@IsOpen" Title="Pomoć za unos uslova" IsOpenChanged="@IsOpenChanged">
+    <BodyContent>
+        @if (_isLoading)
+        {
+            <div class="text-center py-3">
+                <span class="spinner-border spinner-border-sm"></span> Učitavanje...
+            </div>
+        }
+        else if (_step == StepPlaceholderModal.GROUP)
+        {
+            <div>
+                <h6>Odaberi grupu placeholdera</h6>
+                <ul class="list-group">
+                    @foreach (var group in _groups)
+                    {
+                        <li class="list-group-item pointer" @onclick="() => SelectGroup(group)">
+                            @group.Group
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        else if (_step == StepPlaceholderModal.PLACEHOLDER)
+        {
+            <div>
+                <button class="btn btn-link p-0 mb-2" @onclick="BackToGroups">
+                    <i class="fa fa-arrow-left"></i> Nazad na grupe
+                </button>
+                <h6>Odaberi placeholder</h6>
+                <ul class="list-group">
+                    @foreach (var ph in _selectedGroup?.Placeholders ?? Enumerable.Empty<PlaceholderMetadata>())
+                    {
+                        <li class="list-group-item pointer" @onclick="() => SelectPlaceholder(ph)">
+                            <b>@ph.Name</b> <span class="text-muted small">(@ph.Id)</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        else if (_step == StepPlaceholderModal.VALUE)
+        {
+            <div>
+                <button class="btn btn-link p-0 mb-2" @onclick="BackToPlaceholders">
+                    <i class="fa fa-arrow-left"></i> Nazad na placeholdere
+                </button>
+                <h6>Unesi referentnu vrijednost</h6>
+                <div class="mb-2">
+                    <b>@_selectedPlaceholder?.Name</b>
+                    <span class="text-muted small">(@_selectedPlaceholder?.Id)</span>
+                </div>
+                @if (_selectedPlaceholder?.IsEnum == true && _selectedPlaceholder.EnumValues != null)
+                {
+                    <select class="form-select" @bind="_referenceValue">
+                        <option value="">-- Odaberi vrijednost --</option>
+                        @foreach (var val in _selectedPlaceholder.EnumValues)
+                        {
+                            <option value="@val">@val</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <input class="form-control" @bind="_referenceValue" placeholder="Unesi vrijednost" />
+                }
+            </div>
+        }
+
+
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer d-flex justify-content-end">
+            <button class="btn corporate-button-secondary me-2" @onclick="CloseAsync">Zatvori</button>
+            <button class="btn modal-corporate-button-primary" @onclick="InsertCondition">Ubaci primjer</button>
+        </div>
+    </FooterContent>
+</BaseModalLayout>

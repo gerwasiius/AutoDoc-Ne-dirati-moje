@@ -17,10 +17,12 @@
                 <input class="form-check-input corporate-checkbox" type="checkbox" id="isPageBreak" @bind="Relation.IsPageBreak" />
                 <label class="form-check-label" for="isPageBreak">Ova sekcija počinje na novoj stranici (Page Break)</label>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Uslov prikaza (ConditionExpression)</label>
+            <label class="form-label">Uslov prikaza (ConditionExpression)</label>
+            <div class="input-group">
                 <input class="form-control" @bind="Relation.ConditionExpression" />
-                <small class="text-secondary">Kasnije će ovde biti podržana lista uslova.</small>
+                <button class="btn btn-outline-secondary" type="button" @onclick="OpenConditionExpressionModal">
+                    <i class="fa fa-magic"></i>
+                </button>
             </div>
         </EditForm>
     </BodyContent>
@@ -30,3 +32,12 @@
         </div>
     </FooterContent>
 </BaseModalLayout>
+
+
+
+@if (_isExpressionPickerModalOpen)
+{
+    <ConditionExpressionPickerModal IsOpen="_isExpressionPickerModalOpen"
+                                    IsOpenChanged="@(v => _isExpressionPickerModalOpen = v)"
+                                    OnInsertCondition="InsertConditionExpression" />
+}
