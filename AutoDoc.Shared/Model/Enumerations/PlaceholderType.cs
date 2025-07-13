@@ -25,6 +25,8 @@ namespace AutoDoc.Shared.Model.Enumerations
         ENUM,
         /// <summary>Datum i vrijeme.</summary>
         DATETIME,
+        /// <summary>CHAR.</summary>
+        CHAR,
         /// <summary>Neodređeno/ostalo.</summary>
         UNKNOWN
     }

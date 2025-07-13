@@ -4,6 +4,7 @@ using AutoDocFront.Components.Shared;
 using AutoDocFront.Models.Enumerations;
 using AutoDocFront.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace AutoDocFront.Components.Modals
 {
@@ -17,6 +18,7 @@ namespace AutoDocFront.Components.Modals
         /// Servis za dohvat placeholdera.
         /// </summary>
         [Inject] private PlaceholdersApiService PlaceholdersApiService { get; set; } = default!;
+        [Inject] private IToastService ToastService { get; set; } // Dodaj ako već nije
 
         /// <summary>
         /// Event koji se poziva kada se ubaci uslov.
@@ -34,6 +36,7 @@ namespace AutoDocFront.Components.Modals
         private PlaceholderMetadata? _selectedPlaceholder;
         private string _selectedOperator = "==";
         private string? _inputValue;
+        private DateTime? _inputDateValue;
 
         private string _searchInput = string.Empty;
         private string _searchTerm = string.Empty;
@@ -106,6 +109,8 @@ namespace AutoDocFront.Components.Modals
             _selectedPlaceholder = ph;
             _selectedOperator = GetOperatorsForType(ph.Type).FirstOrDefault() ?? "==";
             _inputValue = null;
+            _inputDateValue = null;
+
             _step = PlaceholderPickerStepEnum.VALUE;
         }
 
@@ -136,7 +141,30 @@ namespace AutoDocFront.Components.Modals
         /// </summary>
         private void AddCondition()
         {
-            if (_selectedPlaceholder == null || string.IsNullOrWhiteSpace(_inputValue)) return;
+            if (_selectedPlaceholder == null)
+                return;
+
+            // Provjera za datum
+            if (_selectedPlaceholder.Type == PlaceholderType.DATETIME)
+            {
+                if (_inputDateValue == null)
+                {
+                    ToastService.ShowError("Datum ne smije biti prazan.");
+                    return; // Ne dozvoljava dodavanje ako nije odabran datum
+                }
+
+                // Parsiranje datuma u string (npr. "dd-MM-yyyy")
+                _inputValue = _inputDateValue.Value.ToString("dd-MM-yyyy");
+            }
+            else
+            {
+                // Provjera za ostale tipove
+                if (string.IsNullOrWhiteSpace(_inputValue))
+                {
+                    ToastService.ShowError("Vrijednost ne smije biti prazna.");
+                    return;
+                }
+            }
 
             string value = _inputValue!;
             if (_selectedPlaceholder.Type == PlaceholderType.STRING || _selectedPlaceholder.IsEnum)
@@ -153,6 +181,7 @@ namespace AutoDocFront.Components.Modals
             _selectedGroup = null;
             _selectedPlaceholder = null;
             _inputValue = null;
+            _inputDateValue = null;
         }
 
         /// <summary>

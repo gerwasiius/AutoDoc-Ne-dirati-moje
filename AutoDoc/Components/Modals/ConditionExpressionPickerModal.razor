@@ -58,7 +58,6 @@
                     <button class="btn btn-link text-secondary px-0" @onclick="BackToPlaceholders">
                         <i class="fa fa-arrow-left"></i> Nazad na placeholdere
                     </button>
-                    <small class="text-secondary ms-3">Unesite vrijednost i operator.</small>
                 }
             </div>
             <div class="modal-body pt-0">
@@ -153,16 +152,52 @@
                                         <option value="false">Netačno</option>
                                     </select>
                                 }
+                                else if (_selectedPlaceholder.Type == PlaceholderType.INT)
+                                {
+                                    <input type="number"
+                                           class="form-control corporate-select"
+                                           @bind="_inputValue"
+                                           @bind:event="oninput"
+                                           step="1"
+                                           placeholder="Unesite cijeli broj" />
+                                }
+                                else if (_selectedPlaceholder.Type == PlaceholderType.DECIMAL)
+                                {
+                                    <input type="number"
+                                           class="form-control corporate-select"
+                                           @bind="_inputValue"
+                                           @bind:event="oninput"
+                                           step="0.01"
+                                           placeholder="Unesite decimalnu vrijednost" />
+                                           <p>@_inputValue</p>
+                                }
+                                else if (_selectedPlaceholder.Type == PlaceholderType.CHAR)
+                                {
+                                    <input type="text"
+                                           class="form-control corporate-select"
+                                           maxlength="1"
+                                           @bind="_inputValue"
+                                           @bind:event="oninput"
+                                           placeholder="Unesite jedan karakter" />
+                                }
+                                else if (_selectedPlaceholder.Type == PlaceholderType.DATETIME)
+                                {
+                                    <input type="date"
+                                           class="form-control"
+                                           @bind-value="_inputDateValue"
+                                           @bind-value:event="oninput"
+                                           placeholder="Odaberite datum" />
+                                }
                                 else
                                 {
                                     <input class="form-control corporate-select" @bind="_inputValue" placeholder="Unesite vrijednost" />
                                 }
                             </div>
-                            <div class="mb-3">
-                                <button class="btn corporate-button-primary" @onclick="AddCondition" disabled="@string.IsNullOrWhiteSpace(_inputValue)">
-                                    Dodaj uslov
+                            @* <div class="mb-3">
+                                <button class="btn corporate-button-primary" @onclick="AddCondition" disabled="@string.IsNullOrWhiteSpace(_inputValue) || @_inputDateValue == null ">
+                                    Dodaj uslov11
                                 </button>
-                            </div>
+                            </div> *@
                         </div>
                     </div>
                 }
@@ -172,7 +207,7 @@
     </BodyContent>
     <FooterContent>
         <div class="modal-footer d-flex justify-content-end">
-            <button class="btn modal-corporate-button-primary" @onclick="AddCondition">Unesite vrijednost</button>
+            <button class="btn modal-corporate-button-primary" disabled="@(string.IsNullOrWhiteSpace(_inputValue) && _inputDateValue == null)" @onclick="AddCondition">Dodaj uslov</button>
         </div>
     </FooterContent>
 </BaseModalLayout>
