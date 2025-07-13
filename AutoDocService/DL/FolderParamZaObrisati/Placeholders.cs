@@ -50,575 +50,583 @@ namespace AutoDocService.DL.FolderParamZaObrisati
 
     public class ClientInfo
     {
-        [Placeholder("Ime klijenta", "Puno ime klijenta", "string")]
+        [Placeholder("Ime klijenta", "Puno ime klijenta")]
         public string FirstName { get; set; }
-        [Placeholder("Prezime klijenta", "Puno prezime klijenta", "string")]
+        [Placeholder("Prezime klijenta", "Puno prezime klijenta")]
         public string LastName { get; set; }
-        [Placeholder("JMBG", "Jedinstveni matični broj građana", "string")]
+        [Placeholder("JMBG", "Jedinstveni matični broj građana")]
         public string PersonalId { get; set; }
-        [Placeholder("Datum rođenja", "Datum rođenja klijenta", "DateTime")]
+        [Placeholder("Datum rođenja", "Datum rođenja klijenta")]
         public DateTime DateOfBirth { get; set; }
-        [Placeholder("Email adresa", "Kontakt email klijenta", "string")]
+        [Placeholder("Email adresa", "Kontakt email klijenta")]
         public string Email { get; set; }
     }
 
     public class AccountInfo
     {
-        [Placeholder("Broj računa", "Jedinstveni broj bankovnog računa", "string")]
+        [Placeholder("Broj računa", "Jedinstveni broj bankovnog računa")]
         public string AccountNumber { get; set; }
-        [Placeholder("Tip računa", "Vrsta bankovnog računa", "string")]
+        [Placeholder("Tip računa", "Vrsta bankovnog računa")]
         public string AccountType { get; set; }
-        [Placeholder("Stanje računa", "Trenutno stanje na računu", "decimal")]
+        [Placeholder("Stanje računa", "Trenutno stanje na računu")]
         public decimal Balance { get; set; }
-        [Placeholder("Datum otvaranja", "Datum kada je račun otvoren", "DateTime")]
+        [Placeholder("Datum otvaranja", "Datum kada je račun otvoren")]
         public DateTime OpenDate { get; set; }
-        [Placeholder("Status računa", "Status bankovnog računa", "string")]
+        [Placeholder("Status računa", "Status bankovnog računa")]
         public string Status { get; set; }
     }
 
     public class LoanInfo
     {
-        [Placeholder("Iznos kredita", "Ukupan iznos odobrenog kredita", "decimal")]
+        [Placeholder("Iznos kredita", "Ukupan iznos odobrenog kredita")]
         public decimal LoanAmount { get; set; }
-        [Placeholder("Rok otplate", "Datum završetka otplate kredita", "DateTime")]
+        [Placeholder("Rok otplate", "Datum završetka otplate kredita")]
         public DateTime MaturityDate { get; set; }
-        [Placeholder("Kamatna stopa", "Godišnja kamatna stopa", "decimal")]
+        [Placeholder("Kamatna stopa", "Godišnja kamatna stopa")]
         public decimal InterestRate { get; set; }
-        [Placeholder("Broj rata", "Ukupan broj rata za otplatu", "int")]
+        [Placeholder("Broj rata", "Ukupan broj rata za otplatu")]
         public int NumberOfInstallments { get; set; }
-        [Placeholder("Status kredita", "Trenutni status kredita", "string")]
+        [Placeholder("Status kredita", "Trenutni status kredita")]
         public string Status { get; set; }
     }
 
     public class CardInfo
     {
-        [Placeholder("Broj kartice", "Jedinstveni broj platne kartice", "string")]
+        [Placeholder("Broj kartice", "Jedinstveni broj platne kartice")]
         public string CardNumber { get; set; }
-        [Placeholder("Tip kartice", "Vrsta platne kartice (Visa, MasterCard...)", "string")]
+        [Placeholder("Tip kartice", "Vrsta platne kartice (Visa, MasterCard...)")]
         public string CardType { get; set; }
-        [Placeholder("Datum isteka", "Datum isteka kartice", "DateTime")]
+        [Placeholder("Datum isteka", "Datum isteka kartice")]
         public DateTime ExpiryDate { get; set; }
-        [Placeholder("Status kartice", "Status platne kartice", "string")]
+        [Placeholder("Status kartice", "Status platne kartice")]
         public string Status { get; set; }
-        [Placeholder("Limit kartice", "Maksimalni dozvoljeni limit", "decimal")]
+        [Placeholder("Limit kartice", "Maksimalni dozvoljeni limit")]
         public decimal CardLimit { get; set; }
     }
 
     public class ContactInfo
     {
-        [Placeholder("Telefon", "Broj telefona klijenta", "string")]
+        [Placeholder("Telefon", "Broj telefona klijenta")]
         public string Phone { get; set; }
-        [Placeholder("Mobilni telefon", "Broj mobilnog telefona klijenta", "string")]
+        [Placeholder("Mobilni telefon", "Broj mobilnog telefona klijenta")]
         public string Mobile { get; set; }
-        [Placeholder("Adresa", "Adresa stanovanja klijenta", "string")]
+        [Placeholder("Adresa", "Adresa stanovanja klijenta")]
         public string Address { get; set; }
-        [Placeholder("Grad", "Grad prebivališta", "string")]
+        [Placeholder("Grad", "Grad prebivališta")]
         public string City { get; set; }
-        [Placeholder("Poštanski broj", "Poštanski broj prebivališta", "string")]
+        [Placeholder("Poštanski broj", "Poštanski broj prebivališta")]
         public string PostalCode { get; set; }
     }
 
     public class EmploymentInfo
     {
-        [Placeholder("Naziv poslodavca", "Naziv firme u kojoj je klijent zaposlen", "string")]
+        [Placeholder("Naziv poslodavca", "Naziv firme u kojoj je klijent zaposlen")]
         public string EmployerName { get; set; }
-        [Placeholder("Pozicija", "Radno mjesto klijenta", "string")]
+        [Placeholder("Pozicija", "Radno mjesto klijenta")]
         public string Position { get; set; }
-        [Placeholder("Mjesečna primanja", "Iznos mjesečnih primanja", "decimal")]
+        [Placeholder("Mjesečna primanja", "Iznos mjesečnih primanja")]
         public decimal MonthlyIncome { get; set; }
-        [Placeholder("Status zaposlenja", "Trenutni status zaposlenja", "string")]
-        public string EmploymentStatus { get; set; }
-        [Placeholder("Godina zaposlenja", "Godina kada je klijent zaposlen", "int")]
+        [Placeholder("Status zaposlenja", "Trenutni status zaposlenja")]
+        public EmploymentStatusEnum EmploymentStatus { get; set; }
+        [Placeholder("Godina zaposlenja", "Godina kada je klijent zaposlen")]
         public int EmploymentYear { get; set; }
     }
 
     public class AddressInfo
     {
-        [Placeholder("Ulica", "Naziv ulice prebivališta", "string")]
+        [Placeholder("Ulica", "Naziv ulice prebivališta")]
         public string Street { get; set; }
-        [Placeholder("Broj", "Kućni broj", "string")]
+        [Placeholder("Broj", "Kućni broj")]
         public string Number { get; set; }
-        [Placeholder("Grad", "Grad prebivališta", "string")]
+        [Placeholder("Grad", "Grad prebivališta")]
         public string City { get; set; }
-        [Placeholder("Poštanski broj", "Poštanski broj", "string")]
+        [Placeholder("Poštanski broj", "Poštanski broj")]
         public string PostalCode { get; set; }
-        [Placeholder("Država", "Država prebivališta", "string")]
+        [Placeholder("Država", "Država prebivališta")]
         public string Country { get; set; }
     }
 
     public class GuarantorInfo
     {
-        [Placeholder("Ime jamca", "Puno ime jamca", "string")]
+        [Placeholder("Ime jamca", "Puno ime jamca")]
         public string GuarantorName { get; set; }
-        [Placeholder("JMBG jamca", "Jedinstveni matični broj jamca", "string")]
+        [Placeholder("JMBG jamca", "Jedinstveni matični broj jamca")]
         public string GuarantorId { get; set; }
-        [Placeholder("Telefon jamca", "Kontakt telefon jamca", "string")]
+        [Placeholder("Telefon jamca", "Kontakt telefon jamca")]
         public string GuarantorPhone { get; set; }
-        [Placeholder("Adresa jamca", "Adresa stanovanja jamca", "string")]
+        [Placeholder("Adresa jamca", "Adresa stanovanja jamca")]
         public string GuarantorAddress { get; set; }
-        [Placeholder("Status jamca", "Status jamca u ugovoru", "string")]
+        [Placeholder("Status jamca", "Status jamca u ugovoru")]
         public string GuarantorStatus { get; set; }
     }
 
     public class CollateralInfo
     {
-        [Placeholder("Tip kolaterala", "Vrsta ponuđenog kolaterala", "string")]
+        [Placeholder("Tip kolaterala", "Vrsta ponuđenog kolaterala")]
         public string CollateralType { get; set; }
-        [Placeholder("Vrijednost kolaterala", "Procijenjena vrijednost kolaterala", "decimal")]
+        [Placeholder("Vrijednost kolaterala", "Procijenjena vrijednost kolaterala")]
         public decimal CollateralValue { get; set; }
-        [Placeholder("Opis kolaterala", "Detaljan opis kolaterala", "string")]
+        [Placeholder("Opis kolaterala", "Detaljan opis kolaterala")]
         public string CollateralDescription { get; set; }
-        [Placeholder("Status kolaterala", "Status procjene kolaterala", "string")]
+        [Placeholder("Status kolaterala", "Status procjene kolaterala")]
         public string CollateralStatus { get; set; }
-        [Placeholder("Datum procjene", "Datum procjene kolaterala", "DateTime")]
+        [Placeholder("Datum procjene", "Datum procjene kolaterala")]
         public DateTime AppraisalDate { get; set; }
     }
 
     public class PaymentScheduleInfo
     {
-        [Placeholder("Broj rata", "Ukupan broj rata", "int")]
+        [Placeholder("Broj rata", "Ukupan broj rata")]
         public int NumberOfInstallments { get; set; }
-        [Placeholder("Iznos rate", "Iznos pojedinačne rate", "decimal")]
+        [Placeholder("Iznos rate", "Iznos pojedinačne rate")]
         public decimal InstallmentAmount { get; set; }
-        [Placeholder("Datum prve rate", "Datum dospijeća prve rate", "DateTime")]
+        [Placeholder("Datum prve rate", "Datum dospijeća prve rate")]
         public DateTime FirstInstallmentDate { get; set; }
-        [Placeholder("Datum zadnje rate", "Datum dospijeća zadnje rate", "DateTime")]
+        [Placeholder("Datum zadnje rate", "Datum dospijeća zadnje rate")]
         public DateTime LastInstallmentDate { get; set; }
-        [Placeholder("Status otplate", "Status otplate kredita", "string")]
+        [Placeholder("Status otplate", "Status otplate kredita")]
         public string RepaymentStatus { get; set; }
     }
 
     public class InterestInfo
     {
-        [Placeholder("Kamatna stopa", "Godišnja kamatna stopa", "decimal")]
+        [Placeholder("Kamatna stopa", "Godišnja kamatna stopa")]
         public decimal InterestRate { get; set; }
-        [Placeholder("Vrsta kamate", "Fiksna ili promjenjiva kamata", "string")]
+        [Placeholder("Vrsta kamate", "Fiksna ili promjenjiva kamata")]
         public string InterestType { get; set; }
-        [Placeholder("Datum početka", "Datum početka obračuna kamate", "DateTime")]
+        [Placeholder("Datum početka", "Datum početka obračuna kamate")]
         public DateTime StartDate { get; set; }
-        [Placeholder("Datum završetka", "Datum završetka obračuna kamate", "DateTime")]
+        [Placeholder("Datum završetka", "Datum završetka obračuna kamate")]
         public DateTime EndDate { get; set; }
-        [Placeholder("Status kamate", "Status obračuna kamate", "string")]
+        [Placeholder("Status kamate", "Status obračuna kamate")]
         public string InterestStatus { get; set; }
     }
 
     public class FeeInfo
     {
-        [Placeholder("Vrsta naknade", "Tip bankarske naknade", "string")]
+        [Placeholder("Vrsta naknade", "Tip bankarske naknade")]
         public string FeeType { get; set; }
-        [Placeholder("Iznos naknade", "Iznos naknade", "decimal")]
+        [Placeholder("Iznos naknade", "Iznos naknade")]
         public decimal FeeAmount { get; set; }
-        [Placeholder("Datum naplate", "Datum naplate naknade", "DateTime")]
+        [Placeholder("Datum naplate", "Datum naplate naknade")]
         public DateTime FeeDate { get; set; }
-        [Placeholder("Status naknade", "Status naplate naknade", "string")]
+        [Placeholder("Status naknade", "Status naplate naknade")]
         public string FeeStatus { get; set; }
-        [Placeholder("Opis naknade", "Dodatni opis naknade", "string")]
+        [Placeholder("Opis naknade", "Dodatni opis naknade")]
         public string FeeDescription { get; set; }
     }
 
     public class BankBranchInfo
     {
-        [Placeholder("Naziv filijale", "Naziv bankarske filijale", "string")]
+        [Placeholder("Naziv filijale", "Naziv bankarske filijale")]
         public string BranchName { get; set; }
-        [Placeholder("Adresa filijale", "Adresa bankarske filijale", "string")]
+        [Placeholder("Adresa filijale", "Adresa bankarske filijale")]
         public string BranchAddress { get; set; }
-        [Placeholder("Grad filijale", "Grad u kojem se nalazi filijala", "string")]
+        [Placeholder("Grad filijale", "Grad u kojem se nalazi filijala")]
         public string BranchCity { get; set; }
-        [Placeholder("Telefon filijale", "Kontakt telefon filijale", "string")]
+        [Placeholder("Telefon filijale", "Kontakt telefon filijale")]
         public string BranchPhone { get; set; }
-        [Placeholder("Šifra filijale", "Jedinstvena šifra filijale", "string")]
+        [Placeholder("Šifra filijale", "Jedinstvena šifra filijale")]
         public string BranchCode { get; set; }
     }
 
     public class ContractInfo
     {
-        [Placeholder("Broj ugovora", "Jedinstveni broj ugovora", "string")]
+        [Placeholder("Broj ugovora", "Jedinstveni broj ugovora")]
         public string ContractNumber { get; set; }
-        [Placeholder("Datum ugovora", "Datum potpisivanja ugovora", "DateTime")]
+        [Placeholder("Datum ugovora", "Datum potpisivanja ugovora")]
         public DateTime ContractDate { get; set; }
-        [Placeholder("Status ugovora", "Trenutni status ugovora", "string")]
+        [Placeholder("Status ugovora", "Trenutni status ugovora")]
         public string ContractStatus { get; set; }
-        [Placeholder("Tip ugovora", "Vrsta bankarskog ugovora", "string")]
+        [Placeholder("Tip ugovora", "Vrsta bankarskog ugovora")]
         public string ContractType { get; set; }
-        [Placeholder("Opis ugovora", "Dodatni opis ugovora", "string")]
+        [Placeholder("Opis ugovora", "Dodatni opis ugovora")]
         public string ContractDescription { get; set; }
     }
 
     public class LegalInfo
     {
-        [Placeholder("Naziv pravnog lica", "Naziv firme ili pravnog subjekta", "string")]
+        [Placeholder("Naziv pravnog lica", "Naziv firme ili pravnog subjekta")]
         public string LegalEntityName { get; set; }
-        [Placeholder("ID pravnog lica", "Jedinstveni identifikacioni broj", "string")]
+        [Placeholder("ID pravnog lica", "Jedinstveni identifikacioni broj")]
         public string LegalEntityId { get; set; }
-        [Placeholder("Adresa pravnog lica", "Adresa pravnog subjekta", "string")]
+        [Placeholder("Adresa pravnog lica", "Adresa pravnog subjekta")]
         public string LegalEntityAddress { get; set; }
-        [Placeholder("Telefon pravnog lica", "Kontakt telefon pravnog subjekta", "string")]
+        [Placeholder("Telefon pravnog lica", "Kontakt telefon pravnog subjekta")]
         public string LegalEntityPhone { get; set; }
-        [Placeholder("Status pravnog lica", "Status pravnog subjekta", "string")]
+        [Placeholder("Status pravnog lica", "Status pravnog subjekta")]
         public string LegalEntityStatus { get; set; }
     }
 
     public class NotificationInfo
     {
-        [Placeholder("Tip obavijesti", "Vrsta obavijesti (email, SMS...)", "string")]
+        [Placeholder("Tip obavijesti", "Vrsta obavijesti (email, SMS...)")]
         public string NotificationType { get; set; }
-        [Placeholder("Sadržaj obavijesti", "Tekst obavijesti", "string")]
+        [Placeholder("Sadržaj obavijesti", "Tekst obavijesti")]
         public string NotificationContent { get; set; }
-        [Placeholder("Datum slanja", "Datum slanja obavijesti", "DateTime")]
+        [Placeholder("Datum slanja", "Datum slanja obavijesti")]
         public DateTime NotificationDate { get; set; }
-        [Placeholder("Status obavijesti", "Status isporuke obavijesti", "string")]
+        [Placeholder("Status obavijesti", "Status isporuke obavijesti")]
         public string NotificationStatus { get; set; }
-        [Placeholder("Primalac", "Ime i prezime primaoca", "string")]
+        [Placeholder("Primalac", "Ime i prezime primaoca")]
         public string Recipient { get; set; }
     }
 
     public class StatementInfo
     {
-        [Placeholder("Broj izvoda", "Jedinstveni broj bankarskog izvoda", "string")]
+        [Placeholder("Broj izvoda", "Jedinstveni broj bankarskog izvoda")]
         public string StatementNumber { get; set; }
-        [Placeholder("Datum izvoda", "Datum izdavanja izvoda", "DateTime")]
+        [Placeholder("Datum izvoda", "Datum izdavanja izvoda")]
         public DateTime StatementDate { get; set; }
-        [Placeholder("Stanje na izvještaju", "Stanje računa na dan izvoda", "decimal")]
+        [Placeholder("Stanje na izvještaju", "Stanje računa na dan izvoda")]
         public decimal StatementBalance { get; set; }
-        [Placeholder("Tip izvoda", "Vrsta bankarskog izvoda", "string")]
+        [Placeholder("Tip izvoda", "Vrsta bankarskog izvoda")]
         public string StatementType { get; set; }
-        [Placeholder("Status izvoda", "Status izvoda", "string")]
+        [Placeholder("Status izvoda", "Status izvoda")]
         public string StatementStatus { get; set; }
     }
 
     public class TransactionInfo
     {
-        [Placeholder("Broj transakcije", "Jedinstveni broj transakcije", "string")]
+        [Placeholder("Broj transakcije", "Jedinstveni broj transakcije")]
         public string TransactionNumber { get; set; }
-        [Placeholder("Datum transakcije", "Datum izvršenja transakcije", "DateTime")]
+        [Placeholder("Datum transakcije", "Datum izvršenja transakcije")]
         public DateTime TransactionDate { get; set; }
-        [Placeholder("Iznos transakcije", "Iznos transakcije", "decimal")]
+        [Placeholder("Iznos transakcije", "Iznos transakcije")]
         public decimal TransactionAmount { get; set; }
-        [Placeholder("Tip transakcije", "Vrsta transakcije (uplata, isplata...)", "string")]
+        [Placeholder("Tip transakcije", "Vrsta transakcije (uplata, isplata...)")]
         public string TransactionType { get; set; }
-        [Placeholder("Status transakcije", "Status transakcije", "string")]
+        [Placeholder("Status transakcije", "Status transakcije")]
         public string TransactionStatus { get; set; }
     }
 
     public class LimitInfo
     {
-        [Placeholder("Tip limita", "Vrsta limita (dnevni, mjesečni...)", "string")]
+        [Placeholder("Tip limita", "Vrsta limita (dnevni, mjesečni...)")]
         public string LimitType { get; set; }
-        [Placeholder("Iznos limita", "Maksimalni dozvoljeni iznos", "decimal")]
+        [Placeholder("Iznos limita", "Maksimalni dozvoljeni iznos")]
         public decimal LimitAmount { get; set; }
-        [Placeholder("Datum postavljanja", "Datum postavljanja limita", "DateTime")]
+        [Placeholder("Datum postavljanja", "Datum postavljanja limita")]
         public DateTime LimitDate { get; set; }
-        [Placeholder("Status limita", "Status limita", "string")]
+        [Placeholder("Status limita", "Status limita")]
         public string LimitStatus { get; set; }
-        [Placeholder("Opis limita", "Dodatni opis limita", "string")]
+        [Placeholder("Opis limita", "Dodatni opis limita")]
         public string LimitDescription { get; set; }
     }
 
     public class CurrencyInfo
     {
-        [Placeholder("Šifra valute", "ISO šifra valute (npr. BAM, EUR)", "string")]
+        [Placeholder("Šifra valute", "ISO šifra valute (npr. BAM, EUR)")]
         public string CurrencyCode { get; set; }
-        [Placeholder("Naziv valute", "Naziv valute", "string")]
+        [Placeholder("Naziv valute", "Naziv valute")]
         public string CurrencyName { get; set; }
-        [Placeholder("Simbol valute", "Simbol valute (npr. KM, €)", "string")]
+        [Placeholder("Simbol valute", "Simbol valute (npr. KM, €)")]
         public string CurrencySymbol { get; set; }
-        [Placeholder("Status valute", "Status valute", "string")]
+        [Placeholder("Status valute", "Status valute")]
         public string CurrencyStatus { get; set; }
-        [Placeholder("Kurs valute", "Trenutni kurs valute", "decimal")]
+        [Placeholder("Kurs valute", "Trenutni kurs valute")]
         public decimal ExchangeRate { get; set; }
     }
 
     public class ExchangeRateInfo
     {
-        [Placeholder("Valuta", "Valuta za koju se prikazuje kurs", "string")]
+        [Placeholder("Valuta", "Valuta za koju se prikazuje kurs")]
         public string Currency { get; set; }
-        [Placeholder("Referentna valuta", "Valuta prema kojoj se računa kurs", "string")]
+        [Placeholder("Referentna valuta", "Valuta prema kojoj se računa kurs")]
         public string ReferenceCurrency { get; set; }
-        [Placeholder("Vrijednost kursa", "Vrijednost kursa", "decimal")]
+        [Placeholder("Vrijednost kursa", "Vrijednost kursa")]
         public decimal RateValue { get; set; }
-        [Placeholder("Datum kursa", "Datum važenja kursa", "DateTime")]
+        [Placeholder("Datum kursa", "Datum važenja kursa")]
         public DateTime RateDate { get; set; }
-        [Placeholder("Status kursa", "Status kursa", "string")]
+        [Placeholder("Status kursa", "Status kursa")]
         public string RateStatus { get; set; }
     }
 
     public class InsuranceInfo
     {
-        [Placeholder("Naziv osiguranja", "Naziv police osiguranja", "string")]
+        [Placeholder("Naziv osiguranja", "Naziv police osiguranja")]
         public string InsuranceName { get; set; }
-        [Placeholder("Broj police", "Jedinstveni broj police osiguranja", "string")]
+        [Placeholder("Broj police", "Jedinstveni broj police osiguranja")]
         public string PolicyNumber { get; set; }
-        [Placeholder("Iznos osiguranja", "Ukupan iznos osiguranja", "decimal")]
+        [Placeholder("Iznos osiguranja", "Ukupan iznos osiguranja")]
         public decimal InsuranceAmount { get; set; }
-        [Placeholder("Datum početka", "Datum početka osiguranja", "DateTime")]
+        [Placeholder("Datum početka", "Datum početka osiguranja")]
         public DateTime StartDate { get; set; }
-        [Placeholder("Status osiguranja", "Status police osiguranja", "string")]
+        [Placeholder("Status osiguranja", "Status police osiguranja")]
         public string InsuranceStatus { get; set; }
     }
 
     public class TaxInfo
     {
-        [Placeholder("Tip poreza", "Vrsta poreza", "string")]
+        [Placeholder("Tip poreza", "Vrsta poreza")]
         public string TaxType { get; set; }
-        [Placeholder("Iznos poreza", "Ukupan iznos poreza", "decimal")]
+        [Placeholder("Iznos poreza", "Ukupan iznos poreza")]
         public decimal TaxAmount { get; set; }
-        [Placeholder("Datum obračuna", "Datum obračuna poreza", "DateTime")]
+        [Placeholder("Datum obračuna", "Datum obračuna poreza")]
         public DateTime TaxDate { get; set; }
-        [Placeholder("Status poreza", "Status obračuna poreza", "string")]
+        [Placeholder("Status poreza", "Status obračuna poreza")]
         public string TaxStatus { get; set; }
-        [Placeholder("Opis poreza", "Dodatni opis poreza", "string")]
+        [Placeholder("Opis poreza", "Dodatni opis poreza")]
         public string TaxDescription { get; set; }
     }
 
     public class PenaltyInfo
     {
-        [Placeholder("Tip penala", "Vrsta penala", "string")]
+        [Placeholder("Tip penala", "Vrsta penala")]
         public string PenaltyType { get; set; }
-        [Placeholder("Iznos penala", "Ukupan iznos penala", "decimal")]
+        [Placeholder("Iznos penala", "Ukupan iznos penala")]
         public decimal PenaltyAmount { get; set; }
-        [Placeholder("Datum penala", "Datum obračuna penala", "DateTime")]
+        [Placeholder("Datum penala", "Datum obračuna penala")]
         public DateTime PenaltyDate { get; set; }
-        [Placeholder("Status penala", "Status obračuna penala", "string")]
+        [Placeholder("Status penala", "Status obračuna penala")]
         public string PenaltyStatus { get; set; }
-        [Placeholder("Opis penala", "Dodatni opis penala", "string")]
+        [Placeholder("Opis penala", "Dodatni opis penala")]
         public string PenaltyDescription { get; set; }
     }
 
     public class RepaymentInfo
     {
-        [Placeholder("Iznos otplate", "Iznos pojedinačne otplate", "decimal")]
+        [Placeholder("Iznos otplate", "Iznos pojedinačne otplate")]
         public decimal RepaymentAmount { get; set; }
-        [Placeholder("Datum otplate", "Datum izvršenja otplate", "DateTime")]
+        [Placeholder("Datum otplate", "Datum izvršenja otplate")]
         public DateTime RepaymentDate { get; set; }
-        [Placeholder("Status otplate", "Status otplate", "string")]
+        [Placeholder("Status otplate", "Status otplate")]
         public string RepaymentStatus { get; set; }
-        [Placeholder("Tip otplate", "Vrsta otplate", "string")]
+        [Placeholder("Tip otplate", "Vrsta otplate")]
         public string RepaymentType { get; set; }
-        [Placeholder("Opis otplate", "Dodatni opis otplate", "string")]
+        [Placeholder("Opis otplate", "Dodatni opis otplate")]
         public string RepaymentDescription { get; set; }
     }
 
     public class OverdraftInfo
     {
-        [Placeholder("Iznos dozvoljenog minusa", "Maksimalni iznos dozvoljenog minusa", "decimal")]
+        [Placeholder("Iznos dozvoljenog minusa", "Maksimalni iznos dozvoljenog minusa")]
         public decimal OverdraftAmount { get; set; }
-        [Placeholder("Datum odobrenja", "Datum odobrenja minusa", "DateTime")]
+        [Placeholder("Datum odobrenja", "Datum odobrenja minusa")]
         public DateTime ApprovalDate { get; set; }
-        [Placeholder("Status minusa", "Status dozvoljenog minusa", "string")]
+        [Placeholder("Status minusa", "Status dozvoljenog minusa")]
         public string OverdraftStatus { get; set; }
-        [Placeholder("Tip minusa", "Vrsta dozvoljenog minusa", "string")]
+        [Placeholder("Tip minusa", "Vrsta dozvoljenog minusa")]
         public string OverdraftType { get; set; }
-        [Placeholder("Opis minusa", "Dodatni opis minusa", "string")]
+        [Placeholder("Opis minusa", "Dodatni opis minusa")]
         public string OverdraftDescription { get; set; }
     }
 
     public class DepositInfo
     {
-        [Placeholder("Iznos depozita", "Ukupan iznos depozita", "decimal")]
+        [Placeholder("Iznos depozita", "Ukupan iznos depozita")]
         public decimal DepositAmount { get; set; }
-        [Placeholder("Datum depozita", "Datum uplate depozita", "DateTime")]
+        [Placeholder("Datum depozita", "Datum uplate depozita")]
         public DateTime DepositDate { get; set; }
-        [Placeholder("Status depozita", "Status depozita", "string")]
+        [Placeholder("Status depozita", "Status depozita")]
         public string DepositStatus { get; set; }
-        [Placeholder("Tip depozita", "Vrsta depozita", "string")]
+        [Placeholder("Tip depozita", "Vrsta depozita")]
         public string DepositType { get; set; }
-        [Placeholder("Opis depozita", "Dodatni opis depozita", "string")]
+        [Placeholder("Opis depozita", "Dodatni opis depozita")]
         public string DepositDescription { get; set; }
     }
 
     public class SavingsInfo
     {
-        [Placeholder("Iznos štednje", "Ukupan iznos štednje", "decimal")]
+        [Placeholder("Iznos štednje", "Ukupan iznos štednje")]
         public decimal SavingsAmount { get; set; }
-        [Placeholder("Datum štednje", "Datum uplate štednje", "DateTime")]
+        [Placeholder("Datum štednje", "Datum uplate štednje")]
         public DateTime SavingsDate { get; set; }
-        [Placeholder("Status štednje", "Status štednje", "string")]
+        [Placeholder("Status štednje", "Status štednje")]
         public string SavingsStatus { get; set; }
-        [Placeholder("Tip štednje", "Vrsta štednje", "string")]
+        [Placeholder("Tip štednje", "Vrsta štednje")]
         public string SavingsType { get; set; }
-        [Placeholder("Opis štednje", "Dodatni opis štednje", "string")]
+        [Placeholder("Opis štednje", "Dodatni opis štednje")]
         public string SavingsDescription { get; set; }
     }
 
     public class InvestmentInfo
     {
-        [Placeholder("Iznos investicije", "Ukupan iznos investicije", "decimal")]
+        [Placeholder("Iznos investicije", "Ukupan iznos investicije")]
         public decimal InvestmentAmount { get; set; }
-        [Placeholder("Datum investicije", "Datum ulaganja", "DateTime")]
+        [Placeholder("Datum investicije", "Datum ulaganja")]
         public DateTime InvestmentDate { get; set; }
-        [Placeholder("Status investicije", "Status investicije", "string")]
+        [Placeholder("Status investicije", "Status investicije")]
         public string InvestmentStatus { get; set; }
-        [Placeholder("Tip investicije", "Vrsta investicije", "string")]
+        [Placeholder("Tip investicije", "Vrsta investicije")]
         public string InvestmentType { get; set; }
-        [Placeholder("Opis investicije", "Dodatni opis investicije", "string")]
+        [Placeholder("Opis investicije", "Dodatni opis investicije")]
         public string InvestmentDescription { get; set; }
     }
 
     public class PowerOfAttorneyInfo
     {
-        [Placeholder("Ime punomoćnika", "Puno ime punomoćnika", "string")]
+        [Placeholder("Ime punomoćnika", "Puno ime punomoćnika")]
         public string AttorneyName { get; set; }
-        [Placeholder("JMBG punomoćnika", "Jedinstveni matični broj punomoćnika", "string")]
+        [Placeholder("JMBG punomoćnika", "Jedinstveni matični broj punomoćnika")]
         public string AttorneyId { get; set; }
-        [Placeholder("Tip punomoći", "Vrsta punomoći", "string")]
+        [Placeholder("Tip punomoći", "Vrsta punomoći")]
         public string AttorneyType { get; set; }
-        [Placeholder("Datum izdavanja", "Datum izdavanja punomoći", "DateTime")]
+        [Placeholder("Datum izdavanja", "Datum izdavanja punomoći")]
         public DateTime IssueDate { get; set; }
-        [Placeholder("Status punomoći", "Status punomoći", "string")]
+        [Placeholder("Status punomoći", "Status punomoći")]
         public string AttorneyStatus { get; set; }
     }
 
     public class DocumentInfo
     {
-        [Placeholder("Naziv dokumenta", "Naziv bankarskog dokumenta", "string")]
+        [Placeholder("Naziv dokumenta", "Naziv bankarskog dokumenta")]
         public string DocumentName { get; set; }
-        [Placeholder("Broj dokumenta", "Jedinstveni broj dokumenta", "string")]
+        [Placeholder("Broj dokumenta", "Jedinstveni broj dokumenta")]
         public string DocumentNumber { get; set; }
-        [Placeholder("Datum izdavanja", "Datum izdavanja dokumenta", "DateTime")]
+        [Placeholder("Datum izdavanja", "Datum izdavanja dokumenta")]
         public DateTime IssueDate { get; set; }
-        [Placeholder("Status dokumenta", "Status dokumenta", "string")]
+        [Placeholder("Status dokumenta", "Status dokumenta")]
         public string DocumentStatus { get; set; }
-        [Placeholder("Tip dokumenta", "Vrsta dokumenta", "string")]
+        [Placeholder("Tip dokumenta", "Vrsta dokumenta")]
         public string DocumentType { get; set; }
     }
 
     public class SignatureInfo
     {
-        [Placeholder("Ime potpisnika", "Puno ime potpisnika", "string")]
+        [Placeholder("Ime potpisnika", "Puno ime potpisnika")]
         public string SignerName { get; set; }
-        [Placeholder("Datum potpisa", "Datum potpisivanja dokumenta", "DateTime")]
+        [Placeholder("Datum potpisa", "Datum potpisivanja dokumenta")]
         public DateTime SignatureDate { get; set; }
-        [Placeholder("Status potpisa", "Status potpisa", "string")]
+        [Placeholder("Status potpisa", "Status potpisa")]
         public string SignatureStatus { get; set; }
-        [Placeholder("Tip potpisa", "Vrsta potpisa", "string")]
+        [Placeholder("Tip potpisa", "Vrsta potpisa")]
         public string SignatureType { get; set; }
-        [Placeholder("Opis potpisa", "Dodatni opis potpisa", "string")]
+        [Placeholder("Opis potpisa", "Dodatni opis potpisa")]
         public string SignatureDescription { get; set; }
     }
 
     public class ApprovalInfo
     {
-        [Placeholder("Ime odobravaoca", "Puno ime osobe koja odobrava", "string")]
+        [Placeholder("Ime odobravaoca", "Puno ime osobe koja odobrava")]
         public string ApproverName { get; set; }
-        [Placeholder("Datum odobrenja", "Datum odobravanja", "DateTime")]
+        [Placeholder("Datum odobrenja", "Datum odobravanja")]
         public DateTime ApprovalDate { get; set; }
-        [Placeholder("Status odobrenja", "Status odobrenja", "string")]
+        [Placeholder("Status odobrenja", "Status odobrenja")]
         public string ApprovalStatus { get; set; }
-        [Placeholder("Tip odobrenja", "Vrsta odobrenja", "string")]
+        [Placeholder("Tip odobrenja", "Vrsta odobrenja")]
         public string ApprovalType { get; set; }
-        [Placeholder("Opis odobrenja", "Dodatni opis odobrenja", "string")]
+        [Placeholder("Opis odobrenja", "Dodatni opis odobrenja")]
         public string ApprovalDescription { get; set; }
     }
 
     public class DisbursementInfo
     {
-        [Placeholder("Iznos isplate", "Ukupan iznos isplate", "decimal")]
+        [Placeholder("Iznos isplate", "Ukupan iznos isplate")]
         public decimal DisbursementAmount { get; set; }
-        [Placeholder("Datum isplate", "Datum izvršenja isplate", "DateTime")]
+        [Placeholder("Datum isplate", "Datum izvršenja isplate")]
         public DateTime DisbursementDate { get; set; }
-        [Placeholder("Status isplate", "Status isplate", "string")]
+        [Placeholder("Status isplate", "Status isplate")]
         public string DisbursementStatus { get; set; }
-        [Placeholder("Tip isplate", "Vrsta isplate", "string")]
+        [Placeholder("Tip isplate", "Vrsta isplate")]
         public string DisbursementType { get; set; }
-        [Placeholder("Opis isplate", "Dodatni opis isplate", "string")]
+        [Placeholder("Opis isplate", "Dodatni opis isplate")]
         public string DisbursementDescription { get; set; }
     }
 
     public class ClosureInfo
     {
-        [Placeholder("Datum zatvaranja", "Datum zatvaranja računa/ugovora", "DateTime")]
+        [Placeholder("Datum zatvaranja", "Datum zatvaranja računa/ugovora")]
         public DateTime ClosureDate { get; set; }
-        [Placeholder("Status zatvaranja", "Status zatvaranja", "string")]
+        [Placeholder("Status zatvaranja", "Status zatvaranja")]
         public string ClosureStatus { get; set; }
-        [Placeholder("Tip zatvaranja", "Vrsta zatvaranja", "string")]
+        [Placeholder("Tip zatvaranja", "Vrsta zatvaranja")]
         public string ClosureType { get; set; }
-        [Placeholder("Opis zatvaranja", "Dodatni opis zatvaranja", "string")]
+        [Placeholder("Opis zatvaranja", "Dodatni opis zatvaranja")]
         public string ClosureDescription { get; set; }
-        [Placeholder("Razlog zatvaranja", "Razlog zatvaranja", "string")]
+        [Placeholder("Razlog zatvaranja", "Razlog zatvaranja")]
         public string ClosureReason { get; set; }
     }
 
     public class AmendmentInfo
     {
-        [Placeholder("Broj aneksa", "Jedinstveni broj aneksa", "string")]
+        [Placeholder("Broj aneksa", "Jedinstveni broj aneksa")]
         public string AmendmentNumber { get; set; }
-        [Placeholder("Datum aneksa", "Datum potpisivanja aneksa", "DateTime")]
+        [Placeholder("Datum aneksa", "Datum potpisivanja aneksa")]
         public DateTime AmendmentDate { get; set; }
-        [Placeholder("Status aneksa", "Status aneksa", "string")]
+        [Placeholder("Status aneksa", "Status aneksa")]
         public string AmendmentStatus { get; set; }
-        [Placeholder("Tip aneksa", "Vrsta aneksa", "string")]
+        [Placeholder("Tip aneksa", "Vrsta aneksa")]
         public string AmendmentType { get; set; }
-        [Placeholder("Opis aneksa", "Dodatni opis aneksa", "string")]
+        [Placeholder("Opis aneksa", "Dodatni opis aneksa")]
         public string AmendmentDescription { get; set; }
     }
 
     public class ConsentInfo
     {
-        [Placeholder("Tip saglasnosti", "Vrsta saglasnosti", "string")]
+        [Placeholder("Tip saglasnosti", "Vrsta saglasnosti")]
         public string ConsentType { get; set; }
-        [Placeholder("Datum saglasnosti", "Datum davanja saglasnosti", "DateTime")]
+        [Placeholder("Datum saglasnosti", "Datum davanja saglasnosti")]
         public DateTime ConsentDate { get; set; }
-        [Placeholder("Status saglasnosti", "Status saglasnosti", "string")]
+        [Placeholder("Status saglasnosti", "Status saglasnosti")]
         public string ConsentStatus { get; set; }
-        [Placeholder("Opis saglasnosti", "Dodatni opis saglasnosti", "string")]
+        [Placeholder("Opis saglasnosti", "Dodatni opis saglasnosti")]
         public string ConsentDescription { get; set; }
-        [Placeholder("Ime davaoca", "Puno ime davaoca saglasnosti", "string")]
+        [Placeholder("Ime davaoca", "Puno ime davaoca saglasnosti")]
         public string ConsentGiver { get; set; }
     }
 
     public class RiskAssessmentInfo
     {
-        [Placeholder("Tip procjene rizika", "Vrsta procjene rizika", "string")]
+        [Placeholder("Tip procjene rizika", "Vrsta procjene rizika")]
         public string RiskType { get; set; }
-        [Placeholder("Datum procjene", "Datum procjene rizika", "DateTime")]
+        [Placeholder("Datum procjene", "Datum procjene rizika")]
         public DateTime RiskDate { get; set; }
-        [Placeholder("Status procjene", "Status procjene rizika", "string")]
+        [Placeholder("Status procjene", "Status procjene rizika")]
         public string RiskStatus { get; set; }
-        [Placeholder("Opis rizika", "Dodatni opis rizika", "string")]
+        [Placeholder("Opis rizika", "Dodatni opis rizika")]
         public string RiskDescription { get; set; }
-        [Placeholder("Procjenitelj", "Ime osobe koja je izvršila procjenu", "string")]
+        [Placeholder("Procjenitelj", "Ime osobe koja je izvršila procjenu")]
         public string Assessor { get; set; }
     }
 
     public class ComplianceInfo
     {
-        [Placeholder("Tip usklađenosti", "Vrsta regulatorne usklađenosti", "string")]
+        [Placeholder("Tip usklađenosti", "Vrsta regulatorne usklađenosti")]
         public string ComplianceType { get; set; }
-        [Placeholder("Datum usklađenosti", "Datum provjere usklađenosti", "DateTime")]
+        [Placeholder("Datum usklađenosti", "Datum provjere usklađenosti")]
         public DateTime ComplianceDate { get; set; }
-        [Placeholder("Status usklađenosti", "Status usklađenosti", "string")]
+        [Placeholder("Status usklađenosti", "Status usklađenosti")]
         public string ComplianceStatus { get; set; }
-        [Placeholder("Opis usklađenosti", "Dodatni opis usklađenosti", "string")]
+        [Placeholder("Opis usklađenosti", "Dodatni opis usklađenosti")]
         public string ComplianceDescription { get; set; }
-        [Placeholder("Ime provjeravaoca", "Puno ime osobe koja je izvršila provjeru", "string")]
+        [Placeholder("Ime provjeravaoca", "Puno ime osobe koja je izvršila provjeru")]
         public string ComplianceOfficer { get; set; }
     }
 
     public class AuditInfo
     {
-        [Placeholder("Tip revizije", "Vrsta revizije", "string")]
+        [Placeholder("Tip revizije", "Vrsta revizije")]
         public string AuditType { get; set; }
-        [Placeholder("Datum revizije", "Datum izvršenja revizije", "DateTime")]
+        [Placeholder("Datum revizije", "Datum izvršenja revizije")]
         public DateTime AuditDate { get; set; }
-        [Placeholder("Status revizije", "Status revizije", "string")]
+        [Placeholder("Status revizije", "Status revizije")]
         public string AuditStatus { get; set; }
-        [Placeholder("Opis revizije", "Dodatni opis revizije", "string")]
+        [Placeholder("Opis revizije", "Dodatni opis revizije")]
         public string AuditDescription { get; set; }
-        [Placeholder("Ime revizora", "Puno ime revizora", "string")]
+        [Placeholder("Ime revizora", "Puno ime revizora")]
         public string Auditor { get; set; }
     }
 
     public class NotificationSettings
     {
-        [Placeholder("Email obavijesti", "Status email obavijesti", "bool")]
+        [Placeholder("Email obavijesti", "Status email obavijesti")]
         public bool EmailEnabled { get; set; }
-        [Placeholder("SMS obavijesti", "Status SMS obavijesti", "bool")]
+        [Placeholder("SMS obavijesti", "Status SMS obavijesti")]
         public bool SmsEnabled { get; set; }
-        [Placeholder("Push obavijesti", "Status push obavijesti", "bool")]
+        [Placeholder("Push obavijesti", "Status push obavijesti")]
         public bool PushEnabled { get; set; }
-        [Placeholder("Jezik obavijesti", "Jezik na kojem se šalju obavijesti", "string")]
+        [Placeholder("Jezik obavijesti", "Jezik na kojem se šalju obavijesti")]
         public string NotificationLanguage { get; set; }
-        [Placeholder("Vrijeme slanja", "Preferirano vrijeme slanja obavijesti", "string")]
+        [Placeholder("Vrijeme slanja", "Preferirano vrijeme slanja obavijesti")]
         public string NotificationTime { get; set; }
     }
+}
+public enum EmploymentStatusEnum
+{
+    Zaposlen,
+    Nezaposlen,
+    Student,
+    Penzioner,
+    Ostalo
 }

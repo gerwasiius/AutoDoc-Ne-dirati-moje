@@ -1,4 +1,5 @@
-﻿using AutoDoc.Shared.Model.Placeholders;
+﻿using AutoDoc.Shared.Model.Enumerations;
+using AutoDoc.Shared.Model.Placeholders;
 using AutoDocService.DL.FolderParamZaObrisati;
 
 namespace AutoDocService.API.ServiceInterfaces
@@ -14,10 +15,13 @@ namespace AutoDocService.API.ServiceInterfaces
         IReadOnlyList<PlaceholderGroup> GetAllPlaceholders();
 
         /// <summary>
-        /// Vraća meta podatke za placeholder prema identifikatoru.
+        /// Vraća meta podatke za placeholder prema input parametrima
         /// </summary>
-        /// <param name="id">Jedinstveni identifikator placeholdera.</param>
+        /// <param name="group"></param>
+        /// <param name="name"></param>
+        /// <param name="type"></param>
+        /// <param name="description"></param>
         /// <returns>Meta podaci za traženi placeholder ili null ako ne postoji.</returns>
-        PlaceholderMetadata? GetPlaceholderById(string id);
+        IReadOnlyList<PlaceholderMetadata> GetFilteredPlaceholders(string? group, string? name, PlaceholderType? type, string? description);
     }
 }

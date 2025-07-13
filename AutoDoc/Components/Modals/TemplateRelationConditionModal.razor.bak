@@ -1,0 +1,43 @@
+﻿@using AutoDoc.Shared.Model.DTO.TemplateSectionsRelationDTO
+@using AutoDocFront.Components.Shared
+@inherits ModalBase
+
+<BaseModalLayout IsOpen="@IsOpen" Title="Uredi uslove sekcije" IsOpenChanged="@IsOpenChanged">
+    <BodyContent>
+        <EditForm Model="@Relation" OnValidSubmit="HandleValidSubmit">
+            <div class="mb-3">
+                <label class="form-label">Naziv sekcije</label>
+                <input class="form-control" value="@Relation.SectionName" disabled />
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input corporate-checkbox" type="checkbox" id="isArticle" @bind="Relation.IsArticle" />
+                <label class="form-check-label" for="isArticle">Ova sekcija je pravni član</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input corporate-checkbox" type="checkbox" id="isPageBreak" @bind="Relation.IsPageBreak" />
+                <label class="form-check-label" for="isPageBreak">Ova sekcija počinje na novoj stranici (Page Break)</label>
+            </div>
+            <label class="form-label">Uslov prikaza (ConditionExpression)</label>
+            <div class="input-group">
+                <input class="form-control" @bind="Relation.ConditionExpression" />
+                <button class="btn btn-outline-secondary" type="button" @onclick="OpenConditionExpressionModal">
+                    <i class="fa fa-magic"></i>
+                </button>
+            </div>
+        </EditForm>
+    </BodyContent>
+    <FooterContent>
+        <div class="modal-footer d-flex justify-content-end">
+            <button class="btn modal-corporate-button-primary" @onclick="HandleValidSubmit">Sačuvaj</button>
+        </div>
+    </FooterContent>
+</BaseModalLayout>
+
+
+
+@if (_isExpressionPickerModalOpen)
+{
+    <ConditionExpressionBuilderModal IsOpen="_isExpressionPickerModalOpen"
+                                    IsOpenChanged="@(v => _isExpressionPickerModalOpen = v)"
+                                    OnInsertCondition="InsertConditionExpression" />
+}

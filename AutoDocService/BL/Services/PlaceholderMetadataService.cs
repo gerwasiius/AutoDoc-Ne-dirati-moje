@@ -1,4 +1,5 @@
-﻿using AutoDoc.Shared.Model.Placeholders;
+﻿using AutoDoc.Shared.Model.Enumerations;
+using AutoDoc.Shared.Model.Placeholders;
 using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.DL.FolderParamZaObrisati;
 
@@ -32,13 +33,28 @@ namespace AutoDocService.BL.Services
         }
 
         /// <summary>
-        /// Vraća meta podatke za placeholder prema identifikatoru.
+        /// Metoda kreirana da vraca podatke o placeholderima ovisno o input parametrima.
         /// </summary>
-        /// <param name="id">Jedinstveni identifikator placeholdera.</param>
-        /// <returns>Meta podaci za traženi placeholder ili null ako ne postoji.</returns>
-        public PlaceholderMetadata? GetPlaceholderById(string id)
+        /// <param name="group"></param>
+        /// <param name="name"></param>
+        /// <param name="type"></param>
+        /// <param name="description"></param>
+        /// <returns></returns>
+        public IReadOnlyList<PlaceholderMetadata> GetFilteredPlaceholders(string? group, string? name, PlaceholderType? type, string? description)
         {
-            return PlaceholderMetadataCache.All.FirstOrDefault(p => p.Id == id);
+            var allPlaceholders = GetAllPlaceholders().SelectMany(g => g.Placeholders);
+
+            if (!string.IsNullOrWhiteSpace(group))
+                allPlaceholders = allPlaceholders.Where(p => p.Group.Equals(group, StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrWhiteSpace(name))
+                allPlaceholders = allPlaceholders.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+            if (type != null)
+                    allPlaceholders = allPlaceholders.Where(p => p.Type == type);
+
+            if (!string.IsNullOrWhiteSpace(description))
+                allPlaceholders = allPlaceholders.Where(p => p.Description != null && p.Description.Contains(description, StringComparison.OrdinalIgnoreCase));
+
+            return allPlaceholders.ToList();
         }
     }
 }

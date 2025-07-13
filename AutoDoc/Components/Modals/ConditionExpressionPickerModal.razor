@@ -1,8 +1,10 @@
-﻿@using AutoDoc.Shared.Model.Placeholders
+﻿@using AutoDoc.Shared.Model.Enumerations
+@using AutoDoc.Shared.Model.Placeholders
 @using AutoDocFront.Components.Shared
+@using AutoDocFront.Models.Enumerations
 @inherits ModalBase
 
-<BaseModalLayout IsOpen="@IsOpen" Title="Pomoć za unos uslova" IsOpenChanged="@IsOpenChanged">
+<BaseModalLayout IsOpen="@IsOpen" Title="Uslovi prikaza" IsOpenChanged="@IsOpenChanged">
     <BodyContent>
         @if (_isLoading)
         {
@@ -10,71 +12,167 @@
                 <span class="spinner-border spinner-border-sm"></span> Učitavanje...
             </div>
         }
-        else if (_step == StepPlaceholderModal.GROUP)
+        else
         {
-            <div>
-                <h6>Odaberi grupu placeholdera</h6>
-                <ul class="list-group">
-                    @foreach (var group in _groups)
-                    {
-                        <li class="list-group-item pointer" @onclick="() => SelectGroup(group)">
-                            @group.Group
-                        </li>
-                    }
-                </ul>
-            </div>
-        }
-        else if (_step == StepPlaceholderModal.PLACEHOLDER)
-        {
-            <div>
-                <button class="btn btn-link p-0 mb-2" @onclick="BackToGroups">
-                    <i class="fa fa-arrow-left"></i> Nazad na grupe
-                </button>
-                <h6>Odaberi placeholder</h6>
-                <ul class="list-group">
-                    @foreach (var ph in _selectedGroup?.Placeholders ?? Enumerable.Empty<PlaceholderMetadata>())
-                    {
-                        <li class="list-group-item pointer" @onclick="() => SelectPlaceholder(ph)">
-                            <b>@ph.Name</b> <span class="text-muted small">(@ph.Id)</span>
-                        </li>
-                    }
-                </ul>
-            </div>
-        }
-        else if (_step == StepPlaceholderModal.VALUE)
-        {
-            <div>
-                <button class="btn btn-link p-0 mb-2" @onclick="BackToPlaceholders">
-                    <i class="fa fa-arrow-left"></i> Nazad na placeholdere
-                </button>
-                <h6>Unesi referentnu vrijednost</h6>
-                <div class="mb-2">
-                    <b>@_selectedPlaceholder?.Name</b>
-                    <span class="text-muted small">(@_selectedPlaceholder?.Id)</span>
-                </div>
-                @if (_selectedPlaceholder?.IsEnum == true && _selectedPlaceholder.EnumValues != null)
+            <div class="px-4 pb-2">
+                @if (_step == PlaceholderPickerStepEnum.GROUP)
                 {
-                    <select class="form-select" @bind="_referenceValue">
-                        <option value="">-- Odaberi vrijednost --</option>
-                        @foreach (var val in _selectedPlaceholder.EnumValues)
-                        {
-                            <option value="@val">@val</option>
-                        }
-                    </select>
+                    <small class="text-secondary">Odaberite grupu placeholdera.</small>
+                    <div class="mb-2">
+                        <FilterBar TStatusEnum="PlaceholderPickerStepEnum"
+                                   SearchTerm="@_searchInput"
+                                   SearchTermChanged="v => _searchInput = v"
+                                   Placeholder="Pretraga po imenu ili ID placeholdera..."
+                                   ShowStatus="false"
+                                   OnSearch="OnSearchGroups"
+                                   OnClear="ClearSearchGroups" />
+                    </div>
                 }
-                else
+                else if (_step == PlaceholderPickerStepEnum.PLACEHOLDER && _selectedGroup != null)
                 {
-                    <input class="form-control" @bind="_referenceValue" placeholder="Unesi vrijednost" />
-                }
-            </div>
-        }
+                    <!-- Step: Placeholders -->
+                    <h4 class="fw-bold text-dark">
+                        Grupa: @_selectedGroup.Group
+                    </h4>
+                    <button class="btn btn-link text-secondary px-0" @onclick="BackToGroups">
+                        <i class="fa fa-arrow-left"></i> Nazad na grupe
+                    </button>
 
+                    <div class="mb-2 mt-2">
+                        <FilterBar TStatusEnum="PlaceholderPickerStepEnum"
+                                   SearchTerm="@_placeholderSearchInput"
+                                   SearchTermChanged="v => _placeholderSearchInput = v"
+                                   Placeholder="Pretraga po imenu ili ID placeholdera u grupi..."
+                                   ShowStatus="false"
+                                   OnSearch="OnSearchPlaceholders"
+                                   OnClear="ClearPlaceholderSearch" />
+                    </div>
+                    <small class="text-secondary ms-3">Odaberite placeholder za uslov.</small>
+                }
+                else if (_step == PlaceholderPickerStepEnum.VALUE)
+                {
+                    <h4 class="fw-bold text-dark">
+                        Placeholder: @_selectedPlaceholder.Name
+                    </h4>
+                    <!-- Step: Value -->
+                    <button class="btn btn-link text-secondary px-0" @onclick="BackToPlaceholders">
+                        <i class="fa fa-arrow-left"></i> Nazad na placeholdere
+                    </button>
+                    <small class="text-secondary ms-3">Unesite vrijednost i operator.</small>
+                }
+            </div>
+            <div class="modal-body pt-0">
+                @if (_step == PlaceholderPickerStepEnum.GROUP)
+                {
+                    <div class="px-4 mb-2">
+                        <div class="border rounded-bottom shadow-sm bg-white">
+                            <div class="d-flex align-items-center border-bottom py-2 bg-light rounded-top text-secondary" style="gap: 0.5rem;">
+                                <i class="fa fa-object-group ms-2"></i>
+                                @(FilteredGroups.Count) grupa pronađeno
+                            </div>
+                            <div class="list-group list-group-flush" style="max-height:45vh; overflow-y:auto;">
+                                @foreach (var group in FilteredGroups)
+                                {
+                                    var filteredCount = FilteredPlaceholders(group, _searchTerm).Count;
+                                    <button type="button"
+                                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-bottom w-100"
+                                            @onclick="() => SelectGroup(group)">
+                                        <div class="w-100">
+                                            <strong>@group.Group</strong>
+                                            <div class="text-secondary small mt-1">
+                                                @filteredCount @((filteredCount == 1) ? "placeholder" : "placeholdera") sadrži pretragu
+                                            </div>
+                                        </div>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (_step == PlaceholderPickerStepEnum.PLACEHOLDER && _selectedGroup != null)
+                {
+                    <div class="px-4 mb-2">
+                        <div class="border rounded-bottom shadow-sm bg-white">
+                            <div class="d-flex align-items-center border-bottom py-2 bg-light rounded-top text-secondary" style="gap: 0.5rem;">
+                                <i class="fa fa-list ms-2"></i>
+                                @(FilteredPlaceholdersForSelectedGroup.Count) placeholdera u grupi
+                            </div>
+                            <div class="list-group list-group-flush" style="max-height:45vh; overflow-y:auto;">
+                                @foreach (var ph in FilteredPlaceholdersForSelectedGroup)
+                                {
+                                    <button type="button"
+                                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-bottom w-100"
+                                            @onclick="() => SelectPlaceholder(ph)">
+                                        <div>
+                                            <strong>@ph.Name</strong>
+                                            <span class="badge bg-light text-dark ms-2">@ph.Id</span>
+                                        </div>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (_step == PlaceholderPickerStepEnum.VALUE && _selectedPlaceholder != null)
+                {
+                    <div class="px-4 mb-2">
+                        <div class="border rounded-bottom shadow-sm bg-white p-3">
+                            <div class="mb-3">
+                                @* <label class="form-label">Placeholder</label> *@
+                                <div>
+                                    <strong>@_selectedPlaceholder.Name</strong>
+                                    <span class="badge bg-light text-dark ms-2">@_selectedPlaceholder.Id</span>
+                                </div>
+                            </div>
+                            <small class="text-secondary">Unesite vrijednost i operatora.</small>
+                            <div class="mb-3">
+                                <label class="form-label">Operator</label>
+                                <select class="form-select corporate-select" @bind="_selectedOperator">
+                                    @foreach (var op in GetOperatorsForType(_selectedPlaceholder.Type))
+                                    {
+                                        <option value="@op">@op</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Vrijednost</label>
+                                @if (_selectedPlaceholder.IsEnum && _selectedPlaceholder.EnumValues != null)
+                                {
+                                    <select class="form-select corporate-select" @bind="_inputValue">
+                                        <option value="">-- Odaberite vrijednost --</option>
+                                        @foreach (var val in _selectedPlaceholder.EnumValues)
+                                        {
+                                            <option value="@val">@val</option>
+                                        }
+                                    </select>
+                                }
+                                else if (_selectedPlaceholder.Type == PlaceholderType.BOOL)
+                                {
+                                    <select class="form-select corporate-select" @bind="_inputValue">
+                                        <option value="true">Tačno</option>
+                                        <option value="false">Netačno</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <input class="form-control corporate-select" @bind="_inputValue" placeholder="Unesite vrijednost" />
+                                }
+                            </div>
+                            <div class="mb-3">
+                                <button class="btn corporate-button-primary" @onclick="AddCondition" disabled="@string.IsNullOrWhiteSpace(_inputValue)">
+                                    Dodaj uslov
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
 
     </BodyContent>
     <FooterContent>
         <div class="modal-footer d-flex justify-content-end">
-            <button class="btn corporate-button-secondary me-2" @onclick="CloseAsync">Zatvori</button>
-            <button class="btn modal-corporate-button-primary" @onclick="InsertCondition">Ubaci primjer</button>
+            <button class="btn modal-corporate-button-primary" @onclick="AddCondition">Unesite vrijednost</button>
         </div>
     </FooterContent>
 </BaseModalLayout>

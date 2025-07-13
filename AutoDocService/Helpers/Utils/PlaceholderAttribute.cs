@@ -5,13 +5,13 @@
     {
         public string Label { get; }
         public string Description { get; }
-        public string DataType { get; }
+        //public string DataType { get; }
 
-        public PlaceholderAttribute(string label, string description, string dataType)
+        public PlaceholderAttribute(string label, string description)
         {
             Label = label;
             Description = description;
-            DataType = dataType;
+            //DataType = dataType;
         }
     }
 }

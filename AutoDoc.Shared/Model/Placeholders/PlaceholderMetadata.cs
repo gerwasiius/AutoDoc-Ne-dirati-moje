@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoDoc.Shared.Model.Enumerations;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -35,7 +36,7 @@ namespace AutoDoc.Shared.Model.Placeholders
         /// Tip placeholdera (npr. "string", "int", "enum").
         /// </summary>
         [Required]
-        public string Type { get; set; } = string.Empty;
+        public PlaceholderType Type { get; set; }
 
         /// <summary>
         /// Opis placeholdera.
@@ -69,7 +70,7 @@ namespace AutoDoc.Shared.Model.Placeholders
             string id,
             string group,
             string name,
-            string type,
+            PlaceholderType type,
             string? description,
             bool isNullable,
             IReadOnlyList<string>? enumValues = null)

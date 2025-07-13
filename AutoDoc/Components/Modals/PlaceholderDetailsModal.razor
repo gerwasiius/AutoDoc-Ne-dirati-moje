@@ -1,4 +1,5 @@
 ﻿@using AutoDocFront.Components.Shared
+@using AutoDocFront.Components.Shared.Inputs
 @using AutoDocFront.Utilities
 @inherits ModalBase
 
@@ -12,65 +13,58 @@
         }
         else
         {
-            <dl class="row mb-0">
-                <dt class="col-sm-4">Vrijednost</dt>
-                <dd class="col-sm-8 text-monospace">@($"{Placeholder.Group}.{Placeholder.Name}")</dd>
 
-                <dt class="col-sm-4">Grupa</dt>
-                <dd class="col-sm-8">@Placeholder.Group</dd>
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-4 d-flex align-items-center fw-semibold">Vrijednost</div>
+                    <div class="col-sm-8">
+                        <ReadOnlyInputText Value="@($"{Placeholder.Group}.{Placeholder.Name}")" />
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 d-flex align-items-center fw-semibold">Grupa</div>
+                    <div class="col-sm-8">
+                        <ReadOnlyInputText Value="@Placeholder.Group" />
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 d-flex align-items-center fw-semibold">Naziv</div>
+                    <div class="col-sm-8">
+                        <ReadOnlyInputText Value="@Placeholder.Name" />
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 d-flex align-items-center fw-semibold">Opis</div>
+                    <div class="col-sm-8">
+                        <ReadOnlyInputText Value="@(string.IsNullOrWhiteSpace(Placeholder.Description) ? "Nema opisa" : Placeholder.Description)" IsTextArea="true" Rows="2" />
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 d-flex align-items-center fw-semibold">Tip podatka</div>
+                    <div class="col-sm-8">
+                        <span class="badge @PlaceholderHelpers.GetTypeBadgeClass(Placeholder.Type.ToString())">@Placeholder.Type</span>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 d-flex align-items-center fw-semibold">Moguće vrijednosti</div>
+                    <div class="col-sm-8">
+                        @if (Placeholder.EnumValues != null && Placeholder.EnumValues.Any())
+                        {
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var value in Placeholder.EnumValues)
+                                {
+                                    <span class="badge bg-light text-dark me-2">@value</span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">-</span>
+                        }
+                    </div>
+                </div>
+            </div>
 
-                <dt class="col-sm-4">Naziv</dt>
-                <dd class="col-sm-8">@Placeholder.Name</dd>
-
-                <dt class="col-sm-4">Opis</dt>
-                <dd class="col-sm-8">
-                    @if (!string.IsNullOrWhiteSpace(Placeholder.Description))
-                    {
-                        @Placeholder.Description
-                    }
-                    else
-                    {
-                        <span class="text-muted fst-italic">Nema opisa</span>
-                    }
-                </dd>
-
-                <dt class="col-sm-4">Tip podatka</dt>
-                <dd class="col-sm-8">
-                    <span class="badge @PlaceholderHelpers.GetTypeBadgeClass(Placeholder.Type)">@Placeholder.Type</span>
-                </dd>
-
-                @* <dt class="col-sm-4">Moguća NULL vrijednost?</dt>
-                <dd class="col-sm-8">
-                    @if (Placeholder.IsNullable)
-                    {
-                        <span class="badge bg-green-100 text-green-800 border border-success d-flex align-items-center gap-1">DA</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-green-100 text-green-800 border border-success d-flex align-items-center gap-1">NE</span>
-                    }
-                </dd> *@
-
-                <dt class="col-sm-4">Moguće vrijednosti</dt>
-                <dd class="col-sm-8">
-                    @if (Placeholder.EnumValues != null && Placeholder.EnumValues.Any())
-                    {
-                        <div class="d-flex flex-wrap gap-1">
-                            @foreach (var value in Placeholder.EnumValues)
-                            {
-                                <span class="badge bg-green-100 text-green-800 border border-success d-flex align-items-center gap-1">
-                                    @value
-                                </span>
-
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <span class="text-muted fst-italic">-</span>
-                    }
-                </dd>
-            </dl>
         }
     </BodyContent>
     <FooterContent>

@@ -1,4 +1,5 @@
-﻿using AutoDoc.Shared.Model.Placeholders;
+﻿using AutoDoc.Shared.Model.Enumerations;
+using AutoDoc.Shared.Model.Placeholders;
 using AutoDocService.API.ServiceInterfaces;
 using AutoDocService.BL.Services;
 using AutoDocService.DL.FolderParamZaObrisati;
@@ -39,19 +40,23 @@ namespace AutoDocService.API.Controllers
         }
 
         /// <summary>
-        /// Vraća meta podatke za jedan placeholder prema ID-u.
+        /// Vraća filtrirane meta podatke za placeholdere po zadatim parametrima.
         /// </summary>
-        /// <param name="id">Jedinstveni identifikator placeholdera (npr. "Grupa1.Placeholder1").</param>
-        /// <returns>Meta podaci za traženi placeholder ili 404 ako ne postoji.</returns>
-        [HttpGet("{id}")]
-        [ProducesResponseType(typeof(PlaceholderMetadata), 200)]
-        [ProducesResponseType(404)]
-        public ActionResult<PlaceholderMetadata> GetById(string id)
+        /// <param name="group">Naziv grupe.</param>
+        /// <param name="name">Naziv placeholdera.</param>
+        /// <param name="type">Tip placeholdera.</param>
+        /// <param name="description">Opis placeholdera.</param>
+        /// <returns>Lista filtriranih placeholder meta podataka.</returns>
+        [HttpGet("filter")]
+        [ProducesResponseType(typeof(IReadOnlyList<PlaceholderMetadata>), 200)]
+        public ActionResult<IReadOnlyList<PlaceholderMetadata>> GetFiltered(
+            [FromQuery] string? group = null,
+            [FromQuery] string? name = null,
+            [FromQuery] PlaceholderType? type = null,
+            [FromQuery] string? description = null)
         {
-            var placeholder = _placeholderService.GetPlaceholderById(id);
-            if (placeholder == null)
-                return NotFound($"Placeholder sa ID '{id}' nije pronađen.");
-            return Ok(placeholder);
+            var result = _placeholderService.GetFilteredPlaceholders(group, name, type, description);
+            return Ok(result);
         }
     }
 }

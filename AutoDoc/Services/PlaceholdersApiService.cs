@@ -33,15 +33,30 @@ namespace AutoDocFront.Services
         /// <summary>
         /// Gets a single placeholder by its ID.
         /// </summary>
-        public async Task<PlaceholderMetadata?> GetPlaceholderByIdAsync(string id)
+        public async Task<List<PlaceholderMetadata>> GetPlaceholdersAsync(string? id = null, string? group = null, string? name = null, string? type = null, string? description = null)
         {
-            var url = $"/api/contract-generation/placeholders/{Uri.EscapeDataString(id)}";
+            var queryParams = new List<string>();
+            if (!string.IsNullOrWhiteSpace(id))
+                queryParams.Add($"id={Uri.EscapeDataString(id)}");
+            if (!string.IsNullOrWhiteSpace(group))
+                queryParams.Add($"group={Uri.EscapeDataString(group)}");
+            if (!string.IsNullOrWhiteSpace(name))
+                queryParams.Add($"name={Uri.EscapeDataString(name)}");
+            if (!string.IsNullOrWhiteSpace(type))
+                queryParams.Add($"type={Uri.EscapeDataString(type)}");
+            if (!string.IsNullOrWhiteSpace(description))
+                queryParams.Add($"description={Uri.EscapeDataString(description)}");
+
+            var url = "/api/contract-generation/placeholders/filter";
+            if (queryParams.Count > 0)
+                url += "?" + string.Join("&", queryParams);
+
             var response = await _client.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<PlaceholderMetadata>();
+                return await response.Content.ReadFromJsonAsync<List<PlaceholderMetadata>>() ?? new();
             }
-            return null;
+            return new();
         }
     }
 }

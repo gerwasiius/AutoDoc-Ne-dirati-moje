@@ -6,12 +6,12 @@ public static class PlaceholderHelpers
 {
     public static string GetTypeBadgeClass(string type) => type switch
     {
-        "string" => "bg-primary",
-        "int" => "bg-info text-dark",
-        "decimal" => "bg-success",
-        "DateTime" => "bg-secondary",
-        "enum" => "bg-warning text-dark",
-        "char" => "bg-danger",
+        "STRING" => "bg-primary",
+        "INT" => "bg-info text-dark",
+        "DECIMAL" => "bg-success",
+        "DATETIME" => "bg-secondary",
+        "ENUM" => "bg-warning text-dark",
+        "CHAR" => "bg-danger",
         _ => "bg-light text-dark"
     };
 }
