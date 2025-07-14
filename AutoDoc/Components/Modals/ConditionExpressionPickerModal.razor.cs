@@ -154,7 +154,7 @@ namespace AutoDocFront.Components.Modals
                 }
 
                 // Parsiranje datuma u string (npr. "dd-MM-yyyy")
-                _inputValue = _inputDateValue.Value.ToString("dd-MM-yyyy");
+                _inputValue = _inputDateValue.Value.ToString("dd.MM.yyyy");
             }
             else
             {

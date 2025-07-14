@@ -13,6 +13,7 @@ namespace AutoDocFront.Components.Modals
 
         private bool _isSaving = false;
         private bool _isExpressionPickerModalOpen = false;
+        private List<string> _conditionExpressions = new();
 
         private void OpenConditionExpressionModal()
         {
@@ -48,6 +49,21 @@ namespace AutoDocFront.Components.Modals
                 _isSaving = false;
             }
         }
+
+        // Dodaj novi uslov
+        private void AddCondition(string expr)
+        {
+            if (!string.IsNullOrWhiteSpace(expr))
+                _conditionExpressions.Add(expr);
+        }
+
+        // Ukloni uslov
+        private void RemoveCondition(int index)
+        {
+            if (index >= 0 && index < _conditionExpressions.Count)
+                _conditionExpressions.RemoveAt(index);
+        }
+
 
     }
 }

@@ -15,15 +15,41 @@
             </div>
             <div class="form-check mb-2">
                 <input class="form-check-input corporate-checkbox" type="checkbox" id="isPageBreak" @bind="Relation.IsPageBreak" />
-                <label class="form-check-label" for="isPageBreak">Ova sekcija počinje na novoj stranici (Page Break)</label>
+                <label class="form-check-label" for="isPageBreak">Ova sekcija počinje na novoj stranici</label>
             </div>
-            <label class="form-label">Uslov prikaza (ConditionExpression)</label>
-            <div class="input-group">
+            @*             <div class="input-group">
                 <input class="form-control" @bind="Relation.ConditionExpression" />
                 <button class="btn btn-outline-secondary" type="button" @onclick="OpenConditionExpressionModal">
                     <i class="fa fa-magic"></i>
                 </button>
+            </div> *@
+            <label class="form-label">Uslov prikaza</label>
+            <div class="border rounded shadow-sm bg-white mb-3" style="max-height: 220px; overflow-y: auto;">
+                <ul class="list-group list-group-flush">
+                    @if (_conditionExpressions.Count == 0)
+                    {
+                        <li class="list-group-item text-secondary text-center py-3">
+                            Nema dodatih uslova
+                        </li>
+                    }
+                    else
+                    {
+                        @foreach (var expr in _conditionExpressions.Select((e, i) => new { e, i }))
+                        {
+                            <li class="list-group-item d-flex align-items-center justify-content-between py-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fw-medium">@expr.e</span>
+                                </div>
+                                <button class="btn btn-sm btn-danger" title="Ukloni uslov" @onclick="() => RemoveCondition(expr.i)">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </li>
+                        }
+                    }
+                </ul>
             </div>
+            <button class="btn corporate-button-secondary" type="button" @onclick="OpenConditionExpressionModal">Dodaj uslov</button>
+
         </EditForm>
     </BodyContent>
     <FooterContent>
@@ -39,5 +65,5 @@
 {
     <ConditionExpressionPickerModal IsOpen="_isExpressionPickerModalOpen"
                                     IsOpenChanged="@(v => _isExpressionPickerModalOpen = v)"
-                                    OnInsertCondition="InsertConditionExpression" />
+                                    OnInsertCondition="AddCondition" />
 }
