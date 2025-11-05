@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoDocFront", "AutoDoc\AutoDocFront.csproj", "{0C831A7D-2B58-4F3C-B30E-C5E3D12C8B23}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoDocService", "AutoDocService\AutoDocService.csproj", "{5B52077C-C1E8-44D6-94E1-1D42234B529B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoDoc.Shared", "AutoDoc.Shared\AutoDoc.Shared.csproj", "{39F182D3-5615-4C49-8F65-F9A487E0A13D}"
@@ -15,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0C831A7D-2B58-4F3C-B30E-C5E3D12C8B23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0C831A7D-2B58-4F3C-B30E-C5E3D12C8B23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0C831A7D-2B58-4F3C-B30E-C5E3D12C8B23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0C831A7D-2B58-4F3C-B30E-C5E3D12C8B23}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5B52077C-C1E8-44D6-94E1-1D42234B529B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5B52077C-C1E8-44D6-94E1-1D42234B529B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B52077C-C1E8-44D6-94E1-1D42234B529B}.Release|Any CPU.ActiveCfg = Release|Any CPU
